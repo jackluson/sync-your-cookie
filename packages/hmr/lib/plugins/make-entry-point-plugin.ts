@@ -34,6 +34,7 @@ export function makeEntryPointPlugin(): PluginOption {
             break;
           case 'chunk': {
             fs.writeFileSync(path.resolve(outputDir, newFileName), module.code);
+            console.log('newFileName', newFileName);
             if (isFirefox) {
               const contentDirectory = extractContentDir(outputDir);
               module.code = `import(browser.runtime.getURL("${contentDirectory}/${newFileName}"));`;

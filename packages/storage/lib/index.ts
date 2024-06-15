@@ -1,4 +1,5 @@
-import { createStorage, StorageType, type BaseStorage, SessionAccessLevel } from './base';
-import { exampleThemeStorage } from './exampleThemeStorage';
+import { SessionAccessLevel, StorageType, createStorage, type BaseStorage } from './base';
+export * from './cloudflareStorage';
+export * from './exampleThemeStorage';
 
-export { exampleThemeStorage, createStorage, StorageType, SessionAccessLevel, BaseStorage };
+export { BaseStorage, SessionAccessLevel, StorageType, createStorage };

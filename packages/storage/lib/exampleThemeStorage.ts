@@ -1,6 +1,6 @@
 import { BaseStorage, createStorage, StorageType } from './base';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light' | 'dark' | 'system';
 
 type ThemeStorage = BaseStorage<Theme> & {
   toggle: () => Promise<void>;

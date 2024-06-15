@@ -1,6 +1,8 @@
-import { createRoot } from 'react-dom/client';
-import '@src/index.css';
 import Popup from '@src/Popup';
+import '@src/index.css';
+import { createRoot } from 'react-dom/client';
+
+import { ThemeProvider } from '@src/Providers/ThemeProvider';
 
 function init() {
   const appContainer = document.querySelector('#app-container');
@@ -9,7 +11,11 @@ function init() {
   }
   const root = createRoot(appContainer);
 
-  root.render(<Popup />);
+  root.render(
+    <ThemeProvider>
+      <Popup />
+    </ThemeProvider>,
+  );
 }
 
 init();
