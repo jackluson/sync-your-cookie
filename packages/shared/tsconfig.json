@@ -3,11 +3,13 @@
   "compilerOptions": {
     "outDir": "dist",
     "jsx": "react-jsx",
+    "checkJs": false,
+    "allowJs": false,
     "baseUrl": ".",
     "paths": {
       "@lib/*": ["lib/*"]
     },
     "types": ["chrome"]
   },
-  "include": ["index.ts", "lib"]
+  "include": ["index.ts", "lib"],
 }

@@ -41,7 +41,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
+      // localStorage.setItem(storageKey, theme);
       exampleThemeStorage.set(theme);
       //   setTheme(theme);
     },

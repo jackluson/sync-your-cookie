@@ -27,6 +27,7 @@ const manifest = Object.assign(
     version: packageJson.version,
     description: '__MSG_extensionDescription__',
     permissions: ['cookies', 'tabs', 'storage', 'scripting'].concat(sidePanelConfig.permissions),
+    host_permissions: ['<all_urls>'],
     options_page: 'options/index.html',
     background: {
       service_worker: 'background.iife.js',

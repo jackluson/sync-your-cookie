@@ -10,4 +10,5 @@
 		"source.fixAll.eslint": "explicit",
 		"source.organizeImports": "explicit"
 	},
+	"files.insertFinalNewline": true
 }

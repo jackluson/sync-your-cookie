@@ -17,12 +17,17 @@
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "proto": "pbjs -o ./lib/protobuf/proto/cookie.js -w es6 -t static-module ./lib/protobuf/proto/*.proto && pbts ./lib/protobuf/proto/cookie.js -o ./lib/protobuf/proto/cookie.d.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "pako": "^2.1.0",
+    "protobufjs": "^7.3.2"
+  },
   "devDependencies": {
     "@chrome-extension-boilerplate/storage": "workspace:*",
     "@chrome-extension-boilerplate/tsconfig": "workspace:*",
+    "@types/pako": "^2.0.3",
     "tsup": "8.0.2"
   }
 }

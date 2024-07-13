@@ -1,5 +1,6 @@
 dist
 node_modules
+proto
 .gitignore
 .github
 .eslintignore
