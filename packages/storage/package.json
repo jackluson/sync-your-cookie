@@ -22,6 +22,6 @@
   "dependencies": {},
   "devDependencies": {
     "@sync-your-cookie/tsconfig": "workspace:*",
-    "tsup": "8.0.2"
+    "tsup": "8.2.4"
   }
 }

@@ -28,6 +28,6 @@
     "@sync-your-cookie/storage": "workspace:*",
     "@sync-your-cookie/tsconfig": "workspace:*",
     "@types/pako": "^2.0.3",
-    "tsup": "8.0.2"
+    "tsup": "8.2.4"
   }
 }
