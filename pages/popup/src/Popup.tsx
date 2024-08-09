@@ -6,9 +6,9 @@ import {
   useStorageSuspense,
   withErrorBoundary,
   withSuspense,
-} from '@chrome-extension-boilerplate/shared';
-import { cloudflareAccoutIdStore, themeStorage } from '@chrome-extension-boilerplate/storage';
-import { Alert, AlertDescription, AlertTitle, Button } from '@chrome-extension-boilerplate/ui';
+} from '@sync-your-cookie/shared';
+import { cloudflareAccoutIdStore, themeStorage } from '@sync-your-cookie/storage';
+import { Alert, AlertDescription, AlertTitle, Button } from '@sync-your-cookie/ui';
 import '@src/Popup.css';
 import { ComponentPropsWithoutRef, useEffect, useState } from 'react';
 import { useTheme } from './hooks/useTheme';

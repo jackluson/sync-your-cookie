@@ -1,5 +1,5 @@
 {
-  "name": "@chrome-extension-boilerplate/new-tab",
+  "name": "@sync-your-cookie/new-tab",
   "version": "0.0.1",
   "description": "chrome extension new tab",
   "private": true,
@@ -18,13 +18,13 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@chrome-extension-boilerplate/shared": "workspace:*",
-    "@chrome-extension-boilerplate/storage": "workspace:*"
+    "@sync-your-cookie/shared": "workspace:*",
+    "@sync-your-cookie/storage": "workspace:*"
   },
   "devDependencies": {
-    "@chrome-extension-boilerplate/tailwindcss-config": "workspace:*",
-    "@chrome-extension-boilerplate/tsconfig": "workspace:*",
-    "@chrome-extension-boilerplate/hmr": "workspace:*",
+    "@sync-your-cookie/tailwindcss-config": "workspace:*",
+    "@sync-your-cookie/tsconfig": "workspace:*",
+    "@sync-your-cookie/hmr": "workspace:*",
     "sass": "1.74.1"
   }
 }

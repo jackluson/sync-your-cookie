@@ -1,5 +1,5 @@
 {
-  "name": "@chrome-extension-boilerplate/ui",
+  "name": "@sync-your-cookie/ui",
   "version": "0.0.1",
   "description": "chrome extension ui",
   "private": true,
@@ -41,8 +41,8 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@chrome-extension-boilerplate/tailwindcss-config": "workspace:*",
-    "@chrome-extension-boilerplate/tsconfig": "workspace:*",
+    "@sync-your-cookie/tailwindcss-config": "workspace:*",
+    "@sync-your-cookie/tsconfig": "workspace:*",
     "tsup": "8.0.2",
     "typescript-transform-paths": "^3.4.10"
   }

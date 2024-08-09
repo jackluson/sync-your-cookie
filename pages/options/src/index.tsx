@@ -1,4 +1,4 @@
-import { ThemeProvider } from '@chrome-extension-boilerplate/shared';
+import { ThemeProvider } from '@sync-your-cookie/shared';
 import { createRoot } from 'react-dom/client';
 
 import '@src/index.css';

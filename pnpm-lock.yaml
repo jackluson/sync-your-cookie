@@ -96,23 +96,23 @@ importers:
 
   chrome-extension:
     dependencies:
-      '@chrome-extension-boilerplate/shared':
+      '@sync-your-cookie/shared':
         specifier: workspace:*
         version: link:../packages/shared
-      '@chrome-extension-boilerplate/storage':
+      '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../packages/storage
       webextension-polyfill:
         specifier: ^0.12.0
         version: 0.12.0
     devDependencies:
-      '@chrome-extension-boilerplate/dev-utils':
+      '@sync-your-cookie/dev-utils':
         specifier: workspace:*
         version: link:../packages/dev-utils
-      '@chrome-extension-boilerplate/hmr':
+      '@sync-your-cookie/hmr':
         specifier: workspace:*
         version: link:../packages/hmr
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../packages/tsconfig
       '@laynezh/vite-plugin-lib-assets':
@@ -130,7 +130,7 @@ importers:
 
   packages/dev-utils:
     devDependencies:
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
 
@@ -140,7 +140,7 @@ importers:
         specifier: 8.17.0
         version: 8.17.0
     devDependencies:
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       '@rollup/plugin-sucrase':
@@ -168,10 +168,10 @@ importers:
         specifier: ^7.3.2
         version: 7.3.2
     devDependencies:
-      '@chrome-extension-boilerplate/storage':
+      '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../storage
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       '@types/pako':
@@ -183,7 +183,7 @@ importers:
 
   packages/storage:
     devDependencies:
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       tsup:
@@ -222,10 +222,10 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.4)
     devDependencies:
-      '@chrome-extension-boilerplate/tailwindcss-config':
+      '@sync-your-cookie/tailwindcss-config':
         specifier: workspace:*
         version: link:../tailwind-config
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
       tsup:
@@ -237,23 +237,23 @@ importers:
 
   pages/content:
     dependencies:
-      '@chrome-extension-boilerplate/shared':
+      '@sync-your-cookie/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@chrome-extension-boilerplate/storage':
+      '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../../packages/storage
     devDependencies:
-      '@chrome-extension-boilerplate/hmr':
+      '@sync-your-cookie/hmr':
         specifier: workspace:*
         version: link:../../packages/hmr
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
 
   pages/content-ui:
     dependencies:
-      '@chrome-extension-boilerplate/shared':
+      '@sync-your-cookie/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@radix-ui/react-slot':
@@ -275,64 +275,64 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.4)
     devDependencies:
-      '@chrome-extension-boilerplate/hmr':
+      '@sync-your-cookie/hmr':
         specifier: workspace:*
         version: link:../../packages/hmr
-      '@chrome-extension-boilerplate/tailwindcss-config':
+      '@sync-your-cookie/tailwindcss-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
 
   pages/devtools:
     dependencies:
-      '@chrome-extension-boilerplate/shared':
+      '@sync-your-cookie/shared':
         specifier: workspace:*
         version: link:../../packages/shared
     devDependencies:
-      '@chrome-extension-boilerplate/hmr':
+      '@sync-your-cookie/hmr':
         specifier: workspace:*
         version: link:../../packages/hmr
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
 
   pages/devtools-panel:
     dependencies:
-      '@chrome-extension-boilerplate/shared':
+      '@sync-your-cookie/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@chrome-extension-boilerplate/storage':
+      '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../../packages/storage
     devDependencies:
-      '@chrome-extension-boilerplate/hmr':
+      '@sync-your-cookie/hmr':
         specifier: workspace:*
         version: link:../../packages/hmr
-      '@chrome-extension-boilerplate/tailwindcss-config':
+      '@sync-your-cookie/tailwindcss-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
 
   pages/newtab:
     dependencies:
-      '@chrome-extension-boilerplate/shared':
+      '@sync-your-cookie/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@chrome-extension-boilerplate/storage':
+      '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../../packages/storage
     devDependencies:
-      '@chrome-extension-boilerplate/hmr':
+      '@sync-your-cookie/hmr':
         specifier: workspace:*
         version: link:../../packages/hmr
-      '@chrome-extension-boilerplate/tailwindcss-config':
+      '@sync-your-cookie/tailwindcss-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
       sass:
@@ -341,29 +341,29 @@ importers:
 
   pages/options:
     dependencies:
-      '@chrome-extension-boilerplate/shared':
+      '@sync-your-cookie/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@chrome-extension-boilerplate/storage':
+      '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../../packages/storage
     devDependencies:
-      '@chrome-extension-boilerplate/hmr':
+      '@sync-your-cookie/hmr':
         specifier: workspace:*
         version: link:../../packages/hmr
-      '@chrome-extension-boilerplate/tailwindcss-config':
+      '@sync-your-cookie/tailwindcss-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
 
   pages/popup:
     dependencies:
-      '@chrome-extension-boilerplate/shared':
+      '@sync-your-cookie/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@chrome-extension-boilerplate/storage':
+      '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../../packages/storage
       '@radix-ui/react-slot':
@@ -385,16 +385,16 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.4)
     devDependencies:
-      '@chrome-extension-boilerplate/hmr':
+      '@sync-your-cookie/hmr':
         specifier: workspace:*
         version: link:../../packages/hmr
-      '@chrome-extension-boilerplate/tailwindcss-config':
+      '@sync-your-cookie/tailwindcss-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
-      '@chrome-extension-boilerplate/ui':
+      '@sync-your-cookie/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       postcss-import:
@@ -403,20 +403,20 @@ importers:
 
   pages/sidepanel:
     dependencies:
-      '@chrome-extension-boilerplate/shared':
+      '@sync-your-cookie/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@chrome-extension-boilerplate/storage':
+      '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../../packages/storage
     devDependencies:
-      '@chrome-extension-boilerplate/hmr':
+      '@sync-your-cookie/hmr':
         specifier: workspace:*
         version: link:../../packages/hmr
-      '@chrome-extension-boilerplate/tailwindcss-config':
+      '@sync-your-cookie/tailwindcss-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
-      '@chrome-extension-boilerplate/tsconfig':
+      '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
 

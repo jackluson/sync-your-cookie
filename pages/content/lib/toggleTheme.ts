@@ -1,4 +1,4 @@
-import { themeStorage } from '@chrome-extension-boilerplate/storage';
+import { themeStorage } from '@sync-your-cookie/storage';
 
 export async function toggleTheme() {
   console.log('initial theme:', await themeStorage.get());

@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import libAssetsPlugin from '@laynezh/vite-plugin-lib-assets';
 import makeManifestPlugin from './utils/plugins/make-manifest-plugin';
-import { watchRebuildPlugin } from '@chrome-extension-boilerplate/hmr';
+import { watchRebuildPlugin } from '@sync-your-cookie/hmr';
 
 const rootDir = resolve(__dirname);
 const libDir = resolve(rootDir, 'lib');

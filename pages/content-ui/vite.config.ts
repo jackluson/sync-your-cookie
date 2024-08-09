@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { resolve } from 'path';
-import { makeEntryPointPlugin, watchRebuildPlugin } from '@chrome-extension-boilerplate/hmr';
+import { makeEntryPointPlugin, watchRebuildPlugin } from '@sync-your-cookie/hmr';
 import * as child_process from 'child_process';
 
 const rootDir = resolve(__dirname);

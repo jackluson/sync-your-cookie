@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { BaseStorage } from '@chrome-extension-boilerplate/storage';
+import { BaseStorage } from '@sync-your-cookie/storage';
 
 export function useStorage<
   Storage extends BaseStorage<Data>,

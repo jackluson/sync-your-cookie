@@ -1,5 +1,5 @@
 {
-  "name": "@chrome-extension-boilerplate/popup",
+  "name": "@sync-your-cookie/popup",
   "version": "0.0.1",
   "description": "chrome extension popup",
   "private": true,
@@ -18,8 +18,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@chrome-extension-boilerplate/shared": "workspace:*",
-    "@chrome-extension-boilerplate/storage": "workspace:*",
+    "@sync-your-cookie/shared": "workspace:*",
+    "@sync-your-cookie/storage": "workspace:*",
     "@radix-ui/react-slot": "^1.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -28,10 +28,10 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@chrome-extension-boilerplate/hmr": "workspace:*",
-    "@chrome-extension-boilerplate/tailwindcss-config": "workspace:*",
-    "@chrome-extension-boilerplate/tsconfig": "workspace:*",
-    "@chrome-extension-boilerplate/ui": "workspace:*",
+    "@sync-your-cookie/hmr": "workspace:*",
+    "@sync-your-cookie/tailwindcss-config": "workspace:*",
+    "@sync-your-cookie/tsconfig": "workspace:*",
+    "@sync-your-cookie/ui": "workspace:*",
     "postcss-import": "^16.1.0"
   }
 }

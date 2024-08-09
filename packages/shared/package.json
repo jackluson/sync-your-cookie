@@ -1,5 +1,5 @@
 {
-  "name": "@chrome-extension-boilerplate/shared",
+  "name": "@sync-your-cookie/shared",
   "version": "0.0.1",
   "description": "chrome extension shared code",
   "private": true,
@@ -25,8 +25,8 @@
     "protobufjs": "^7.3.2"
   },
   "devDependencies": {
-    "@chrome-extension-boilerplate/storage": "workspace:*",
-    "@chrome-extension-boilerplate/tsconfig": "workspace:*",
+    "@sync-your-cookie/storage": "workspace:*",
+    "@sync-your-cookie/tsconfig": "workspace:*",
     "@types/pako": "^2.0.3",
     "tsup": "8.0.2"
   }

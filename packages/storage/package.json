@@ -1,5 +1,5 @@
 {
-  "name": "@chrome-extension-boilerplate/storage",
+  "name": "@sync-your-cookie/storage",
   "version": "0.0.1",
   "description": "chrome extension storage",
   "private": true,
@@ -21,7 +21,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@chrome-extension-boilerplate/tsconfig": "workspace:*",
+    "@sync-your-cookie/tsconfig": "workspace:*",
     "tsup": "8.0.2"
   }
 }

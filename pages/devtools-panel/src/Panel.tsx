@@ -1,6 +1,6 @@
 import '@src/Panel.css';
-import { useStorageSuspense, withErrorBoundary, withSuspense } from '@chrome-extension-boilerplate/shared';
-import { themeStorage } from '@chrome-extension-boilerplate/storage';
+import { useStorageSuspense, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
+import { themeStorage } from '@sync-your-cookie/storage';
 import { ComponentPropsWithoutRef } from 'react';
 
 const Panel = () => {

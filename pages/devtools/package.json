@@ -1,5 +1,5 @@
 {
-  "name": "@chrome-extension-boilerplate/devtools",
+  "name": "@sync-your-cookie/devtools",
   "version": "0.0.1",
   "description": "chrome extension devtools",
   "private": true,
@@ -18,10 +18,10 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@chrome-extension-boilerplate/shared": "workspace:*"
+    "@sync-your-cookie/shared": "workspace:*"
   },
   "devDependencies": {
-    "@chrome-extension-boilerplate/tsconfig": "workspace:*",
-    "@chrome-extension-boilerplate/hmr": "workspace:*"
+    "@sync-your-cookie/tsconfig": "workspace:*",
+    "@sync-your-cookie/hmr": "workspace:*"
   }
 }

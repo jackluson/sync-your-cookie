@@ -1,5 +1,5 @@
 {
-  "name": "@chrome-extension-boilerplate/tsconfig",
+  "name": "@sync-your-cookie/tsconfig",
   "version": "1.0.0",
   "description": "tsconfig for chrome extension",
   "private": true,

@@ -1,4 +1,4 @@
-import { ThemeProviderContext } from '@chrome-extension-boilerplate/shared';
+import { ThemeProviderContext } from '@sync-your-cookie/shared';
 
 import { useContext } from 'react';
 

@@ -1,5 +1,5 @@
 {
-  "name": "@chrome-extension-boilerplate/content-ui",
+  "name": "@sync-your-cookie/content-ui",
   "version": "0.0.1",
   "description": "chrome extension content ui",
   "type": "module",
@@ -20,7 +20,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@chrome-extension-boilerplate/shared": "workspace:*",
+    "@sync-your-cookie/shared": "workspace:*",
     "@radix-ui/react-slot": "^1.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -29,8 +29,8 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@chrome-extension-boilerplate/hmr": "workspace:*",
-    "@chrome-extension-boilerplate/tailwindcss-config": "workspace:*",
-    "@chrome-extension-boilerplate/tsconfig": "workspace:*"
+    "@sync-your-cookie/hmr": "workspace:*",
+    "@sync-your-cookie/tailwindcss-config": "workspace:*",
+    "@sync-your-cookie/tsconfig": "workspace:*"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "extends": "@chrome-extension-boilerplate/tsconfig/base",
+  "extends": "@sync-your-cookie/tsconfig/base",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {

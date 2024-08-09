@@ -1,7 +1,7 @@
 {
-  "name": "chrome-extension-boilerplate-react-vite",
+  "name": "sync-your-cookie",
   "version": "0.0.1",
-  "description": "chrome extension boilerplate",
+  "description": "sync your cookie extension monorepo",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -1,4 +1,4 @@
-import { themeStorage } from '@chrome-extension-boilerplate/storage';
+import { themeStorage } from '@sync-your-cookie/storage';
 import { useStorageSuspense } from '@lib/hooks/useStorageSuspense';
 import { createContext, useEffect } from 'react';
 

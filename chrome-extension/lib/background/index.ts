@@ -1,5 +1,5 @@
 import 'webextension-polyfill';
-import { themeStorage } from '@chrome-extension-boilerplate/storage';
+import { themeStorage } from '@sync-your-cookie/storage';
 
 themeStorage.get().then(theme => {
   console.log('theme', theme);
