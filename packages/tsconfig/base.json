@@ -21,6 +21,11 @@
     "lib": [
       "DOM",
       "ESNext"
+    ],
+    "plugins": [
+      {
+        "transform": "typescript-transform-paths"
+      },
     ]
   }
 }

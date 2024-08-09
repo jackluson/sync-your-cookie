@@ -8,6 +8,11 @@
     "module": "CommonJS",
     "moduleResolution": "Node",
     "target": "ES6",
-    "types": ["node"]
+    "types": ["node"],
+    "plugins": [
+      {
+        "transform": "typescript-transform-paths"
+      },
+    ]
   }
 }

@@ -9,20 +9,22 @@ const DEFAULT_KEY = 'sync-your-cookie';
  * @returns promise<res>
  */
 export const writeCloudflareKV = async (value: string, accountId: string, namespaceId: string, token: string) => {
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/bulk`;
-  const payload = [
-    {
-      key: DEFAULT_KEY,
-      metadata: {
-        someMetadataKey: value,
-      },
-      value: value,
-    },
-  ];
+  console.log('value', value.length);
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${DEFAULT_KEY}`;
+  // const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/bulk`;
+  // const payload = [
+  //   {
+  //     key: DEFAULT_KEY,
+  //     metadata: JSON.stringify({
+  //       someMetadataKey: value,
+  //     }),
+  //     value: value,
+  //   },
+  // ];
   const options = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(payload),
+    body: value,
   };
   return fetch(url, options).then(res => res.json());
 };

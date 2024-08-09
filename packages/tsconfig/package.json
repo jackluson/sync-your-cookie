@@ -2,5 +2,12 @@
   "name": "@chrome-extension-boilerplate/tsconfig",
   "version": "1.0.0",
   "description": "tsconfig for chrome extension",
-  "private": true
+  "private": true,
+  "scripts": {
+    "prepare": "ts-patch install -s"
+  },
+  "devDependencies": {
+    "ts-patch": "^3.2.1",
+    "typescript-transform-paths": "^3.4.10"
+  }
 }
