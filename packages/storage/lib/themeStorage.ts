@@ -11,7 +11,7 @@ const storage = createStorage<Theme>('theme-storage-key', 'light', {
   liveUpdate: true,
 });
 
-export const exampleThemeStorage: ThemeStorage = {
+export const themeStorage: ThemeStorage = {
   ...storage,
   // TODO: extends your own methods
   toggle: async () => {

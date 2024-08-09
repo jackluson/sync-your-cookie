@@ -1,4 +1,5 @@
-import { ThemeProviderContext } from '@src/Providers/ThemeProvider';
+import { ThemeProviderContext } from '@chrome-extension-boilerplate/shared';
+
 import { useContext } from 'react';
 
 export const useTheme = () => {

@@ -1,8 +1,8 @@
+import { ThemeProvider } from '@chrome-extension-boilerplate/shared';
+import '@chrome-extension-boilerplate/ui/css';
 import Popup from '@src/Popup';
 import '@src/index.css';
 import { createRoot } from 'react-dom/client';
-
-import { ThemeProvider } from '@src/Providers/ThemeProvider';
 
 function init() {
   const appContainer = document.querySelector('#app-container');

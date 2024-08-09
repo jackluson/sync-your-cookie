@@ -1,4 +1,6 @@
+import { ThemeProvider } from '@chrome-extension-boilerplate/shared';
 import { createRoot } from 'react-dom/client';
+
 import '@src/index.css';
 import Options from '@src/Options';
 
@@ -8,7 +10,11 @@ function init() {
     throw new Error('Can not find #app-container');
   }
   const root = createRoot(appContainer);
-  root.render(<Options />);
+  root.render(
+    <ThemeProvider>
+      <Options />
+    </ThemeProvider>,
+  );
 }
 
 init();

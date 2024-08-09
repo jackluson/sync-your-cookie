@@ -1,10 +1,10 @@
 import '@src/SidePanel.css';
 import { useStorageSuspense, withErrorBoundary, withSuspense } from '@chrome-extension-boilerplate/shared';
-import { exampleThemeStorage } from '@chrome-extension-boilerplate/storage';
+import { themeStorage } from '@chrome-extension-boilerplate/storage';
 import { ComponentPropsWithoutRef } from 'react';
 
 const SidePanel = () => {
-  const theme = useStorageSuspense(exampleThemeStorage);
+  const theme = useStorageSuspense(themeStorage);
 
   return (
     <div
@@ -33,7 +33,7 @@ const SidePanel = () => {
 };
 
 const ToggleButton = (props: ComponentPropsWithoutRef<'button'>) => {
-  const theme = useStorageSuspense(exampleThemeStorage);
+  const theme = useStorageSuspense(themeStorage);
   return (
     <button
       className={
@@ -42,7 +42,7 @@ const ToggleButton = (props: ComponentPropsWithoutRef<'button'>) => {
         'font-bold mt-4 py-1 px-4 rounded shadow hover:scale-105 ' +
         (theme === 'light' ? 'bg-white text-black' : 'bg-black text-white')
       }
-      onClick={exampleThemeStorage.toggle}>
+      onClick={themeStorage.toggle}>
       {props.children}
     </button>
   );

@@ -1,20 +1,21 @@
 import {
   arrayBufferToBase64,
+  base64ToArrayBuffer,
   decodeDomainCookies,
   encodeDomainCookies,
   useStorageSuspense,
   withErrorBoundary,
   withSuspense,
 } from '@chrome-extension-boilerplate/shared';
-import { cloudflareAccoutIdStore, exampleThemeStorage } from '@chrome-extension-boilerplate/storage';
+import { cloudflareAccoutIdStore, themeStorage } from '@chrome-extension-boilerplate/storage';
+import { Alert, AlertDescription, AlertTitle, Button } from '@chrome-extension-boilerplate/ui';
 import '@src/Popup.css';
-import { Button } from '@src/components/ui/button';
 import { ComponentPropsWithoutRef, useEffect, useState } from 'react';
 import { useTheme } from './hooks/useTheme';
-import { writeCloudflareKV } from './utils/cloudflare';
+import { readCloudflareKV, writeCloudflareKV } from './utils/cloudflare';
 
 const Popup = () => {
-  const theme = useStorageSuspense(exampleThemeStorage);
+  const theme = useStorageSuspense(themeStorage);
   const cloudfareAccountId = useStorageSuspense(cloudflareAccoutIdStore);
 
   const { setTheme } = useTheme();
@@ -26,41 +27,15 @@ const Popup = () => {
       console.log('tab', tabs);
       if (tabs.length > 0) {
         const activeTab = tabs[0];
-        if (activeTab.url) {
+        if (activeTab.url && activeTab.url.startsWith('http')) {
           console.log('actieTab', activeTab.url, new URL(activeTab.url));
           setActiveTabUrl(activeTab.url);
           setHostname(new URL(activeTab.url).host);
         }
       }
     });
+    console.log('cloudfareAccountId-useEffect', cloudfareAccountId);
   }, []);
-  async function concatUint8Arrays(uint8arrays: ArrayBuffer[]) {
-    const blob = new Blob(uint8arrays);
-    const buffer = await blob.arrayBuffer();
-    return new Uint8Array(buffer);
-  }
-
-  /**
-   * Decompress bytes into a UTF-8 string.
-   *
-   * @param {Uint8Array} compressedBytes
-   * @returns {Promise<string>}
-   */
-  async function decompress(compressedBytes: ArrayBuffer) {
-    // Convert the bytes to a stream.
-    const stream = new Blob([compressedBytes]).stream();
-
-    // Create a decompressed stream.
-    const decompressedStream = stream.pipeThrough(new DecompressionStream('gzip')) as unknown as ArrayBuffer[];
-
-    // Read all the bytes from this stream.
-    const chunks = [];
-    for await (const chunk of decompressedStream) {
-      chunks.push(chunk);
-    }
-    const stringBytes = await concatUint8Arrays(chunks);
-    return stringBytes;
-  }
 
   const handleUpload = () => {
     console.log('handle load');
@@ -109,18 +84,53 @@ const Popup = () => {
           // console.log('pakoDecomressBuffer', pakoDecomressBuffer);
           // const deCompressResStr = new TextDecoder().decode(pakoDecomressBuffer);
           // console.log('deCompressResStr', deCompressResStr, deCompressResStr.length);
-          const deMsg = await decodeDomainCookies(compressRes);
-          console.log('deMsg', deMsg);
         }
       },
     );
 
-    console.log('cloudfareAccountId', cloudfareAccountId);
     // chrome.tts.speak('Hello, world.', (res)=> {
     //   console.log("res", res);
     //   console.log('done')
 
     // });
+  };
+
+  const handlePull = async () => {
+    const accoundId = 'e0a55339ba8e15b97db21d0f9d80a255';
+    const namespaceId = '8181fed01e874d25be35da06564df74f';
+    const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
+    const res = await readCloudflareKV(accoundId, namespaceId, token);
+    console.log('res', res);
+    const compressedBuffer = base64ToArrayBuffer(res);
+    const deMsg = await decodeDomainCookies(compressedBuffer);
+    console.log('deMsg', deMsg);
+    const cookies = deMsg.cookies;
+    const cookieDetails = cookies.map(cookie => {
+      return {
+        domain: cookie.domain ?? undefined,
+        expirationDate: cookie.expirationDate ?? undefined,
+        httpOnly: cookie.httpOnly ?? undefined,
+        name: cookie.name ?? undefined,
+        // partitionKey: cookie.storeId,
+        path: cookie.path ?? undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sameSite: cookie.sameSite ?? ('lax' as any),
+        secure: cookie.secure ?? undefined,
+        storeId: cookie.storeId ?? undefined,
+        value: cookie.value ?? undefined,
+        url: activeTabUrl,
+      };
+    });
+    console.log('cookiesDetail', cookieDetails);
+    for (const cookies of cookieDetails) {
+      chrome.cookies.set(cookies, res => {
+        console.log('set cookie', res);
+      });
+    }
+  };
+
+  const handleUpdateToken = () => {
+    cloudflareAccoutIdStore.set('e0a55339ba8e15b97db21d0f9d80a255');
   };
 
   return (
@@ -141,8 +151,14 @@ const Popup = () => {
           style={{ color: theme === 'light' ? '#0281dc' : undefined, marginBottom: '10px' }}>
           Learn React!
         </a>
-        <Button className="mb-2" onClick={handleUpload}>
-          上传cookie
+        <Button className="mb-2" onClick={handleUpdateToken}>
+          Update Token
+        </Button>
+        <Button disabled={!activeTabUrl} className="mb-2" onClick={handleUpload}>
+          Push cookie
+        </Button>
+        <Button disabled={!activeTabUrl} className="mb-2" onClick={handlePull}>
+          Pull cookie
         </Button>
         <Button
           onClick={() => {
@@ -156,6 +172,10 @@ const Popup = () => {
           }}>
           Click me
         </Button>
+        <Alert>
+          <AlertTitle>Heads up!</AlertTitle>
+          <AlertDescription>You can add components to your app using the cli.</AlertDescription>
+        </Alert>
         <ToggleButton>Toggle theme ~</ToggleButton>
       </header>
     </div>
@@ -163,7 +183,7 @@ const Popup = () => {
 };
 
 const ToggleButton = (props: ComponentPropsWithoutRef<'button'>) => {
-  const theme = useStorageSuspense(exampleThemeStorage);
+  const theme = useStorageSuspense(themeStorage);
   return (
     <button
       className={
@@ -172,7 +192,7 @@ const ToggleButton = (props: ComponentPropsWithoutRef<'button'>) => {
         'font-bold mt-4 py-1 px-4 rounded shadow hover:scale-105 ' +
         (theme === 'light' ? 'bg-white text-black' : 'bg-black text-white')
       }
-      onClick={exampleThemeStorage.toggle}>
+      onClick={themeStorage.toggle}>
       {props.children}
     </button>
   );

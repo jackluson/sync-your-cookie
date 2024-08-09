@@ -1,5 +1,5 @@
-import { useStorageSuspense } from '@chrome-extension-boilerplate/shared';
-import { exampleThemeStorage } from '@chrome-extension-boilerplate/storage';
+import { themeStorage } from '@chrome-extension-boilerplate/storage';
+import { useStorageSuspense } from '@lib/hooks/useStorageSuspense';
 import { createContext, useEffect } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
@@ -21,7 +21,7 @@ const initialState: ThemeProviderState = {
 export const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  const theme = useStorageSuspense(exampleThemeStorage);
+  const theme = useStorageSuspense(themeStorage);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -42,7 +42,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     theme,
     setTheme: (theme: Theme) => {
       // localStorage.setItem(storageKey, theme);
-      exampleThemeStorage.set(theme);
+      themeStorage.set(theme);
       //   setTheme(theme);
     },
   };
