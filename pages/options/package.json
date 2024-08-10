@@ -24,6 +24,7 @@
   "devDependencies": {
     "@sync-your-cookie/tailwindcss-config": "workspace:*",
     "@sync-your-cookie/tsconfig": "workspace:*",
-    "@sync-your-cookie/hmr": "workspace:*"
+    "@sync-your-cookie/hmr": "workspace:*",
+    "@sync-your-cookie/ui": "workspace:*"
   }
 }

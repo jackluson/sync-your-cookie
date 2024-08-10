@@ -106,6 +106,9 @@ importers:
         specifier: ^0.12.0
         version: 0.12.0
     devDependencies:
+      '@laynezh/vite-plugin-lib-assets':
+        specifier: ^0.5.21
+        version: 0.5.23(vite@5.3.2)
       '@sync-your-cookie/dev-utils':
         specifier: workspace:*
         version: link:../packages/dev-utils
@@ -115,9 +118,6 @@ importers:
       '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../packages/tsconfig
-      '@laynezh/vite-plugin-lib-assets':
-        specifier: ^0.5.21
-        version: 0.5.23(vite@5.3.2)
       '@types/ws':
         specifier: ^8.5.10
         version: 8.5.10
@@ -140,12 +140,12 @@ importers:
         specifier: 8.17.0
         version: 8.17.0
     devDependencies:
-      '@sync-your-cookie/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
       '@rollup/plugin-sucrase':
         specifier: ^5.0.2
         version: 5.0.2(rollup@4.18.0)
+      '@sync-your-cookie/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@types/ws':
         specifier: ^8.5.10
         version: 8.5.10
@@ -253,12 +253,12 @@ importers:
 
   pages/content-ui:
     dependencies:
-      '@sync-your-cookie/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@radix-ui/react-slot':
         specifier: ^1.0.2
         version: 1.1.0(@types/react@18.3.3)(react@18.2.0)
+      '@sync-your-cookie/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -357,18 +357,21 @@ importers:
       '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
+      '@sync-your-cookie/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
 
   pages/popup:
     dependencies:
+      '@radix-ui/react-slot':
+        specifier: ^1.0.2
+        version: 1.1.0(@types/react@18.3.3)(react@18.2.0)
       '@sync-your-cookie/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../../packages/storage
-      '@radix-ui/react-slot':
-        specifier: ^1.0.2
-        version: 1.1.0(@types/react@18.3.3)(react@18.2.0)
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0

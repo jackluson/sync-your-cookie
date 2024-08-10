@@ -1,7 +1,7 @@
-import { ThemeProvider } from '@sync-your-cookie/shared';
-import '@sync-your-cookie/ui/css';
 import Popup from '@src/Popup';
 import '@src/index.css';
+import { ThemeProvider } from '@sync-your-cookie/shared';
+import '@sync-your-cookie/ui/css';
 import { createRoot } from 'react-dom/client';
 
 function init() {
