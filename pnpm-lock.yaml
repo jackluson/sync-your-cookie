@@ -363,30 +363,12 @@ importers:
 
   pages/popup:
     dependencies:
-      '@radix-ui/react-slot':
-        specifier: ^1.0.2
-        version: 1.1.0(@types/react@18.3.3)(react@18.2.0)
       '@sync-your-cookie/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../../packages/storage
-      class-variance-authority:
-        specifier: ^0.7.0
-        version: 0.7.0
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
-      lucide-react:
-        specifier: ^0.394.0
-        version: 0.394.0(react@18.2.0)
-      tailwind-merge:
-        specifier: ^2.3.0
-        version: 2.3.0
-      tailwindcss-animate:
-        specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.4.4)
     devDependencies:
       '@sync-your-cookie/hmr':
         specifier: workspace:*
@@ -400,9 +382,6 @@ importers:
       '@sync-your-cookie/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      postcss-import:
-        specifier: ^16.1.0
-        version: 16.1.0(postcss@8.4.39)
 
   pages/sidepanel:
     dependencies:
@@ -3788,18 +3767,6 @@ packages:
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
       resolve: 1.22.8
-
-  /postcss-import@16.1.0(postcss@8.4.39):
-    resolution: {integrity: sha512-7hsAZ4xGXl4MW+OKEWCnF6T5jqBw80/EE9aXg1r2yyn1RsVEU8EtKXbijEODa+rg7iih4bKf7vlvTGYR4CnPNg==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      postcss: ^8.0.0
-    dependencies:
-      postcss: 8.4.39
-      postcss-value-parser: 4.2.0
-      read-cache: 1.0.0
-      resolve: 1.22.8
-    dev: true
 
   /postcss-js@4.0.1(postcss@8.4.39):
     resolution: {integrity: sha512-dDLF8pEO191hJMtlHFPRa8xsizHaM82MLfNkUHdUtVEV3tgTp5oj+8qbEqYM57SLfc74KSbw//4SeJma2LRVIw==}

@@ -19,19 +19,12 @@
   },
   "dependencies": {
     "@sync-your-cookie/shared": "workspace:*",
-    "@sync-your-cookie/storage": "workspace:*",
-    "@radix-ui/react-slot": "^1.0.2",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.394.0",
-    "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.7"
+    "@sync-your-cookie/storage": "workspace:*"
   },
   "devDependencies": {
     "@sync-your-cookie/hmr": "workspace:*",
     "@sync-your-cookie/tailwindcss-config": "workspace:*",
     "@sync-your-cookie/tsconfig": "workspace:*",
-    "@sync-your-cookie/ui": "workspace:*",
-    "postcss-import": "^16.1.0"
+    "@sync-your-cookie/ui": "workspace:*"
   }
 }
