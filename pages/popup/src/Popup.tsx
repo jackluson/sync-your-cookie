@@ -1,22 +1,26 @@
+// import '@src/Popup.css';
 import {
   arrayBufferToBase64,
   base64ToArrayBuffer,
   decodeDomainCookies,
   encodeDomainCookies,
+  ErrorCode,
+  readCloudflareKV,
   useStorageSuspense,
   withErrorBoundary,
   withSuspense,
+  writeCloudflareKV,
 } from '@sync-your-cookie/shared';
-import { cloudflareAccoutIdStore, themeStorage } from '@sync-your-cookie/storage';
-import { Alert, AlertDescription, AlertTitle, Button } from '@sync-your-cookie/ui';
-import '@src/Popup.css';
+import { cloudflareAccoutIdStorage, themeStorage } from '@sync-your-cookie/storage';
+import { Alert, AlertDescription, AlertTitle, Button, Toaster } from '@sync-your-cookie/ui';
 import { ComponentPropsWithoutRef, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { useTheme } from './hooks/useTheme';
-import { readCloudflareKV, writeCloudflareKV } from './utils/cloudflare';
+// import {  } from './utils/cloudflare';
 
 const Popup = () => {
   const theme = useStorageSuspense(themeStorage);
-  const cloudfareAccountId = useStorageSuspense(cloudflareAccoutIdStore);
+  const cloudfareAccountId = useStorageSuspense(cloudflareAccoutIdStorage);
 
   const { setTheme } = useTheme();
   const [hostname, setHostname] = useState('');
@@ -37,9 +41,26 @@ const Popup = () => {
     console.log('cloudfareAccountId-useEffect', cloudfareAccountId);
   }, []);
 
-  const handleUpload = () => {
+  const check = () => {
+    if (!cloudfareAccountId) {
+      toast('Account ID is empty', {
+        description: 'Please set cloudflare account id',
+        action: {
+          label: 'go to settings',
+          onClick: () => {
+            chrome.runtime.openOptionsPage();
+          },
+        },
+        position: 'top-right',
+      });
+      throw new Error('Please set cloudflare account id');
+    }
+  };
+
+  const handleUpload = async () => {
     console.log('handle load');
     console.log('hostname', hostname);
+    await check();
 
     chrome.cookies.getAll(
       {
@@ -50,13 +71,31 @@ const Popup = () => {
         if (cookies) {
           const compressRes = await encodeDomainCookies(cookies);
           console.log('compressRes', compressRes);
-          const accoundId = 'e0a55339ba8e15b97db21d0f9d80a255';
+          // const accoundId = 'e0a55339ba8e15b97db21d0f9d80a255';
           const namespaceId = '8181fed01e874d25be35da06564df74f';
           const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
           const base64Str = arrayBufferToBase64(compressRes);
-          writeCloudflareKV(base64Str, accoundId, namespaceId, token)
+          console.log('writeCloudflareKV', writeCloudflareKV);
+          writeCloudflareKV(base64Str, cloudfareAccountId, namespaceId, token)
             .then(async json => {
               console.log(json);
+              if (json.success) {
+                toast.success('Pushed success');
+              } else {
+                console.log('json.errors[0]', json.errors[0]);
+                if (json.errors?.length && json.errors[0].code === ErrorCode.NotFoundRoute) {
+                  toast.error('cloudflare account info is incorrect', {
+                    action: {
+                      label: 'go to settings',
+                      onClick: () => {
+                        chrome.runtime.openOptionsPage();
+                      },
+                    },
+                  });
+                } else {
+                  toast.error('Pushed fail');
+                }
+              }
               // const value = await readCloudflareKV(accoundId, namespaceId, token)
               // console.log("value", value);
               // const buffer = base64ToArrayBuffer(value);
@@ -130,28 +169,20 @@ const Popup = () => {
   };
 
   const handleUpdateToken = () => {
-    cloudflareAccoutIdStore.set('e0a55339ba8e15b97db21d0f9d80a255');
+    cloudflareAccoutIdStorage.set('e0a55339ba8e15b97db21d0f9d80a255');
   };
 
   return (
     <div
-      className="absolute top-0 left-0 right-0 bottom-0 flex flex-col items-center justify-center p-4 bg-background "
+      className="flex flex-col items-center min-w-[420px] justify-center p-4 bg-background "
       // style={{
       //   backgroundColor: theme === 'light' ? '#eee' : '#222',
       // }}
     >
       <h3 className="text-xl text-primary font-bold">{hostname}</h3>
-      <header className="App-header" style={{ color: theme === 'light' ? '#222' : '#eee' }}>
+      <div className="flex flex-col">
         {/* <img src={chrome.runtime.getURL('popup/logo.svg')} className="App-logo" alt="logo" /> */}
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: theme === 'light' ? '#0281dc' : undefined, marginBottom: '10px' }}>
-          Learn React!
-        </a>
-        <Button className="mb-2" onClick={handleUpdateToken}>
+        <Button title={cloudfareAccountId} className="mb-2" onClick={handleUpdateToken}>
           Update Token
         </Button>
         <Button disabled={!activeTabUrl} className="mb-2" onClick={handleUpload}>
@@ -177,7 +208,8 @@ const Popup = () => {
           <AlertDescription>You can add components to your app using the cli.</AlertDescription>
         </Alert>
         <ToggleButton>Toggle theme ~</ToggleButton>
-      </header>
+      </div>
+      <Toaster visibleToasts={1} richColors position="top-center" />
     </div>
   );
 };

@@ -19,7 +19,10 @@
   },
   "dependencies": {
     "@sync-your-cookie/shared": "workspace:*",
-    "@sync-your-cookie/storage": "workspace:*"
+    "@sync-your-cookie/storage": "workspace:*",
+    "clsx": "^2.1.1",
+    "sonner": "^1.5.0",
+    "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
     "@sync-your-cookie/hmr": "workspace:*",
