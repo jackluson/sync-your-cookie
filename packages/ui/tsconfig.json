@@ -9,6 +9,7 @@
     "paths": {
       "src/*": ["./src/*"],
       "@components/*": ["./src/components/*"],
+      "@/components/*": ["./src/components/*"],
       "@libs/*": ["./src/libs/*"]
     },
     "types": ["chrome"],
