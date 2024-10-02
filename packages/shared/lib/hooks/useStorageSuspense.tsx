@@ -1,5 +1,5 @@
-import { useSyncExternalStore } from 'react';
 import { BaseStorage } from '@sync-your-cookie/storage';
+import { useSyncExternalStore } from 'react';
 
 type WrappedPromise = ReturnType<typeof wrapPromise>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -10,7 +10,6 @@ export function useStorageSuspense<
   Data = Storage extends BaseStorage<infer Data> ? Data : unknown,
 >(storage: Storage) {
   const _data = useSyncExternalStore<Data | null>(storage.subscribe, storage.getSnapshot);
-
   if (!storageMap.has(storage)) {
     storageMap.set(storage, wrapPromise(storage.get()));
   }

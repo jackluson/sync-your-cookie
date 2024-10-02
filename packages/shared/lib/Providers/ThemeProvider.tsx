@@ -1,5 +1,5 @@
-import { themeStorage } from '@sync-your-cookie/storage';
 import { useStorageSuspense } from '@lib/hooks/useStorageSuspense';
+import { themeStorage } from '@sync-your-cookie/storage';
 import { createContext, useEffect } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
@@ -30,7 +30,6 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 
     if (theme === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-
       root.classList.add(systemTheme);
       return;
     }

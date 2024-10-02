@@ -1,5 +1,5 @@
 import { useStorageSuspense, useTheme, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
-import { cloudflareAccoutIdStorage, themeStorage } from '@sync-your-cookie/storage';
+import { cloudflareAccountIdStorage, themeStorage } from '@sync-your-cookie/storage';
 import {
   Button,
   Card,
@@ -17,10 +17,10 @@ import { useState } from 'react';
 
 const Options = () => {
   const theme = useStorageSuspense(themeStorage);
-  const cloudfareAccountId = useStorageSuspense(cloudflareAccoutIdStorage);
+  const cloudflareAccountId = useStorageSuspense(cloudflareAccountIdStorage);
 
-  const [accountId, setAccountId] = useState(cloudfareAccountId);
-  const [namespaceId, setNamespaceId] = useState(cloudfareAccountId);
+  const [accountId, setAccountId] = useState(cloudflareAccountId);
+  const [namespaceId, setNamespaceId] = useState(cloudflareAccountId);
 
   const { setTheme } = useTheme();
 
@@ -35,7 +35,7 @@ const Options = () => {
 
   const handleSave = () => {
     console.log('handleSave', accountId);
-    cloudflareAccoutIdStorage.set(accountId);
+    cloudflareAccountIdStorage.set(accountId);
   };
 
   return (
@@ -50,17 +50,19 @@ const Options = () => {
           alt="logo"
         />
         <div className="w-full">
-          <Card className="mx-auto max-w-lg">
+          <Card className="mx-auto min-w-[400px] max-w-lg">
             <CardHeader>
               <div className="flex justify-between">
                 <CardTitle className="text-xl">Settings</CardTitle>
               </div>
-              <CardDescription>Enter your cloudfare account to store Cookie</CardDescription>
+              <CardDescription>Enter your cloudflare account to store Cookie</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="accountId">Account ID</Label>
+                  <div className="flex justify-between items-center ">
+                    <Label htmlFor="accountId">Account ID</Label>
+                  </div>
                   <Input
                     id="accountId"
                     value={accountId}
@@ -74,10 +76,12 @@ const Options = () => {
                 <div className="grid gap-2">
                   <div className="flex justify-between items-center ">
                     <Label htmlFor="namespaceId">Namespace ID</Label>
-                    <div className="text-center ml-16 text-sm">
-                      Don’t have an ID yet?
-                      <span className=" cursor-pointer underline ml-2">Create</span>
-                    </div>
+                    {namespaceId ? null : (
+                      <div className="text-center ml-16 text-sm">
+                        Don’t have an ID yet?
+                        <span className=" cursor-pointer underline ml-2">Create</span>
+                      </div>
+                    )}
                   </div>
                   <Input
                     id="namespaceId"
@@ -92,6 +96,17 @@ const Options = () => {
                 <Button onClick={handleSave} type="submit" className="w-full">
                   Save
                 </Button>
+                <div className="text-center mt-4 text-sm">
+                  Don’t have a cloudflare Account yet?
+                  <a
+                    href="https://dash.cloudflare.com/sign-up"
+                    target="_blank"
+                    className=" cursor-pointer underline ml-2"
+                    rel="noreferrer">
+                    Sign up
+                  </a>
+                </div>
+
                 {/* <Button variant="outline" className="w-full">
                   Sign up with GitHub
                 </Button> */}

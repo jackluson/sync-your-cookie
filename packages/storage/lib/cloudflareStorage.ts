@@ -1,6 +1,11 @@
 import { BaseStorage, createStorage, StorageType } from './base';
 
-export const cloudflareAccoutIdStorage: BaseStorage<string> = createStorage<string>('cloudflare-account-id', 'x', {
+export const cloudflareAccountIdStorage: BaseStorage<string> = createStorage<string>('cloudflare-account-id', '', {
+  storageType: StorageType.Local,
+  liveUpdate: true,
+});
+
+export const cloudflareNamespaceIdStorage: BaseStorage<string> = createStorage<string>('cloudflare-namespace-id', '', {
   storageType: StorageType.Local,
   liveUpdate: true,
 });

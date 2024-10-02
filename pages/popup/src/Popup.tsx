@@ -11,7 +11,7 @@ import {
   withSuspense,
   writeCloudflareKV,
 } from '@sync-your-cookie/shared';
-import { cloudflareAccoutIdStorage, themeStorage } from '@sync-your-cookie/storage';
+import { cloudflareAccountIdStorage, themeStorage } from '@sync-your-cookie/storage';
 import { Alert, AlertDescription, AlertTitle, Button, Toaster } from '@sync-your-cookie/ui';
 import { ComponentPropsWithoutRef, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -20,7 +20,7 @@ import { useTheme } from './hooks/useTheme';
 
 const Popup = () => {
   const theme = useStorageSuspense(themeStorage);
-  const cloudfareAccountId = useStorageSuspense(cloudflareAccoutIdStorage);
+  const cloudflareAccountId = useStorageSuspense(cloudflareAccountIdStorage);
 
   const { setTheme } = useTheme();
   const [hostname, setHostname] = useState('');
@@ -38,11 +38,11 @@ const Popup = () => {
         }
       }
     });
-    console.log('cloudfareAccountId-useEffect', cloudfareAccountId);
+    console.log('cloudflareAccountId-useEffect', cloudflareAccountId);
   }, []);
 
   const check = () => {
-    if (!cloudfareAccountId) {
+    if (!cloudflareAccountId) {
       toast('Account ID is empty', {
         description: 'Please set cloudflare account id',
         action: {
@@ -76,7 +76,7 @@ const Popup = () => {
           const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
           const base64Str = arrayBufferToBase64(compressRes);
           console.log('writeCloudflareKV', writeCloudflareKV);
-          writeCloudflareKV(base64Str, cloudfareAccountId, namespaceId, token)
+          writeCloudflareKV(base64Str, cloudflareAccountId, namespaceId, token)
             .then(async json => {
               console.log(json);
               if (json.success) {
@@ -169,7 +169,7 @@ const Popup = () => {
   };
 
   const handleUpdateToken = () => {
-    cloudflareAccoutIdStorage.set('e0a55339ba8e15b97db21d0f9d80a255');
+    cloudflareAccountIdStorage.set('e0a55339ba8e15b97db21d0f9d80a255');
   };
 
   return (
@@ -182,7 +182,7 @@ const Popup = () => {
       <h3 className="text-xl text-primary font-bold">{hostname}</h3>
       <div className="flex flex-col">
         {/* <img src={chrome.runtime.getURL('popup/logo.svg')} className="App-logo" alt="logo" /> */}
-        <Button title={cloudfareAccountId} className="mb-2" onClick={handleUpdateToken}>
+        <Button title={cloudflareAccountId} className="mb-2" onClick={handleUpdateToken}>
           Update Token
         </Button>
         <Button disabled={!activeTabUrl} className="mb-2" onClick={handleUpload}>
