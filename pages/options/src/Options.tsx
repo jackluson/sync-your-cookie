@@ -80,7 +80,7 @@ const Options = () => {
                     onChange={handleTokenInput}
                     className="w-full mb-2"
                     type="text"
-                    placeholder="please input your cloudflare account ID "
+                    placeholder="please input your cloudflare token "
                     required
                   />
                 </div>
