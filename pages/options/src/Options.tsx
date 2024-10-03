@@ -1,5 +1,9 @@
 import { useStorageSuspense, useTheme, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
-import { cloudflareAccountIdStorage, themeStorage } from '@sync-your-cookie/storage';
+import {
+  cloudflareAccountIdStorage,
+  cloudflareNamespaceIdStorage,
+  cloudflareTokenStorage,
+} from '@sync-your-cookie/storage';
 import {
   Button,
   Card,
@@ -12,30 +16,37 @@ import {
   ThemeDropdown,
   Toaster,
 } from '@sync-your-cookie/ui';
-
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 const Options = () => {
-  const theme = useStorageSuspense(themeStorage);
   const cloudflareAccountId = useStorageSuspense(cloudflareAccountIdStorage);
+  const cloudflareNamespaceId = useStorageSuspense(cloudflareNamespaceIdStorage);
+  const cloudflareToken = useStorageSuspense(cloudflareTokenStorage);
 
+  const [token, setToken] = useState(cloudflareToken);
   const [accountId, setAccountId] = useState(cloudflareAccountId);
-  const [namespaceId, setNamespaceId] = useState(cloudflareAccountId);
+  const [namespaceId, setNamespaceId] = useState(cloudflareNamespaceId);
 
   const { setTheme } = useTheme();
+
+  const handleTokenInput: React.ChangeEventHandler<HTMLInputElement> = evt => {
+    setToken(evt.target.value);
+  };
 
   const handleAccountInput: React.ChangeEventHandler<HTMLInputElement> = evt => {
     setAccountId(evt.target.value);
   };
 
   const handleNamespaceInput: React.ChangeEventHandler<HTMLInputElement> = evt => {
-    console.log('handleInput', evt.target.value);
     setNamespaceId(evt.target.value);
   };
 
   const handleSave = () => {
-    console.log('handleSave', accountId);
     cloudflareAccountIdStorage.set(accountId);
+    cloudflareNamespaceIdStorage.set(namespaceId);
+    cloudflareTokenStorage.set(token);
+    toast.success('Save Success');
   };
 
   return (
@@ -61,13 +72,27 @@ const Options = () => {
               <div className="grid gap-4">
                 <div className="grid gap-2">
                   <div className="flex justify-between items-center ">
+                    <Label htmlFor="token">Authorization Token</Label>
+                  </div>
+                  <Input
+                    id="token"
+                    value={token}
+                    onChange={handleTokenInput}
+                    className="w-full mb-2"
+                    type="text"
+                    placeholder="please input your cloudflare account ID "
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <div className="flex justify-between items-center ">
                     <Label htmlFor="accountId">Account ID</Label>
                   </div>
                   <Input
                     id="accountId"
                     value={accountId}
                     onChange={handleAccountInput}
-                    className="w-full mb-4"
+                    className="w-full mb-2"
                     type="text"
                     placeholder="please input your cloudflare account ID "
                     required
@@ -106,16 +131,20 @@ const Options = () => {
                     Sign up
                   </a>
                 </div>
-
-                {/* <Button variant="outline" className="w-full">
-                  Sign up with GitHub
-                </Button> */}
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
-      <Toaster />
+
+      <Toaster
+        position="top-center"
+        richColors
+        visibleToasts={1}
+        toastOptions={{
+          duration: 2000,
+        }}
+      />
     </div>
   );
 };

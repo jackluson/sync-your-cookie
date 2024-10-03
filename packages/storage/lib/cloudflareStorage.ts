@@ -9,3 +9,8 @@ export const cloudflareNamespaceIdStorage: BaseStorage<string> = createStorage<s
   storageType: StorageType.Local,
   liveUpdate: true,
 });
+
+export const cloudflareTokenStorage: BaseStorage<string> = createStorage<string>('cloudflare-toekn', '', {
+  storageType: StorageType.Local,
+  liveUpdate: true,
+});

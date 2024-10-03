@@ -359,6 +359,9 @@ importers:
       '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../../packages/storage
+      sonner:
+        specifier: ^1.5.0
+        version: 1.5.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
     devDependencies:
       '@sync-your-cookie/hmr':
         specifier: workspace:*

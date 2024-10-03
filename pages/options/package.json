@@ -19,7 +19,8 @@
   },
   "dependencies": {
     "@sync-your-cookie/shared": "workspace:*",
-    "@sync-your-cookie/storage": "workspace:*"
+    "@sync-your-cookie/storage": "workspace:*",
+    "sonner": "^1.5.0"
   },
   "devDependencies": {
     "@sync-your-cookie/tailwindcss-config": "workspace:*",

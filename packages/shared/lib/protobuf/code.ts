@@ -32,3 +32,5 @@ export const decodeDomainCookies = async (buffer: Uint8Array, isDeCompress: bool
   const message = DomainCookies.decode(buf);
   return message;
 };
+
+export type { ICookie, IDomainCookies } from './proto/cookie';

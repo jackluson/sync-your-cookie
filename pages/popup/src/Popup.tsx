@@ -1,30 +1,35 @@
-// import '@src/Popup.css';
 import {
   arrayBufferToBase64,
   base64ToArrayBuffer,
   decodeDomainCookies,
   encodeDomainCookies,
   ErrorCode,
+  ICookie,
   readCloudflareKV,
   useStorageSuspense,
   withErrorBoundary,
   withSuspense,
   writeCloudflareKV,
 } from '@sync-your-cookie/shared';
-import { cloudflareAccountIdStorage, themeStorage } from '@sync-your-cookie/storage';
-import { Alert, AlertDescription, AlertTitle, Button, Toaster } from '@sync-your-cookie/ui';
-import { ComponentPropsWithoutRef, useEffect, useState } from 'react';
+import {
+  cloudflareAccountIdStorage,
+  cloudflareNamespaceIdStorage,
+  cloudflareTokenStorage,
+} from '@sync-your-cookie/storage';
+import { Button, Spinner, Toaster } from '@sync-your-cookie/ui';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useTheme } from './hooks/useTheme';
-// import {  } from './utils/cloudflare';
 
 const Popup = () => {
-  const theme = useStorageSuspense(themeStorage);
   const cloudflareAccountId = useStorageSuspense(cloudflareAccountIdStorage);
+  const cloudflareNamespaceId = useStorageSuspense(cloudflareNamespaceIdStorage);
+  const cloudflareToken = useStorageSuspense(cloudflareTokenStorage);
 
-  const { setTheme } = useTheme();
+  const { theme } = useTheme();
   const [hostname, setHostname] = useState('');
   const [activeTabUrl, setActiveTabUrl] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
@@ -38,13 +43,50 @@ const Popup = () => {
         }
       }
     });
-    console.log('cloudflareAccountId-useEffect', cloudflareAccountId);
+    fetchCookies();
   }, []);
+
+  const fetchCookies = async () => {
+    let cookieDetails: ICookie[] = [];
+    try {
+      setLoading(true);
+      const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
+      const res = await readCloudflareKV(cloudflareAccountId, cloudflareNamespaceId, token);
+      console.log('res', res);
+      const compressedBuffer = base64ToArrayBuffer(res);
+      const deMsg = await decodeDomainCookies(compressedBuffer);
+      console.log('deMsg', deMsg);
+      const cookies = deMsg.cookies;
+      cookieDetails = cookies.map(cookie => {
+        return {
+          domain: cookie.domain ?? undefined,
+          expirationDate: cookie.expirationDate ?? undefined,
+          httpOnly: cookie.httpOnly ?? undefined,
+          name: cookie.name ?? undefined,
+          // partitionKey: cookie.storeId,
+          path: cookie.path ?? undefined,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          sameSite: cookie.sameSite ?? ('lax' as any),
+          secure: cookie.secure ?? undefined,
+          storeId: cookie.storeId ?? undefined,
+          value: cookie.value ?? undefined,
+          url: activeTabUrl,
+        };
+      });
+      console.log('pull cookiesDetail-》', cookieDetails);
+      return cookieDetails;
+    } catch (error) {
+      console.log('error', error);
+    } finally {
+      setLoading(false);
+    }
+    return cookieDetails;
+  };
 
   const check = () => {
     if (!cloudflareAccountId) {
-      toast('Account ID is empty', {
-        description: 'Please set cloudflare account id',
+      toast.error('Account ID is empty', {
+        // description: 'Please set cloudflare account id',
         action: {
           label: 'go to settings',
           onClick: () => {
@@ -53,11 +95,24 @@ const Popup = () => {
         },
         position: 'top-right',
       });
-      throw new Error('Please set cloudflare account id');
+      throw new Error('Please set cloudflare account ID');
+    }
+    if (!cloudflareNamespaceId) {
+      toast.error('NamespaceId ID is empty', {
+        // description: 'Please set cloudflare namespace ID',
+        action: {
+          label: 'go to settings',
+          onClick: () => {
+            chrome.runtime.openOptionsPage();
+          },
+        },
+        position: 'top-right',
+      });
+      throw new Error('Please set cloudflare namespace ID');
     }
   };
 
-  const handleUpload = async () => {
+  const handlePush = async () => {
     console.log('handle load');
     console.log('hostname', hostname);
     await check();
@@ -67,16 +122,16 @@ const Popup = () => {
         url: activeTabUrl,
       },
       async cookies => {
-        console.log('cookies', cookies);
+        console.log('push->cookies', cookies);
         if (cookies) {
           const compressRes = await encodeDomainCookies(cookies);
           console.log('compressRes', compressRes);
           // const accoundId = 'e0a55339ba8e15b97db21d0f9d80a255';
-          const namespaceId = '8181fed01e874d25be35da06564df74f';
-          const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
+          // const namespaceId = '8181fed01e874d25be35da06564df74f';
+          // const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
           const base64Str = arrayBufferToBase64(compressRes);
           console.log('writeCloudflareKV', writeCloudflareKV);
-          writeCloudflareKV(base64Str, cloudflareAccountId, namespaceId, token)
+          writeCloudflareKV(base64Str, cloudflareAccountId, cloudflareNamespaceId, cloudflareToken)
             .then(async json => {
               console.log(json);
               if (json.success) {
@@ -135,32 +190,7 @@ const Popup = () => {
   };
 
   const handlePull = async () => {
-    const accoundId = 'e0a55339ba8e15b97db21d0f9d80a255';
-    const namespaceId = '8181fed01e874d25be35da06564df74f';
-    const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
-    const res = await readCloudflareKV(accoundId, namespaceId, token);
-    console.log('res', res);
-    const compressedBuffer = base64ToArrayBuffer(res);
-    const deMsg = await decodeDomainCookies(compressedBuffer);
-    console.log('deMsg', deMsg);
-    const cookies = deMsg.cookies;
-    const cookieDetails = cookies.map(cookie => {
-      return {
-        domain: cookie.domain ?? undefined,
-        expirationDate: cookie.expirationDate ?? undefined,
-        httpOnly: cookie.httpOnly ?? undefined,
-        name: cookie.name ?? undefined,
-        // partitionKey: cookie.storeId,
-        path: cookie.path ?? undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        sameSite: cookie.sameSite ?? ('lax' as any),
-        secure: cookie.secure ?? undefined,
-        storeId: cookie.storeId ?? undefined,
-        value: cookie.value ?? undefined,
-        url: activeTabUrl,
-      };
-    });
-    console.log('cookiesDetail', cookieDetails);
+    const cookieDetails = await fetchCookies();
     for (const cookies of cookieDetails) {
       chrome.cookies.set(cookies, res => {
         console.log('set cookie', res);
@@ -174,59 +204,43 @@ const Popup = () => {
 
   return (
     <div
-      className="flex flex-col items-center min-w-[420px] justify-center p-4 bg-background "
+      className="flex flex-col items-center min-w-[400px] justify-center p-4 bg-background "
       // style={{
       //   backgroundColor: theme === 'light' ? '#eee' : '#222',
       // }}
     >
-      <h3 className="text-xl text-primary font-bold">{hostname}</h3>
-      <div className="flex flex-col">
-        {/* <img src={chrome.runtime.getURL('popup/logo.svg')} className="App-logo" alt="logo" /> */}
-        <Button title={cloudflareAccountId} className="mb-2" onClick={handleUpdateToken}>
-          Update Token
-        </Button>
-        <Button disabled={!activeTabUrl} className="mb-2" onClick={handleUpload}>
-          Push cookie
-        </Button>
-        <Button disabled={!activeTabUrl} className="mb-2" onClick={handlePull}>
-          Pull cookie
-        </Button>
-        <Button
-          onClick={() => {
-            setTheme('dark');
-          }}>
-          Click me
-        </Button>
-        <Button
-          onClick={() => {
-            setTheme('light');
-          }}>
-          Click me
-        </Button>
-        <Alert>
-          <AlertTitle>Heads up!</AlertTitle>
-          <AlertDescription>You can add components to your app using the cli.</AlertDescription>
-        </Alert>
-        <ToggleButton>Toggle theme ~</ToggleButton>
-      </div>
-      <Toaster visibleToasts={1} richColors position="top-center" />
-    </div>
-  );
-};
+      <Spinner show={loading}>
+        {hostname ? <h3 className=" whitespace-nowrap my-4 text-xl text-primary font-bold"> {hostname}</h3> : null}
 
-const ToggleButton = (props: ComponentPropsWithoutRef<'button'>) => {
-  const theme = useStorageSuspense(themeStorage);
-  return (
-    <button
-      className={
-        props.className +
-        ' ' +
-        'font-bold mt-4 py-1 px-4 rounded shadow hover:scale-105 ' +
-        (theme === 'light' ? 'bg-white text-black' : 'bg-black text-white')
-      }
-      onClick={themeStorage.toggle}>
-      {props.children}
-    </button>
+        <div className="flex flex-col">
+          {/* <img src={chrome.runtime.getURL('popup/logo.svg')} className="App-logo" alt="logo" /> */}
+          <Button title={cloudflareAccountId} className="mb-2" onClick={handleUpdateToken}>
+            Update Token
+          </Button>
+          <Button disabled={!activeTabUrl} className="mb-2" onClick={handlePush}>
+            Push cookie
+          </Button>
+          <Button disabled={!activeTabUrl} className="mb-2" onClick={handlePull}>
+            Pull cookie
+          </Button>
+        </div>
+        <Toaster
+          theme={theme}
+          closeButton
+          toastOptions={{
+            duration: 2000,
+            style: {
+              // width: 'max-content',
+              // margin: '0 auto',
+            },
+            // className: 'w-[240px]',
+          }}
+          visibleToasts={1}
+          richColors
+          position="top-center"
+        />
+      </Spinner>
+    </div>
   );
 };
 
