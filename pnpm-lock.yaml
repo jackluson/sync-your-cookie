@@ -159,6 +159,25 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@swc/core@1.6.6)(@types/node@20.14.9)(typescript@5.2.2)
 
+  packages/protobuf:
+    dependencies:
+      pako:
+        specifier: ^2.1.0
+        version: 2.1.0
+      protobufjs:
+        specifier: ^7.3.2
+        version: 7.3.2
+    devDependencies:
+      '@sync-your-cookie/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/pako':
+        specifier: ^2.0.3
+        version: 2.0.3
+      tsup:
+        specifier: 8.0.2
+        version: 8.0.2(@swc/core@1.6.6)(postcss@8.4.39)(ts-node@10.9.2(@swc/core@1.6.6)(@types/node@20.14.9)(typescript@5.2.2))(typescript@5.2.2)
+
   packages/shared:
     dependencies:
       pako:
@@ -183,6 +202,9 @@ importers:
 
   packages/storage:
     devDependencies:
+      '@sync-your-cookie/protobuf':
+        specifier: workspace:*
+        version: link:../protobuf
       '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
@@ -397,6 +419,9 @@ importers:
       '@sync-your-cookie/hmr':
         specifier: workspace:*
         version: link:../../packages/hmr
+      '@sync-your-cookie/protobuf':
+        specifier: workspace:*
+        version: link:../../packages/protobuf
       '@sync-your-cookie/tailwindcss-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config

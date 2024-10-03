@@ -1,9 +1,5 @@
 import { useStorageSuspense, useTheme, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
-import {
-  cloudflareAccountIdStorage,
-  cloudflareNamespaceIdStorage,
-  cloudflareTokenStorage,
-} from '@sync-your-cookie/storage';
+import { cloudflareStorage } from '@sync-your-cookie/storage';
 import {
   Button,
   Card,
@@ -20,13 +16,12 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 const Options = () => {
-  const cloudflareAccountId = useStorageSuspense(cloudflareAccountIdStorage);
-  const cloudflareNamespaceId = useStorageSuspense(cloudflareNamespaceIdStorage);
-  const cloudflareToken = useStorageSuspense(cloudflareTokenStorage);
+  const cloudflareAccountInfo = useStorageSuspense(cloudflareStorage);
+  console.log('cloudflareAccountInfo', cloudflareAccountInfo);
 
-  const [token, setToken] = useState(cloudflareToken);
-  const [accountId, setAccountId] = useState(cloudflareAccountId);
-  const [namespaceId, setNamespaceId] = useState(cloudflareNamespaceId);
+  const [token, setToken] = useState(cloudflareAccountInfo.token);
+  const [accountId, setAccountId] = useState(cloudflareAccountInfo.accountId);
+  const [namespaceId, setNamespaceId] = useState(cloudflareAccountInfo.namespaceId);
 
   const { setTheme } = useTheme();
 
@@ -43,9 +38,11 @@ const Options = () => {
   };
 
   const handleSave = () => {
-    cloudflareAccountIdStorage.set(accountId);
-    cloudflareNamespaceIdStorage.set(namespaceId);
-    cloudflareTokenStorage.set(token);
+    cloudflareStorage.update({
+      accountId: accountId,
+      namespaceId: namespaceId,
+      token: token,
+    });
     toast.success('Save Success');
   };
 

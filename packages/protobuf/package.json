@@ -1,7 +1,7 @@
 {
-  "name": "@sync-your-cookie/storage",
+  "name": "@sync-your-cookie/protobuf",
   "version": "0.0.1",
-  "description": "chrome extension storage",
+  "description": "chrome extension protobuf code",
   "private": true,
   "sideEffects": false,
   "files": [
@@ -12,17 +12,21 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "clean": "rimraf ./dist && rimraf .turbo",
-    "build": "tsup index.ts --format esm,cjs --dts",
+    "build": "tsup index.ts --format esm,cjs --dts --external react,chrome",
     "dev": "tsc -w",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "proto": "pbjs -o ./lib/protobuf/proto/cookie.js -w es6 -t static-module ./lib/protobuf/proto/*.proto && pbts ./lib/protobuf/proto/cookie.js -o ./lib/protobuf/proto/cookie.d.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "pako": "^2.1.0",
+    "protobufjs": "^7.3.2"
+  },
   "devDependencies": {
     "@sync-your-cookie/tsconfig": "workspace:*",
-    "@sync-your-cookie/protobuf": "workspace:*",
+    "@types/pako": "^2.0.3",
     "tsup": "8.0.2"
   }
 }

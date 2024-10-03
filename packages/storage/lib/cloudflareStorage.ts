@@ -1,16 +1,29 @@
 import { BaseStorage, createStorage, StorageType } from './base';
 
-export const cloudflareAccountIdStorage: BaseStorage<string> = createStorage<string>('cloudflare-account-id', '', {
-  storageType: StorageType.Local,
-  liveUpdate: true,
-});
+interface AccountInfo {
+  accountId?: string;
+  namespaceId?: string;
+  token?: string;
+}
 
-export const cloudflareNamespaceIdStorage: BaseStorage<string> = createStorage<string>('cloudflare-namespace-id', '', {
-  storageType: StorageType.Local,
-  liveUpdate: true,
-});
+const storage = createStorage<AccountInfo>(
+  'cloudflare-account',
+  {},
+  {
+    storageType: StorageType.Local,
+    liveUpdate: true,
+  },
+);
 
-export const cloudflareTokenStorage: BaseStorage<string> = createStorage<string>('cloudflare-toekn', '', {
-  storageType: StorageType.Local,
-  liveUpdate: true,
-});
+type CloudflareStorage = BaseStorage<AccountInfo> & {
+  update: (updateInfo: AccountInfo) => Promise<void>;
+};
+
+export const cloudflareStorage: CloudflareStorage = {
+  ...storage,
+  update: async (updateInfo: AccountInfo) => {
+    await storage.set(currentInfo => {
+      return { ...currentInfo, ...updateInfo };
+    });
+  },
+};

@@ -3,8 +3,11 @@ import {
   base64ToArrayBuffer,
   decodeDomainCookies,
   encodeDomainCookies,
-  ErrorCode,
   ICookie,
+} from '@sync-your-cookie/protobuf';
+
+import {
+  ErrorCode,
   readCloudflareKV,
   useStorageSuspense,
   withErrorBoundary,
