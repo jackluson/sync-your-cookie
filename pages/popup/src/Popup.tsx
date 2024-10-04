@@ -14,20 +14,15 @@ import {
   withSuspense,
   writeCloudflareKV,
 } from '@sync-your-cookie/shared';
-import {
-  cloudflareAccountIdStorage,
-  cloudflareNamespaceIdStorage,
-  cloudflareTokenStorage,
-} from '@sync-your-cookie/storage';
+import { cloudflareStorage } from '@sync-your-cookie/storage';
+
 import { Button, Spinner, Toaster } from '@sync-your-cookie/ui';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useTheme } from './hooks/useTheme';
 
 const Popup = () => {
-  const cloudflareAccountId = useStorageSuspense(cloudflareAccountIdStorage);
-  const cloudflareNamespaceId = useStorageSuspense(cloudflareNamespaceIdStorage);
-  const cloudflareToken = useStorageSuspense(cloudflareTokenStorage);
+  const cloudflareAccountInfo = useStorageSuspense(cloudflareStorage);
 
   const { theme } = useTheme();
   const [hostname, setHostname] = useState('');
@@ -46,15 +41,20 @@ const Popup = () => {
         }
       }
     });
-    fetchCookies();
+    fetchCookies(true);
   }, []);
 
-  const fetchCookies = async () => {
+  const fetchCookies = async (isSilent = false) => {
     let cookieDetails: ICookie[] = [];
+    await check({ isSilent });
     try {
       setLoading(true);
       const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
-      const res = await readCloudflareKV(cloudflareAccountId, cloudflareNamespaceId, token);
+      const res = await readCloudflareKV(
+        cloudflareAccountInfo.accountId!,
+        cloudflareAccountInfo.namespaceId!,
+        cloudflareAccountInfo.token!,
+      );
       console.log('res', res);
       const compressedBuffer = base64ToArrayBuffer(res);
       const deMsg = await decodeDomainCookies(compressedBuffer);
@@ -86,32 +86,28 @@ const Popup = () => {
     return cookieDetails;
   };
 
-  const check = () => {
-    if (!cloudflareAccountId) {
-      toast.error('Account ID is empty', {
-        // description: 'Please set cloudflare account id',
-        action: {
-          label: 'go to settings',
-          onClick: () => {
-            chrome.runtime.openOptionsPage();
+  const check = ({ isSilent = false } = {}) => {
+    if (!cloudflareAccountInfo.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
+      let message = 'Account ID is empty';
+      if (!cloudflareAccountInfo.namespaceId) {
+        message = 'NamespaceId ID is empty';
+      } else if (!cloudflareAccountInfo.token) {
+        message = 'Token is empty';
+      }
+      if (isSilent === false) {
+        toast.error(message, {
+          // description: 'Please set cloudflare account id',
+          action: {
+            label: 'go to settings',
+            onClick: () => {
+              chrome.runtime.openOptionsPage();
+            },
           },
-        },
-        position: 'top-right',
-      });
-      throw new Error('Please set cloudflare account ID');
-    }
-    if (!cloudflareNamespaceId) {
-      toast.error('NamespaceId ID is empty', {
-        // description: 'Please set cloudflare namespace ID',
-        action: {
-          label: 'go to settings',
-          onClick: () => {
-            chrome.runtime.openOptionsPage();
-          },
-        },
-        position: 'top-right',
-      });
-      throw new Error('Please set cloudflare namespace ID');
+          position: 'top-right',
+        });
+      }
+
+      throw new Error('Please set cloudflare account correctly');
     }
   };
 
@@ -134,7 +130,12 @@ const Popup = () => {
           // const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
           const base64Str = arrayBufferToBase64(compressRes);
           console.log('writeCloudflareKV', writeCloudflareKV);
-          writeCloudflareKV(base64Str, cloudflareAccountId, cloudflareNamespaceId, cloudflareToken)
+          writeCloudflareKV(
+            base64Str,
+            cloudflareAccountInfo.accountId!,
+            cloudflareAccountInfo.namespaceId!,
+            cloudflareAccountInfo.token!,
+          )
             .then(async json => {
               console.log(json);
               if (json.success) {
@@ -201,10 +202,6 @@ const Popup = () => {
     }
   };
 
-  const handleUpdateToken = () => {
-    cloudflareAccountIdStorage.set('e0a55339ba8e15b97db21d0f9d80a255');
-  };
-
   return (
     <div
       className="flex flex-col items-center min-w-[400px] justify-center p-4 bg-background "
@@ -216,10 +213,9 @@ const Popup = () => {
         {hostname ? <h3 className=" whitespace-nowrap my-4 text-xl text-primary font-bold"> {hostname}</h3> : null}
 
         <div className="flex flex-col">
-          {/* <img src={chrome.runtime.getURL('popup/logo.svg')} className="App-logo" alt="logo" /> */}
-          <Button title={cloudflareAccountId} className="mb-2" onClick={handleUpdateToken}>
+          {/* <Button title={cloudflareAccountId} className="mb-2" onClick={handleUpdateToken}>
             Update Token
-          </Button>
+          </Button> */}
           <Button disabled={!activeTabUrl} className="mb-2" onClick={handlePush}>
             Push cookie
           </Button>
