@@ -1,10 +1,19 @@
 import '@src/SidePanel.css';
 import { useStorageSuspense, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
 import { themeStorage } from '@sync-your-cookie/storage';
-import { ComponentPropsWithoutRef } from 'react';
+import { ComponentPropsWithoutRef, useEffect } from 'react';
 
 const SidePanel = () => {
   const theme = useStorageSuspense(themeStorage);
+
+  useEffect(() => {
+    chrome.runtime.onMessage.addListener(message => {
+      // Might not be as easy if there are multiple side panels open
+      if (message === 'closeSidePanel') {
+        window.close();
+      }
+    });
+  }, []);
 
   return (
     <div

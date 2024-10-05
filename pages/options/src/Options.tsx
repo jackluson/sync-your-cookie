@@ -134,6 +134,27 @@ const Options = () => {
         </div>
       </div>
 
+      <div className="mt-2 text-sm">
+        Built by
+        <a className="mx-0.5 font-bold " target="_blank" href="https://github.com/jackluson" rel="noreferrer">
+          jackluson
+        </a>
+        . The source code is available on{' '}
+        <a
+          className="font-bold inline-flex items-center "
+          href="https://github.com/jackluson/sync-your-cookie"
+          target="_blank"
+          rel="noopener noreferrer">
+          GitHub
+          <img
+            src={chrome.runtime.getURL('popup/github.svg')}
+            className="ml-1 h-4 w-4 overflow-hidden object-contain "
+            alt="logo"
+          />
+        </a>
+        .
+      </div>
+
       <Toaster
         position="top-center"
         richColors

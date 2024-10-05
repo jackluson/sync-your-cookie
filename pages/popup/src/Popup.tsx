@@ -10,20 +10,25 @@ import {
   ErrorCode,
   readCloudflareKV,
   useStorageSuspense,
+  useTheme,
   withErrorBoundary,
   withSuspense,
   writeCloudflareKV,
 } from '@sync-your-cookie/shared';
-import { cloudflareStorage } from '@sync-your-cookie/storage';
+import { cloudflareStorage, cookieStorage } from '@sync-your-cookie/storage';
 
 import { Button, Spinner, Toaster } from '@sync-your-cookie/ui';
+import { Copyright, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
+
 import { toast } from 'sonner';
-import { useTheme } from './hooks/useTheme';
+import { extractDomain } from './utils';
 
 const Popup = () => {
   const cloudflareAccountInfo = useStorageSuspense(cloudflareStorage);
+  const cookieInfo = useStorageSuspense(cookieStorage);
 
+  console.log('cookieInfo', cookieInfo);
   const { theme } = useTheme();
   const [hostname, setHostname] = useState('');
   const [activeTabUrl, setActiveTabUrl] = useState('');
@@ -37,7 +42,8 @@ const Popup = () => {
         if (activeTab.url && activeTab.url.startsWith('http')) {
           console.log('actieTab', activeTab.url, new URL(activeTab.url));
           setActiveTabUrl(activeTab.url);
-          setHostname(new URL(activeTab.url).host);
+          const domain = extractDomain(new URL(activeTab.url).host);
+          setHostname(domain);
         }
       }
     });
@@ -49,7 +55,6 @@ const Popup = () => {
     await check({ isSilent });
     try {
       setLoading(true);
-      const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
       const res = await readCloudflareKV(
         cloudflareAccountInfo.accountId!,
         cloudflareAccountInfo.namespaceId!,
@@ -114,6 +119,7 @@ const Popup = () => {
   const handlePush = async () => {
     console.log('handle load');
     console.log('hostname', hostname);
+    console.log('exist cookies', await cookieStorage.get(), cookieInfo);
     await check();
 
     chrome.cookies.getAll(
@@ -123,8 +129,10 @@ const Popup = () => {
       async cookies => {
         console.log('push->cookies', cookies);
         if (cookies) {
-          const compressRes = await encodeDomainCookies(cookies);
-          console.log('compressRes', compressRes);
+          const existOtherDomainCookies = cookieInfo.list.filter(cookie => !cookie.domain?.includes(hostname));
+          const mergeCookies = [...existOtherDomainCookies, ...cookies];
+          console.log('mergeCookies', mergeCookies);
+          const compressRes = await encodeDomainCookies(mergeCookies);
           // const accoundId = 'e0a55339ba8e15b97db21d0f9d80a255';
           // const namespaceId = '8181fed01e874d25be35da06564df74f';
           // const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
@@ -140,6 +148,7 @@ const Popup = () => {
               console.log(json);
               if (json.success) {
                 toast.success('Pushed success');
+                cookieStorage.update({ list: mergeCookies });
               } else {
                 console.log('json.errors[0]', json.errors[0]);
                 if (json.errors?.length && json.errors[0].code === ErrorCode.NotFoundRoute) {
@@ -195,50 +204,110 @@ const Popup = () => {
 
   const handlePull = async () => {
     const cookieDetails = await fetchCookies();
-    for (const cookies of cookieDetails) {
-      chrome.cookies.set(cookies, res => {
-        console.log('set cookie', res);
-      });
+    for (const cookie of cookieDetails) {
+      if (cookie.domain?.includes(hostname)) {
+        chrome.cookies.set({ ...cookie, url: activeTabUrl } as chrome.cookies.SetDetails, res => {
+          console.log('set cookie', res);
+        });
+      }
     }
+    cookieStorage.update({ list: cookieDetails });
   };
 
   return (
-    <div
-      className="flex flex-col items-center min-w-[400px] justify-center p-4 bg-background "
-      // style={{
-      //   backgroundColor: theme === 'light' ? '#eee' : '#222',
-      // }}
-    >
-      <Spinner show={loading}>
-        {hostname ? <h3 className=" whitespace-nowrap my-4 text-xl text-primary font-bold"> {hostname}</h3> : null}
+    <div className="flex flex-col items-center min-w-[400px] justify-center bg-background ">
+      <header className=" p-2 flex w-full justify-between items-center bg-slate-50/50 shadow-md border-b border-gray-200 ">
+        <div className="flex items-center">
+          <img
+            src={chrome.runtime.getURL('options/logo.png')}
+            className="h-10 w-10 overflow-hidden object-contain "
+            alt="logo"
+          />
+          <h2 className="text-base text-slate-700	 font-bold">SyncYourCookie</h2>
+        </div>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            chrome.runtime.openOptionsPage();
+          }}
+          className="cursor-pointer text-sm text-slate-700 mr-[-8px] ">
+          <Settings size={20} />
+        </Button>
+      </header>
+      <main className="p-4 ">
+        <Spinner show={loading}>
+          {hostname ? <h3 className=" whitespace-nowrap my-4 text-xl text-primary font-bold"> {hostname}</h3> : null}
 
-        <div className="flex flex-col">
-          {/* <Button title={cloudflareAccountId} className="mb-2" onClick={handleUpdateToken}>
+          <div className=" flex flex-col">
+            {/* <Button title={cloudflareAccountId} className="mb-2" onClick={handleUpdateToken}>
             Update Token
           </Button> */}
-          <Button disabled={!activeTabUrl} className="mb-2" onClick={handlePush}>
-            Push cookie
-          </Button>
-          <Button disabled={!activeTabUrl} className="mb-2" onClick={handlePull}>
-            Pull cookie
-          </Button>
-        </div>
-        <Toaster
-          theme={theme}
-          closeButton
-          toastOptions={{
-            duration: 2000,
-            style: {
-              // width: 'max-content',
-              // margin: '0 auto',
-            },
-            // className: 'w-[240px]',
-          }}
-          visibleToasts={1}
-          richColors
-          position="top-center"
-        />
-      </Spinner>
+            <Button disabled={!activeTabUrl} className="mb-2" onClick={handlePush}>
+              Push cookie
+            </Button>
+            <Button disabled={!activeTabUrl} className="mb-2" onClick={handlePull}>
+              Pull cookie
+            </Button>
+            <Button
+              className="mb-2"
+              onClick={async () => {
+                // const tab = await chrome.tabs.getCurrent();
+                // console.log('tab', tab);
+                chrome.windows.getCurrent(async currentWindow => {
+                  console.log('currentWindow', currentWindow);
+                  const res = await chrome.sidePanel.getOptions({
+                    tabId: currentWindow.id,
+                  });
+                  console.log('res', res);
+                  chrome.sidePanel
+                    .open({ windowId: currentWindow.id! })
+                    .then(() => {
+                      console.log('Side panel opened successfully');
+                    })
+                    .catch(error => {
+                      console.error('Error opening side panel:', error);
+                    });
+                });
+              }}>
+              Open Manager
+            </Button>
+          </div>
+          <Toaster
+            theme={theme}
+            closeButton
+            toastOptions={{
+              duration: 2000,
+              style: {
+                // width: 'max-content',
+                // margin: '0 auto',
+              },
+              // className: 'w-[240px]',
+            }}
+            visibleToasts={1}
+            richColors
+            position="top-center"
+          />
+        </Spinner>
+      </main>
+      <footer className="w-full text-center justify-center p-4 flex items-center border-t border-gray-200 ">
+        <span>
+          <Copyright size={16} />
+        </span>
+        <a
+          className=" inline-flex items-center mx-1 text-sm underline"
+          href="https://github.com/jackluson"
+          target="_blank"
+          rel="noopener noreferrer">
+          jackluson
+        </a>
+        <a href="https://github.com/jackluson/sync-your-cookie" target="_blank" rel="noopener noreferrer">
+          <img
+            src={chrome.runtime.getURL('popup/github.svg')}
+            className="h-4 w-4 overflow-hidden object-contain "
+            alt="logo"
+          />
+        </a>
+      </footer>
     </div>
   );
 };
