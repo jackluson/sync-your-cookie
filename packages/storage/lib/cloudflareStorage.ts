@@ -1,6 +1,6 @@
 import { BaseStorage, createStorage, StorageType } from './base';
 
-interface AccountInfo {
+export interface AccountInfo {
   accountId?: string;
   namespaceId?: string;
   token?: string;

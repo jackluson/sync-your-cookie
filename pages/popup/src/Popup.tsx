@@ -1,14 +1,8 @@
-import {
-  arrayBufferToBase64,
-  base64ToArrayBuffer,
-  decodeDomainCookies,
-  encodeDomainCookies,
-  ICookie,
-} from '@sync-your-cookie/protobuf';
+import { arrayBufferToBase64, encodeCookiesMap, ICookie } from '@sync-your-cookie/protobuf';
 
 import {
   ErrorCode,
-  readCloudflareKV,
+  readAndDecodeCookies,
   useStorageSuspense,
   useTheme,
   withErrorBoundary,
@@ -18,17 +12,18 @@ import {
 import { cloudflareStorage, cookieStorage } from '@sync-your-cookie/storage';
 
 import { Button, Spinner, Toaster } from '@sync-your-cookie/ui';
-import { Copyright, Settings } from 'lucide-react';
+import { CloudDownload, CloudUpload, Copyright, PanelRightOpen, RotateCw, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { toast } from 'sonner';
+import { AutoSwitch } from './components/AutoSwtich';
 import { extractDomain } from './utils';
 
 const Popup = () => {
   const cloudflareAccountInfo = useStorageSuspense(cloudflareStorage);
   const cookieInfo = useStorageSuspense(cookieStorage);
 
-  console.log('cookieInfo', cookieInfo);
+  console.log('cookieInfo', cookieInfo, cookieInfo);
   const { theme } = useTheme();
   const [hostname, setHostname] = useState('');
   const [activeTabUrl, setActiveTabUrl] = useState('');
@@ -47,41 +42,24 @@ const Popup = () => {
         }
       }
     });
-    fetchCookies(true);
+    // fetchCookies(true);
+    const handler = (changeInfo: chrome.cookies.CookieChangeInfo) => {
+      console.log('changeInfo', changeInfo);
+    };
+
+    chrome.cookies?.onChanged.addListener(handler);
+    return () => {
+      chrome.cookies?.onChanged.removeListener(handler);
+    };
   }, []);
 
   const fetchCookies = async (isSilent = false) => {
-    let cookieDetails: ICookie[] = [];
+    const cookieDetails: ICookie[] = [];
     await check({ isSilent });
     try {
       setLoading(true);
-      const res = await readCloudflareKV(
-        cloudflareAccountInfo.accountId!,
-        cloudflareAccountInfo.namespaceId!,
-        cloudflareAccountInfo.token!,
-      );
-      console.log('res', res);
-      const compressedBuffer = base64ToArrayBuffer(res);
-      const deMsg = await decodeDomainCookies(compressedBuffer);
-      console.log('deMsg', deMsg);
-      const cookies = deMsg.cookies;
-      cookieDetails = cookies.map(cookie => {
-        return {
-          domain: cookie.domain ?? undefined,
-          expirationDate: cookie.expirationDate ?? undefined,
-          httpOnly: cookie.httpOnly ?? undefined,
-          name: cookie.name ?? undefined,
-          // partitionKey: cookie.storeId,
-          path: cookie.path ?? undefined,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          sameSite: cookie.sameSite ?? ('lax' as any),
-          secure: cookie.secure ?? undefined,
-          storeId: cookie.storeId ?? undefined,
-          value: cookie.value ?? undefined,
-          url: activeTabUrl,
-        };
-      });
-      console.log('pull cookiesDetail-》', cookieDetails);
+      const cookieDetails = await readAndDecodeCookies(cloudflareAccountInfo);
+      console.log('pull cookiesDetail-》12', cookieDetails);
       return cookieDetails;
     } catch (error) {
       console.log('error', error);
@@ -129,10 +107,7 @@ const Popup = () => {
       async cookies => {
         console.log('push->cookies', cookies);
         if (cookies) {
-          const existOtherDomainCookies = cookieInfo.list.filter(cookie => !cookie.domain?.includes(hostname));
-          const mergeCookies = [...existOtherDomainCookies, ...cookies];
-          console.log('mergeCookies', mergeCookies);
-          const compressRes = await encodeDomainCookies(mergeCookies);
+          const compressRes = await encodeCookiesMap(hostname, cookies, cookieInfo);
           // const accoundId = 'e0a55339ba8e15b97db21d0f9d80a255';
           // const namespaceId = '8181fed01e874d25be35da06564df74f';
           // const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
@@ -148,7 +123,7 @@ const Popup = () => {
               console.log(json);
               if (json.success) {
                 toast.success('Pushed success');
-                cookieStorage.update({ list: mergeCookies });
+                cookieStorage.updateItem(hostname, cookies);
               } else {
                 console.log('json.errors[0]', json.errors[0]);
                 if (json.errors?.length && json.errors[0].code === ErrorCode.NotFoundRoute) {
@@ -203,15 +178,18 @@ const Popup = () => {
   };
 
   const handlePull = async () => {
-    const cookieDetails = await fetchCookies();
-    for (const cookie of cookieDetails) {
-      if (cookie.domain?.includes(hostname)) {
-        chrome.cookies.set({ ...cookie, url: activeTabUrl } as chrome.cookies.SetDetails, res => {
-          console.log('set cookie', res);
-        });
+    const cookieDetails = cookieInfo.domainCookieMap?.[hostname]?.cookies || [];
+    if (cookieDetails.length === 0) {
+      toast.error('No cookies to pull');
+    } else {
+      for (const cookie of cookieDetails) {
+        if (cookie.domain?.includes(hostname)) {
+          chrome.cookies.set({ ...cookie, url: activeTabUrl } as chrome.cookies.SetDetails, res => {
+            console.log('set cookie', res);
+          });
+        }
       }
     }
-    cookieStorage.update({ list: cookieDetails });
   };
 
   return (
@@ -236,20 +214,39 @@ const Popup = () => {
       </header>
       <main className="p-4 ">
         <Spinner show={loading}>
-          {hostname ? <h3 className=" whitespace-nowrap my-4 text-xl text-primary font-bold"> {hostname}</h3> : null}
+          {hostname ? (
+            <h3 className=" mb-2 text-center whitespace-nowrap text-xl text-primary font-bold"> {hostname}</h3>
+          ) : null}
 
           <div className=" flex flex-col">
             {/* <Button title={cloudflareAccountId} className="mb-2" onClick={handleUpdateToken}>
             Update Token
           </Button> */}
-            <Button disabled={!activeTabUrl} className="mb-2" onClick={handlePush}>
-              Push cookie
-            </Button>
-            <Button disabled={!activeTabUrl} className="mb-2" onClick={handlePull}>
-              Pull cookie
-            </Button>
+            <div className="flex items-center mb-2 ">
+              <Button disabled={!activeTabUrl} className=" mr-2 w-[160px] justify-start" onClick={handlePush}>
+                <CloudUpload size={16} className="mr-2" />
+                Push cookie
+              </Button>
+              <AutoSwitch />
+            </div>
+
+            <div className="flex items-center mb-2 ">
+              <Button
+                disabled={!activeTabUrl || loading}
+                className=" w-[160px] mr-2 justify-start"
+                onClick={handlePull}>
+                {loading ? (
+                  <RotateCw size={16} className="mr-2 animate-spin" />
+                ) : (
+                  <CloudDownload size={16} className="mr-2" />
+                )}
+                Pull cookie
+              </Button>
+              <AutoSwitch />
+            </div>
+
             <Button
-              className="mb-2"
+              className="mb-2 justify-start"
               onClick={async () => {
                 // const tab = await chrome.tabs.getCurrent();
                 // console.log('tab', tab);
@@ -269,6 +266,7 @@ const Popup = () => {
                     });
                 });
               }}>
+              <PanelRightOpen size={16} className="mr-2" />
               Open Manager
             </Button>
           </div>

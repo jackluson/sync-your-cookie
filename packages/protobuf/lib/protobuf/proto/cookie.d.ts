@@ -157,103 +157,218 @@ export class Cookie implements ICookie {
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
-/** Properties of a DomainCookies. */
-export interface IDomainCookies {
+/** Properties of a DomainCookie. */
+export interface IDomainCookie {
 
-    /** DomainCookies timestamp */
-    timestamp?: (number|Long|null);
+    /** DomainCookie createTime */
+    createTime?: (number|Long|null);
 
-    /** DomainCookies cookies */
+    /** DomainCookie updateTime */
+    updateTime?: (number|Long|null);
+
+    /** DomainCookie cookies */
     cookies?: (ICookie[]|null);
 }
 
-/** Represents a DomainCookies. */
-export class DomainCookies implements IDomainCookies {
+/** Represents a DomainCookie. */
+export class DomainCookie implements IDomainCookie {
 
     /**
-     * Constructs a new DomainCookies.
+     * Constructs a new DomainCookie.
      * @param [properties] Properties to set
      */
-    constructor(properties?: IDomainCookies);
+    constructor(properties?: IDomainCookie);
 
-    /** DomainCookies timestamp. */
-    public timestamp: (number|Long);
+    /** DomainCookie createTime. */
+    public createTime: (number|Long);
 
-    /** DomainCookies cookies. */
+    /** DomainCookie updateTime. */
+    public updateTime: (number|Long);
+
+    /** DomainCookie cookies. */
     public cookies: ICookie[];
 
     /**
-     * Creates a new DomainCookies instance using the specified properties.
+     * Creates a new DomainCookie instance using the specified properties.
      * @param [properties] Properties to set
-     * @returns DomainCookies instance
+     * @returns DomainCookie instance
      */
-    public static create(properties?: IDomainCookies): DomainCookies;
+    public static create(properties?: IDomainCookie): DomainCookie;
 
     /**
-     * Encodes the specified DomainCookies message. Does not implicitly {@link DomainCookies.verify|verify} messages.
-     * @param message DomainCookies message or plain object to encode
+     * Encodes the specified DomainCookie message. Does not implicitly {@link DomainCookie.verify|verify} messages.
+     * @param message DomainCookie message or plain object to encode
      * @param [writer] Writer to encode to
      * @returns Writer
      */
-    public static encode(message: IDomainCookies, writer?: $protobuf.Writer): $protobuf.Writer;
+    public static encode(message: IDomainCookie, writer?: $protobuf.Writer): $protobuf.Writer;
 
     /**
-     * Encodes the specified DomainCookies message, length delimited. Does not implicitly {@link DomainCookies.verify|verify} messages.
-     * @param message DomainCookies message or plain object to encode
+     * Encodes the specified DomainCookie message, length delimited. Does not implicitly {@link DomainCookie.verify|verify} messages.
+     * @param message DomainCookie message or plain object to encode
      * @param [writer] Writer to encode to
      * @returns Writer
      */
-    public static encodeDelimited(message: IDomainCookies, writer?: $protobuf.Writer): $protobuf.Writer;
+    public static encodeDelimited(message: IDomainCookie, writer?: $protobuf.Writer): $protobuf.Writer;
 
     /**
-     * Decodes a DomainCookies message from the specified reader or buffer.
+     * Decodes a DomainCookie message from the specified reader or buffer.
      * @param reader Reader or buffer to decode from
      * @param [length] Message length if known beforehand
-     * @returns DomainCookies
+     * @returns DomainCookie
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): DomainCookies;
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): DomainCookie;
 
     /**
-     * Decodes a DomainCookies message from the specified reader or buffer, length delimited.
+     * Decodes a DomainCookie message from the specified reader or buffer, length delimited.
      * @param reader Reader or buffer to decode from
-     * @returns DomainCookies
+     * @returns DomainCookie
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): DomainCookies;
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): DomainCookie;
 
     /**
-     * Verifies a DomainCookies message.
+     * Verifies a DomainCookie message.
      * @param message Plain object to verify
      * @returns `null` if valid, otherwise the reason why it is not
      */
     public static verify(message: { [k: string]: any }): (string|null);
 
     /**
-     * Creates a DomainCookies message from a plain object. Also converts values to their respective internal types.
+     * Creates a DomainCookie message from a plain object. Also converts values to their respective internal types.
      * @param object Plain object
-     * @returns DomainCookies
+     * @returns DomainCookie
      */
-    public static fromObject(object: { [k: string]: any }): DomainCookies;
+    public static fromObject(object: { [k: string]: any }): DomainCookie;
 
     /**
-     * Creates a plain object from a DomainCookies message. Also converts values to other types if specified.
-     * @param message DomainCookies
+     * Creates a plain object from a DomainCookie message. Also converts values to other types if specified.
+     * @param message DomainCookie
      * @param [options] Conversion options
      * @returns Plain object
      */
-    public static toObject(message: DomainCookies, options?: $protobuf.IConversionOptions): { [k: string]: any };
+    public static toObject(message: DomainCookie, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
     /**
-     * Converts this DomainCookies to JSON.
+     * Converts this DomainCookie to JSON.
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
 
     /**
-     * Gets the default type url for DomainCookies
+     * Gets the default type url for DomainCookie
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a CookiesMap. */
+export interface ICookiesMap {
+
+    /** CookiesMap createTime */
+    createTime?: (number|Long|null);
+
+    /** CookiesMap updateTime */
+    updateTime?: (number|Long|null);
+
+    /** CookiesMap domainCookieMap */
+    domainCookieMap?: ({ [k: string]: IDomainCookie }|null);
+}
+
+/** Represents a CookiesMap. */
+export class CookiesMap implements ICookiesMap {
+
+    /**
+     * Constructs a new CookiesMap.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ICookiesMap);
+
+    /** CookiesMap createTime. */
+    public createTime: (number|Long);
+
+    /** CookiesMap updateTime. */
+    public updateTime: (number|Long);
+
+    /** CookiesMap domainCookieMap. */
+    public domainCookieMap: { [k: string]: IDomainCookie };
+
+    /**
+     * Creates a new CookiesMap instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns CookiesMap instance
+     */
+    public static create(properties?: ICookiesMap): CookiesMap;
+
+    /**
+     * Encodes the specified CookiesMap message. Does not implicitly {@link CookiesMap.verify|verify} messages.
+     * @param message CookiesMap message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ICookiesMap, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified CookiesMap message, length delimited. Does not implicitly {@link CookiesMap.verify|verify} messages.
+     * @param message CookiesMap message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ICookiesMap, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a CookiesMap message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns CookiesMap
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CookiesMap;
+
+    /**
+     * Decodes a CookiesMap message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns CookiesMap
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CookiesMap;
+
+    /**
+     * Verifies a CookiesMap message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a CookiesMap message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns CookiesMap
+     */
+    public static fromObject(object: { [k: string]: any }): CookiesMap;
+
+    /**
+     * Creates a plain object from a CookiesMap message. Also converts values to other types if specified.
+     * @param message CookiesMap
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: CookiesMap, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this CookiesMap to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CookiesMap
      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
      * @returns The default type url
      */

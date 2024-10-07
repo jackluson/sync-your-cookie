@@ -441,25 +441,26 @@ export const Cookie = $root.Cookie = (() => {
     return Cookie;
 })();
 
-export const DomainCookies = $root.DomainCookies = (() => {
+export const DomainCookie = $root.DomainCookie = (() => {
 
     /**
-     * Properties of a DomainCookies.
-     * @exports IDomainCookies
-     * @interface IDomainCookies
-     * @property {number|Long|null} [timestamp] DomainCookies timestamp
-     * @property {Array.<ICookie>|null} [cookies] DomainCookies cookies
+     * Properties of a DomainCookie.
+     * @exports IDomainCookie
+     * @interface IDomainCookie
+     * @property {number|Long|null} [createTime] DomainCookie createTime
+     * @property {number|Long|null} [updateTime] DomainCookie updateTime
+     * @property {Array.<ICookie>|null} [cookies] DomainCookie cookies
      */
 
     /**
-     * Constructs a new DomainCookies.
-     * @exports DomainCookies
-     * @classdesc Represents a DomainCookies.
-     * @implements IDomainCookies
+     * Constructs a new DomainCookie.
+     * @exports DomainCookie
+     * @classdesc Represents a DomainCookie.
+     * @implements IDomainCookie
      * @constructor
-     * @param {IDomainCookies=} [properties] Properties to set
+     * @param {IDomainCookie=} [properties] Properties to set
      */
-    function DomainCookies(properties) {
+    function DomainCookie(properties) {
         this.cookies = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
@@ -468,89 +469,103 @@ export const DomainCookies = $root.DomainCookies = (() => {
     }
 
     /**
-     * DomainCookies timestamp.
-     * @member {number|Long} timestamp
-     * @memberof DomainCookies
+     * DomainCookie createTime.
+     * @member {number|Long} createTime
+     * @memberof DomainCookie
      * @instance
      */
-    DomainCookies.prototype.timestamp = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    DomainCookie.prototype.createTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
 
     /**
-     * DomainCookies cookies.
+     * DomainCookie updateTime.
+     * @member {number|Long} updateTime
+     * @memberof DomainCookie
+     * @instance
+     */
+    DomainCookie.prototype.updateTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+    /**
+     * DomainCookie cookies.
      * @member {Array.<ICookie>} cookies
-     * @memberof DomainCookies
+     * @memberof DomainCookie
      * @instance
      */
-    DomainCookies.prototype.cookies = $util.emptyArray;
+    DomainCookie.prototype.cookies = $util.emptyArray;
 
     /**
-     * Creates a new DomainCookies instance using the specified properties.
+     * Creates a new DomainCookie instance using the specified properties.
      * @function create
-     * @memberof DomainCookies
+     * @memberof DomainCookie
      * @static
-     * @param {IDomainCookies=} [properties] Properties to set
-     * @returns {DomainCookies} DomainCookies instance
+     * @param {IDomainCookie=} [properties] Properties to set
+     * @returns {DomainCookie} DomainCookie instance
      */
-    DomainCookies.create = function create(properties) {
-        return new DomainCookies(properties);
+    DomainCookie.create = function create(properties) {
+        return new DomainCookie(properties);
     };
 
     /**
-     * Encodes the specified DomainCookies message. Does not implicitly {@link DomainCookies.verify|verify} messages.
+     * Encodes the specified DomainCookie message. Does not implicitly {@link DomainCookie.verify|verify} messages.
      * @function encode
-     * @memberof DomainCookies
+     * @memberof DomainCookie
      * @static
-     * @param {IDomainCookies} message DomainCookies message or plain object to encode
+     * @param {IDomainCookie} message DomainCookie message or plain object to encode
      * @param {$protobuf.Writer} [writer] Writer to encode to
      * @returns {$protobuf.Writer} Writer
      */
-    DomainCookies.encode = function encode(message, writer) {
+    DomainCookie.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        if (message.timestamp != null && Object.hasOwnProperty.call(message, "timestamp"))
-            writer.uint32(/* id 1, wireType 0 =*/8).int64(message.timestamp);
+        if (message.createTime != null && Object.hasOwnProperty.call(message, "createTime"))
+            writer.uint32(/* id 1, wireType 0 =*/8).int64(message.createTime);
+        if (message.updateTime != null && Object.hasOwnProperty.call(message, "updateTime"))
+            writer.uint32(/* id 2, wireType 0 =*/16).int64(message.updateTime);
         if (message.cookies != null && message.cookies.length)
             for (let i = 0; i < message.cookies.length; ++i)
-                $root.Cookie.encode(message.cookies[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.Cookie.encode(message.cookies[i], writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
         return writer;
     };
 
     /**
-     * Encodes the specified DomainCookies message, length delimited. Does not implicitly {@link DomainCookies.verify|verify} messages.
+     * Encodes the specified DomainCookie message, length delimited. Does not implicitly {@link DomainCookie.verify|verify} messages.
      * @function encodeDelimited
-     * @memberof DomainCookies
+     * @memberof DomainCookie
      * @static
-     * @param {IDomainCookies} message DomainCookies message or plain object to encode
+     * @param {IDomainCookie} message DomainCookie message or plain object to encode
      * @param {$protobuf.Writer} [writer] Writer to encode to
      * @returns {$protobuf.Writer} Writer
      */
-    DomainCookies.encodeDelimited = function encodeDelimited(message, writer) {
+    DomainCookie.encodeDelimited = function encodeDelimited(message, writer) {
         return this.encode(message, writer).ldelim();
     };
 
     /**
-     * Decodes a DomainCookies message from the specified reader or buffer.
+     * Decodes a DomainCookie message from the specified reader or buffer.
      * @function decode
-     * @memberof DomainCookies
+     * @memberof DomainCookie
      * @static
      * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
      * @param {number} [length] Message length if known beforehand
-     * @returns {DomainCookies} DomainCookies
+     * @returns {DomainCookie} DomainCookie
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    DomainCookies.decode = function decode(reader, length) {
+    DomainCookie.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
             reader = $Reader.create(reader);
-        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.DomainCookies();
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.DomainCookie();
         while (reader.pos < end) {
             let tag = reader.uint32();
             switch (tag >>> 3) {
             case 1: {
-                    message.timestamp = reader.int64();
+                    message.createTime = reader.int64();
                     break;
                 }
             case 2: {
+                    message.updateTime = reader.int64();
+                    break;
+                }
+            case 5: {
                     if (!(message.cookies && message.cookies.length))
                         message.cookies = [];
                     message.cookies.push($root.Cookie.decode(reader, reader.uint32()));
@@ -565,35 +580,38 @@ export const DomainCookies = $root.DomainCookies = (() => {
     };
 
     /**
-     * Decodes a DomainCookies message from the specified reader or buffer, length delimited.
+     * Decodes a DomainCookie message from the specified reader or buffer, length delimited.
      * @function decodeDelimited
-     * @memberof DomainCookies
+     * @memberof DomainCookie
      * @static
      * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-     * @returns {DomainCookies} DomainCookies
+     * @returns {DomainCookie} DomainCookie
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    DomainCookies.decodeDelimited = function decodeDelimited(reader) {
+    DomainCookie.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
             reader = new $Reader(reader);
         return this.decode(reader, reader.uint32());
     };
 
     /**
-     * Verifies a DomainCookies message.
+     * Verifies a DomainCookie message.
      * @function verify
-     * @memberof DomainCookies
+     * @memberof DomainCookie
      * @static
      * @param {Object.<string,*>} message Plain object to verify
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
-    DomainCookies.verify = function verify(message) {
+    DomainCookie.verify = function verify(message) {
         if (typeof message !== "object" || message === null)
             return "object expected";
-        if (message.timestamp != null && message.hasOwnProperty("timestamp"))
-            if (!$util.isInteger(message.timestamp) && !(message.timestamp && $util.isInteger(message.timestamp.low) && $util.isInteger(message.timestamp.high)))
-                return "timestamp: integer|Long expected";
+        if (message.createTime != null && message.hasOwnProperty("createTime"))
+            if (!$util.isInteger(message.createTime) && !(message.createTime && $util.isInteger(message.createTime.low) && $util.isInteger(message.createTime.high)))
+                return "createTime: integer|Long expected";
+        if (message.updateTime != null && message.hasOwnProperty("updateTime"))
+            if (!$util.isInteger(message.updateTime) && !(message.updateTime && $util.isInteger(message.updateTime.low) && $util.isInteger(message.updateTime.high)))
+                return "updateTime: integer|Long expected";
         if (message.cookies != null && message.hasOwnProperty("cookies")) {
             if (!Array.isArray(message.cookies))
                 return "cookies: array expected";
@@ -607,33 +625,42 @@ export const DomainCookies = $root.DomainCookies = (() => {
     };
 
     /**
-     * Creates a DomainCookies message from a plain object. Also converts values to their respective internal types.
+     * Creates a DomainCookie message from a plain object. Also converts values to their respective internal types.
      * @function fromObject
-     * @memberof DomainCookies
+     * @memberof DomainCookie
      * @static
      * @param {Object.<string,*>} object Plain object
-     * @returns {DomainCookies} DomainCookies
+     * @returns {DomainCookie} DomainCookie
      */
-    DomainCookies.fromObject = function fromObject(object) {
-        if (object instanceof $root.DomainCookies)
+    DomainCookie.fromObject = function fromObject(object) {
+        if (object instanceof $root.DomainCookie)
             return object;
-        let message = new $root.DomainCookies();
-        if (object.timestamp != null)
+        let message = new $root.DomainCookie();
+        if (object.createTime != null)
             if ($util.Long)
-                (message.timestamp = $util.Long.fromValue(object.timestamp)).unsigned = false;
-            else if (typeof object.timestamp === "string")
-                message.timestamp = parseInt(object.timestamp, 10);
-            else if (typeof object.timestamp === "number")
-                message.timestamp = object.timestamp;
-            else if (typeof object.timestamp === "object")
-                message.timestamp = new $util.LongBits(object.timestamp.low >>> 0, object.timestamp.high >>> 0).toNumber();
+                (message.createTime = $util.Long.fromValue(object.createTime)).unsigned = false;
+            else if (typeof object.createTime === "string")
+                message.createTime = parseInt(object.createTime, 10);
+            else if (typeof object.createTime === "number")
+                message.createTime = object.createTime;
+            else if (typeof object.createTime === "object")
+                message.createTime = new $util.LongBits(object.createTime.low >>> 0, object.createTime.high >>> 0).toNumber();
+        if (object.updateTime != null)
+            if ($util.Long)
+                (message.updateTime = $util.Long.fromValue(object.updateTime)).unsigned = false;
+            else if (typeof object.updateTime === "string")
+                message.updateTime = parseInt(object.updateTime, 10);
+            else if (typeof object.updateTime === "number")
+                message.updateTime = object.updateTime;
+            else if (typeof object.updateTime === "object")
+                message.updateTime = new $util.LongBits(object.updateTime.low >>> 0, object.updateTime.high >>> 0).toNumber();
         if (object.cookies) {
             if (!Array.isArray(object.cookies))
-                throw TypeError(".DomainCookies.cookies: array expected");
+                throw TypeError(".DomainCookie.cookies: array expected");
             message.cookies = [];
             for (let i = 0; i < object.cookies.length; ++i) {
                 if (typeof object.cookies[i] !== "object")
-                    throw TypeError(".DomainCookies.cookies: object expected");
+                    throw TypeError(".DomainCookie.cookies: object expected");
                 message.cookies[i] = $root.Cookie.fromObject(object.cookies[i]);
             }
         }
@@ -641,31 +668,42 @@ export const DomainCookies = $root.DomainCookies = (() => {
     };
 
     /**
-     * Creates a plain object from a DomainCookies message. Also converts values to other types if specified.
+     * Creates a plain object from a DomainCookie message. Also converts values to other types if specified.
      * @function toObject
-     * @memberof DomainCookies
+     * @memberof DomainCookie
      * @static
-     * @param {DomainCookies} message DomainCookies
+     * @param {DomainCookie} message DomainCookie
      * @param {$protobuf.IConversionOptions} [options] Conversion options
      * @returns {Object.<string,*>} Plain object
      */
-    DomainCookies.toObject = function toObject(message, options) {
+    DomainCookie.toObject = function toObject(message, options) {
         if (!options)
             options = {};
         let object = {};
         if (options.arrays || options.defaults)
             object.cookies = [];
-        if (options.defaults)
+        if (options.defaults) {
             if ($util.Long) {
                 let long = new $util.Long(0, 0, false);
-                object.timestamp = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                object.createTime = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
             } else
-                object.timestamp = options.longs === String ? "0" : 0;
-        if (message.timestamp != null && message.hasOwnProperty("timestamp"))
-            if (typeof message.timestamp === "number")
-                object.timestamp = options.longs === String ? String(message.timestamp) : message.timestamp;
+                object.createTime = options.longs === String ? "0" : 0;
+            if ($util.Long) {
+                let long = new $util.Long(0, 0, false);
+                object.updateTime = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+            } else
+                object.updateTime = options.longs === String ? "0" : 0;
+        }
+        if (message.createTime != null && message.hasOwnProperty("createTime"))
+            if (typeof message.createTime === "number")
+                object.createTime = options.longs === String ? String(message.createTime) : message.createTime;
             else
-                object.timestamp = options.longs === String ? $util.Long.prototype.toString.call(message.timestamp) : options.longs === Number ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber() : message.timestamp;
+                object.createTime = options.longs === String ? $util.Long.prototype.toString.call(message.createTime) : options.longs === Number ? new $util.LongBits(message.createTime.low >>> 0, message.createTime.high >>> 0).toNumber() : message.createTime;
+        if (message.updateTime != null && message.hasOwnProperty("updateTime"))
+            if (typeof message.updateTime === "number")
+                object.updateTime = options.longs === String ? String(message.updateTime) : message.updateTime;
+            else
+                object.updateTime = options.longs === String ? $util.Long.prototype.toString.call(message.updateTime) : options.longs === Number ? new $util.LongBits(message.updateTime.low >>> 0, message.updateTime.high >>> 0).toNumber() : message.updateTime;
         if (message.cookies && message.cookies.length) {
             object.cookies = [];
             for (let j = 0; j < message.cookies.length; ++j)
@@ -675,32 +713,353 @@ export const DomainCookies = $root.DomainCookies = (() => {
     };
 
     /**
-     * Converts this DomainCookies to JSON.
+     * Converts this DomainCookie to JSON.
      * @function toJSON
-     * @memberof DomainCookies
+     * @memberof DomainCookie
      * @instance
      * @returns {Object.<string,*>} JSON object
      */
-    DomainCookies.prototype.toJSON = function toJSON() {
+    DomainCookie.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
     /**
-     * Gets the default type url for DomainCookies
+     * Gets the default type url for DomainCookie
      * @function getTypeUrl
-     * @memberof DomainCookies
+     * @memberof DomainCookie
      * @static
      * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
      * @returns {string} The default type url
      */
-    DomainCookies.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+    DomainCookie.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
             typeUrlPrefix = "type.googleapis.com";
         }
-        return typeUrlPrefix + "/DomainCookies";
+        return typeUrlPrefix + "/DomainCookie";
     };
 
-    return DomainCookies;
+    return DomainCookie;
+})();
+
+export const CookiesMap = $root.CookiesMap = (() => {
+
+    /**
+     * Properties of a CookiesMap.
+     * @exports ICookiesMap
+     * @interface ICookiesMap
+     * @property {number|Long|null} [createTime] CookiesMap createTime
+     * @property {number|Long|null} [updateTime] CookiesMap updateTime
+     * @property {Object.<string,IDomainCookie>|null} [domainCookieMap] CookiesMap domainCookieMap
+     */
+
+    /**
+     * Constructs a new CookiesMap.
+     * @exports CookiesMap
+     * @classdesc Represents a CookiesMap.
+     * @implements ICookiesMap
+     * @constructor
+     * @param {ICookiesMap=} [properties] Properties to set
+     */
+    function CookiesMap(properties) {
+        this.domainCookieMap = {};
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * CookiesMap createTime.
+     * @member {number|Long} createTime
+     * @memberof CookiesMap
+     * @instance
+     */
+    CookiesMap.prototype.createTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+    /**
+     * CookiesMap updateTime.
+     * @member {number|Long} updateTime
+     * @memberof CookiesMap
+     * @instance
+     */
+    CookiesMap.prototype.updateTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+    /**
+     * CookiesMap domainCookieMap.
+     * @member {Object.<string,IDomainCookie>} domainCookieMap
+     * @memberof CookiesMap
+     * @instance
+     */
+    CookiesMap.prototype.domainCookieMap = $util.emptyObject;
+
+    /**
+     * Creates a new CookiesMap instance using the specified properties.
+     * @function create
+     * @memberof CookiesMap
+     * @static
+     * @param {ICookiesMap=} [properties] Properties to set
+     * @returns {CookiesMap} CookiesMap instance
+     */
+    CookiesMap.create = function create(properties) {
+        return new CookiesMap(properties);
+    };
+
+    /**
+     * Encodes the specified CookiesMap message. Does not implicitly {@link CookiesMap.verify|verify} messages.
+     * @function encode
+     * @memberof CookiesMap
+     * @static
+     * @param {ICookiesMap} message CookiesMap message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CookiesMap.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.createTime != null && Object.hasOwnProperty.call(message, "createTime"))
+            writer.uint32(/* id 1, wireType 0 =*/8).int64(message.createTime);
+        if (message.updateTime != null && Object.hasOwnProperty.call(message, "updateTime"))
+            writer.uint32(/* id 2, wireType 0 =*/16).int64(message.updateTime);
+        if (message.domainCookieMap != null && Object.hasOwnProperty.call(message, "domainCookieMap"))
+            for (let keys = Object.keys(message.domainCookieMap), i = 0; i < keys.length; ++i) {
+                writer.uint32(/* id 5, wireType 2 =*/42).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
+                $root.DomainCookie.encode(message.domainCookieMap[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+            }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified CookiesMap message, length delimited. Does not implicitly {@link CookiesMap.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof CookiesMap
+     * @static
+     * @param {ICookiesMap} message CookiesMap message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CookiesMap.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a CookiesMap message from the specified reader or buffer.
+     * @function decode
+     * @memberof CookiesMap
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {CookiesMap} CookiesMap
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CookiesMap.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.CookiesMap(), key, value;
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.createTime = reader.int64();
+                    break;
+                }
+            case 2: {
+                    message.updateTime = reader.int64();
+                    break;
+                }
+            case 5: {
+                    if (message.domainCookieMap === $util.emptyObject)
+                        message.domainCookieMap = {};
+                    let end2 = reader.uint32() + reader.pos;
+                    key = "";
+                    value = null;
+                    while (reader.pos < end2) {
+                        let tag2 = reader.uint32();
+                        switch (tag2 >>> 3) {
+                        case 1:
+                            key = reader.string();
+                            break;
+                        case 2:
+                            value = $root.DomainCookie.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag2 & 7);
+                            break;
+                        }
+                    }
+                    message.domainCookieMap[key] = value;
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a CookiesMap message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof CookiesMap
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {CookiesMap} CookiesMap
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CookiesMap.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a CookiesMap message.
+     * @function verify
+     * @memberof CookiesMap
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    CookiesMap.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.createTime != null && message.hasOwnProperty("createTime"))
+            if (!$util.isInteger(message.createTime) && !(message.createTime && $util.isInteger(message.createTime.low) && $util.isInteger(message.createTime.high)))
+                return "createTime: integer|Long expected";
+        if (message.updateTime != null && message.hasOwnProperty("updateTime"))
+            if (!$util.isInteger(message.updateTime) && !(message.updateTime && $util.isInteger(message.updateTime.low) && $util.isInteger(message.updateTime.high)))
+                return "updateTime: integer|Long expected";
+        if (message.domainCookieMap != null && message.hasOwnProperty("domainCookieMap")) {
+            if (!$util.isObject(message.domainCookieMap))
+                return "domainCookieMap: object expected";
+            let key = Object.keys(message.domainCookieMap);
+            for (let i = 0; i < key.length; ++i) {
+                let error = $root.DomainCookie.verify(message.domainCookieMap[key[i]]);
+                if (error)
+                    return "domainCookieMap." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a CookiesMap message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof CookiesMap
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {CookiesMap} CookiesMap
+     */
+    CookiesMap.fromObject = function fromObject(object) {
+        if (object instanceof $root.CookiesMap)
+            return object;
+        let message = new $root.CookiesMap();
+        if (object.createTime != null)
+            if ($util.Long)
+                (message.createTime = $util.Long.fromValue(object.createTime)).unsigned = false;
+            else if (typeof object.createTime === "string")
+                message.createTime = parseInt(object.createTime, 10);
+            else if (typeof object.createTime === "number")
+                message.createTime = object.createTime;
+            else if (typeof object.createTime === "object")
+                message.createTime = new $util.LongBits(object.createTime.low >>> 0, object.createTime.high >>> 0).toNumber();
+        if (object.updateTime != null)
+            if ($util.Long)
+                (message.updateTime = $util.Long.fromValue(object.updateTime)).unsigned = false;
+            else if (typeof object.updateTime === "string")
+                message.updateTime = parseInt(object.updateTime, 10);
+            else if (typeof object.updateTime === "number")
+                message.updateTime = object.updateTime;
+            else if (typeof object.updateTime === "object")
+                message.updateTime = new $util.LongBits(object.updateTime.low >>> 0, object.updateTime.high >>> 0).toNumber();
+        if (object.domainCookieMap) {
+            if (typeof object.domainCookieMap !== "object")
+                throw TypeError(".CookiesMap.domainCookieMap: object expected");
+            message.domainCookieMap = {};
+            for (let keys = Object.keys(object.domainCookieMap), i = 0; i < keys.length; ++i) {
+                if (typeof object.domainCookieMap[keys[i]] !== "object")
+                    throw TypeError(".CookiesMap.domainCookieMap: object expected");
+                message.domainCookieMap[keys[i]] = $root.DomainCookie.fromObject(object.domainCookieMap[keys[i]]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a CookiesMap message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof CookiesMap
+     * @static
+     * @param {CookiesMap} message CookiesMap
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    CookiesMap.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.objects || options.defaults)
+            object.domainCookieMap = {};
+        if (options.defaults) {
+            if ($util.Long) {
+                let long = new $util.Long(0, 0, false);
+                object.createTime = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+            } else
+                object.createTime = options.longs === String ? "0" : 0;
+            if ($util.Long) {
+                let long = new $util.Long(0, 0, false);
+                object.updateTime = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+            } else
+                object.updateTime = options.longs === String ? "0" : 0;
+        }
+        if (message.createTime != null && message.hasOwnProperty("createTime"))
+            if (typeof message.createTime === "number")
+                object.createTime = options.longs === String ? String(message.createTime) : message.createTime;
+            else
+                object.createTime = options.longs === String ? $util.Long.prototype.toString.call(message.createTime) : options.longs === Number ? new $util.LongBits(message.createTime.low >>> 0, message.createTime.high >>> 0).toNumber() : message.createTime;
+        if (message.updateTime != null && message.hasOwnProperty("updateTime"))
+            if (typeof message.updateTime === "number")
+                object.updateTime = options.longs === String ? String(message.updateTime) : message.updateTime;
+            else
+                object.updateTime = options.longs === String ? $util.Long.prototype.toString.call(message.updateTime) : options.longs === Number ? new $util.LongBits(message.updateTime.low >>> 0, message.updateTime.high >>> 0).toNumber() : message.updateTime;
+        let keys2;
+        if (message.domainCookieMap && (keys2 = Object.keys(message.domainCookieMap)).length) {
+            object.domainCookieMap = {};
+            for (let j = 0; j < keys2.length; ++j)
+                object.domainCookieMap[keys2[j]] = $root.DomainCookie.toObject(message.domainCookieMap[keys2[j]], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this CookiesMap to JSON.
+     * @function toJSON
+     * @memberof CookiesMap
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    CookiesMap.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for CookiesMap
+     * @function getTypeUrl
+     * @memberof CookiesMap
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    CookiesMap.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/CookiesMap";
+    };
+
+    return CookiesMap;
 })();
 
 export { $root as default };

@@ -11,5 +11,6 @@
     },
     "types": ["chrome"]
   },
+  "exclude": ["code-test.ts"],
   "include": ["index.ts", "lib"],
 }
