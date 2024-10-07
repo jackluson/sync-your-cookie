@@ -49,7 +49,7 @@
   "devDependencies": {
     "@sync-your-cookie/tailwindcss-config": "workspace:*",
     "@sync-your-cookie/tsconfig": "workspace:*",
-    "tsup": "8.0.2",
+    "tsup": "8.3.0",
     "typescript-transform-paths": "^3.4.10"
   }
 }
