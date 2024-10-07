@@ -1,9 +1,7 @@
-import { ICookie } from '@sync-your-cookie/protobuf';
-
 import {
   ErrorCode,
   mergeAndWriteCookies,
-  readCookiesMap,
+  pullCookies,
   useStorageSuspense,
   useTheme,
   withErrorBoundary,
@@ -25,20 +23,20 @@ const Popup = () => {
 
   console.log('cookieInfo', cookieInfo, cookieInfo);
   const { theme } = useTheme();
-  const [hostname, setHostname] = useState('');
+  const [domain, setDomain] = useState('');
   const [activeTabUrl, setActiveTabUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, async function (tabs) {
       console.log('tab', tabs);
       if (tabs.length > 0) {
         const activeTab = tabs[0];
         if (activeTab.url && activeTab.url.startsWith('http')) {
           console.log('actieTab', activeTab.url, new URL(activeTab.url));
           setActiveTabUrl(activeTab.url);
-          const domain = extractDomain(new URL(activeTab.url).host);
-          setHostname(domain);
+          const domain = await extractDomain(activeTab.url);
+          setDomain(domain);
         }
       }
     });
@@ -52,22 +50,6 @@ const Popup = () => {
       chrome.cookies?.onChanged.removeListener(handler);
     };
   }, []);
-
-  const fetchCookies = async (isSilent = false) => {
-    const cookieDetails: ICookie[] = [];
-    await check({ isSilent });
-    try {
-      setLoading(true);
-      const cookieDetails = await readCookiesMap(cloudflareAccountInfo);
-      console.log('pull cookiesDetail-》12', cookieDetails);
-      return cookieDetails;
-    } catch (error) {
-      console.log('error', error);
-    } finally {
-      setLoading(false);
-    }
-    return cookieDetails;
-  };
 
   const check = ({ isSilent = false } = {}) => {
     if (!cloudflareAccountInfo.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
@@ -96,18 +78,20 @@ const Popup = () => {
 
   const handlePush = async () => {
     console.log('handle load');
-    console.log('hostname', hostname);
+    console.log('hostname', domain);
     console.log('exist cookies', await cookieStorage.get(), cookieInfo);
     await check();
 
     chrome.cookies.getAll(
       {
         url: activeTabUrl,
+        domain: domain,
+        path: '/',
       },
       async cookies => {
         console.log('push->cookies', cookies);
         if (cookies) {
-          const [res, newCookiesMap] = await mergeAndWriteCookies(cloudflareAccountInfo, hostname, cookies, cookieInfo);
+          const [res, newCookiesMap] = await mergeAndWriteCookies(cloudflareAccountInfo, domain, cookies, cookieInfo);
           // const accoundId = 'e0a55339ba8e15b97db21d0f9d80a255';
           // const namespaceId = '8181fed01e874d25be35da06564df74f';
           // const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
@@ -142,12 +126,15 @@ const Popup = () => {
   };
 
   const handlePull = async () => {
-    const cookieDetails = cookieInfo.domainCookieMap?.[hostname]?.cookies || [];
+    await check();
+    const cookieMap = await pullCookies();
+    console.log('cookieMap', cookieMap);
+    const cookieDetails = cookieMap.domainCookieMap?.[domain]?.cookies || [];
     if (cookieDetails.length === 0) {
-      toast.error('No cookies to pull');
+      toast.error('No cookies to pull, push first please');
     } else {
       for (const cookie of cookieDetails) {
-        if (cookie.domain?.includes(hostname)) {
+        if (cookie.domain?.includes(domain)) {
           chrome.cookies.set({ ...cookie, url: activeTabUrl } as chrome.cookies.SetDetails, res => {
             console.log('set cookie', res);
           });
@@ -178,8 +165,8 @@ const Popup = () => {
       </header>
       <main className="p-4 ">
         <Spinner show={loading}>
-          {hostname ? (
-            <h3 className=" mb-2 text-center whitespace-nowrap text-xl text-primary font-bold"> {hostname}</h3>
+          {domain ? (
+            <h3 className=" mb-2 text-center whitespace-nowrap text-xl text-primary font-bold"> {domain}</h3>
           ) : null}
 
           <div className=" flex flex-col">
