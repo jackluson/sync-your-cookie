@@ -1,26 +1,12 @@
 import pako from 'pako';
 import { compress, decompress } from './../../utils/compress';
-import type { ICookie, ICookiesMap } from './proto/cookie';
+import type { ICookiesMap } from './proto/cookie';
 import { CookiesMap } from './proto/cookie';
 
 export const encodeCookiesMap = async (
-  domain: string,
-  cookies: ICookie[],
-  oldCookieMap: ICookiesMap = {},
+  cookiesMap: ICookiesMap = {},
   isCompress: boolean = true,
 ): Promise<Uint8Array> => {
-  const cookiesMap: ICookiesMap = {
-    updateTime: Date.now(),
-    createTime: oldCookieMap?.createTime || Date.now(),
-    domainCookieMap: {
-      ...(oldCookieMap.domainCookieMap || {}),
-      [domain]: {
-        updateTime: Date.now(),
-        createTime: oldCookieMap.domainCookieMap?.[domain]?.createTime || Date.now(),
-        cookies: cookies,
-      },
-    },
-  };
   // verify 只会校验数据的类型是否合法，并不会校验是否缺少或增加了数据项。
   const invalid = CookiesMap.verify(cookiesMap);
   if (invalid) {

@@ -1,13 +1,13 @@
-import { arrayBufferToBase64, encodeCookiesMap, ICookie } from '@sync-your-cookie/protobuf';
+import { ICookie } from '@sync-your-cookie/protobuf';
 
 import {
   ErrorCode,
-  readAndDecodeCookies,
+  mergeAndWriteCookies,
+  readCookiesMap,
   useStorageSuspense,
   useTheme,
   withErrorBoundary,
   withSuspense,
-  writeCloudflareKV,
 } from '@sync-your-cookie/shared';
 import { cloudflareStorage, cookieStorage } from '@sync-your-cookie/storage';
 
@@ -58,7 +58,7 @@ const Popup = () => {
     await check({ isSilent });
     try {
       setLoading(true);
-      const cookieDetails = await readAndDecodeCookies(cloudflareAccountInfo);
+      const cookieDetails = await readCookiesMap(cloudflareAccountInfo);
       console.log('pull cookiesDetail-》12', cookieDetails);
       return cookieDetails;
     } catch (error) {
@@ -107,65 +107,29 @@ const Popup = () => {
       async cookies => {
         console.log('push->cookies', cookies);
         if (cookies) {
-          const compressRes = await encodeCookiesMap(hostname, cookies, cookieInfo);
+          const [res, newCookiesMap] = await mergeAndWriteCookies(cloudflareAccountInfo, hostname, cookies, cookieInfo);
           // const accoundId = 'e0a55339ba8e15b97db21d0f9d80a255';
           // const namespaceId = '8181fed01e874d25be35da06564df74f';
           // const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
-          const base64Str = arrayBufferToBase64(compressRes);
-          console.log('writeCloudflareKV', writeCloudflareKV);
-          writeCloudflareKV(
-            base64Str,
-            cloudflareAccountInfo.accountId!,
-            cloudflareAccountInfo.namespaceId!,
-            cloudflareAccountInfo.token!,
-          )
-            .then(async json => {
-              console.log(json);
-              if (json.success) {
-                toast.success('Pushed success');
-                cookieStorage.updateItem(hostname, cookies);
-              } else {
-                console.log('json.errors[0]', json.errors[0]);
-                if (json.errors?.length && json.errors[0].code === ErrorCode.NotFoundRoute) {
-                  toast.error('cloudflare account info is incorrect', {
-                    action: {
-                      label: 'go to settings',
-                      onClick: () => {
-                        chrome.runtime.openOptionsPage();
-                      },
-                    },
-                  });
-                } else {
-                  toast.error('Pushed fail');
-                }
-              }
-              // const value = await readCloudflareKV(accoundId, namespaceId, token)
-              // console.log("value", value);
-              // const buffer = base64ToArrayBuffer(value);
-              // console.log("base64Str-> res", base64Str);
-              // const output = pako.ungzip(buffer);
-              // console.log("output", output, output.length, );
-              // var decode = decodeMessage(output);
-              // console.log("decode", decode);
-            })
-            .catch(err => console.error('error:' + err));
-          // console.log('buf', buf);
-          // const pokoOutput = pako.deflate(buf);
-          // console.log('pokoOutput', pokoOutput, pokoOutput.length);
-          // const pokoOutputGzip = pako.gzip(buf);
-          // console.log('pokoOutputGzip', pokoOutputGzip, pokoOutputGzip.length);
-          // const rawStr = new TextDecoder().decode(pokoOutput);
-          // console.log('rawStr', rawStr, rawStr.length);
-          // const compressRes = await compress(pokoOutput);
-          // console.log('compressRes', compressRes);
-
-          // console.log('base64Str-》', base64Str, base64Str.length);
-          // const compressStr = new TextDecoder().decode(compressRes);
-          // console.log('compressStr', compressStr, compressStr.length);
-          // const pakoDecomressBuffer = decodeDomainCookies(compressRes);
-          // console.log('pakoDecomressBuffer', pakoDecomressBuffer);
-          // const deCompressResStr = new TextDecoder().decode(pakoDecomressBuffer);
-          // console.log('deCompressResStr', deCompressResStr, deCompressResStr.length);
+          console.log(res);
+          if (res.success) {
+            toast.success('Pushed success');
+            cookieStorage.update(newCookiesMap);
+          } else {
+            console.log('json.errors[0]', res.errors[0]);
+            if (res.errors?.length && res.errors[0].code === ErrorCode.NotFoundRoute) {
+              toast.error('cloudflare account info is incorrect', {
+                action: {
+                  label: 'go to settings',
+                  onClick: () => {
+                    chrome.runtime.openOptionsPage();
+                  },
+                },
+              });
+            } else {
+              toast.error('Pushed fail');
+            }
+          }
         }
       },
     );

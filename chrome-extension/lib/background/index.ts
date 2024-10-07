@@ -3,7 +3,7 @@ import 'webextension-polyfill';
 
 import { cloudflareStorage, cookieStorage } from '@sync-your-cookie/storage';
 
-import { readAndDecodeCookies } from '@sync-your-cookie/shared';
+import { readCookiesMap } from '@sync-your-cookie/shared';
 
 function badge(text: string, color: string = '#7246e4', delay?: number) {
   chrome.action.setBadgeText({ text });
@@ -19,7 +19,7 @@ const init = async () => {
   badge('↓');
   const cloudflareInfo = await cloudflareStorage.get();
   console.log('cloudflareInfo-->bg', cloudflareInfo);
-  const cookieMap = await readAndDecodeCookies(cloudflareInfo);
+  const cookieMap = await readCookiesMap(cloudflareInfo);
   console.log('bg-> cookieMap', cookieMap);
   cookieStorage.update(cookieMap);
   badge('');
@@ -35,7 +35,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   });
 
   chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId === 'openSidePanel') {
+    if (info.menuItemId === 'openSidePanel' && tab?.windowId) {
       // This will open the panel in all the pages on the current window.
       chrome.sidePanel.open({ windowId: tab.windowId });
     }

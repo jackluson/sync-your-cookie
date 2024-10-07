@@ -1,5 +1,13 @@
 const DEFAULT_KEY = 'sync-your-cookie';
 
+export interface WriteResponse {
+  success: boolean;
+  errors: {
+    code: number;
+    message: string;
+  }[];
+}
+
 /**
  *
  * @param value specify the value to write
@@ -9,7 +17,6 @@ const DEFAULT_KEY = 'sync-your-cookie';
  * @returns promise<res>
  */
 export const writeCloudflareKV = async (value: string, accountId: string, namespaceId: string, token: string) => {
-  console.log('value', value.length);
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${DEFAULT_KEY}`;
   // const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/bulk`;
   // const payload = [

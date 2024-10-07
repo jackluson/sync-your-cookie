@@ -1,9 +1,16 @@
 import type { AccountInfo } from '@sync-your-cookie/storage';
-import { readCloudflareKV } from '../cloudflare/api';
+import { readCloudflareKV, writeCloudflareKV, WriteResponse } from '../cloudflare/api';
 
-import { base64ToArrayBuffer, decodeCookiesMap } from '@sync-your-cookie/protobuf';
+import {
+  arrayBufferToBase64,
+  base64ToArrayBuffer,
+  decodeCookiesMap,
+  encodeCookiesMap,
+  ICookie,
+  ICookiesMap,
+} from '@sync-your-cookie/protobuf';
 
-export const readAndDecodeCookies = async (cloudflareAccountInfo: AccountInfo) => {
+export const readCookiesMap = async (cloudflareAccountInfo: AccountInfo) => {
   if (!cloudflareAccountInfo.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) return {};
   const res = await readCloudflareKV(
     cloudflareAccountInfo.accountId,
@@ -34,4 +41,42 @@ export const readAndDecodeCookies = async (cloudflareAccountInfo: AccountInfo) =
   // });
   // console.log('pull cookiesDetail-》', cookieDetails);
   return deMsg;
+};
+
+export const writeCookiesMap = async (cloudflareAccountInfo: AccountInfo, cookiesMap: ICookiesMap = {}) => {
+  const buffered = await encodeCookiesMap(cookiesMap);
+  const base64Str = arrayBufferToBase64(buffered);
+  const res = await writeCloudflareKV(
+    base64Str,
+    cloudflareAccountInfo.accountId!,
+    cloudflareAccountInfo.namespaceId!,
+    cloudflareAccountInfo.token!,
+  );
+  return res;
+};
+
+export const mergeAndWriteCookies = async (
+  cloudflareAccountInfo: AccountInfo,
+  domain: string,
+  cookies: ICookie[],
+  oldCookieMap: ICookiesMap = {},
+): Promise<[WriteResponse, ICookiesMap]> => {
+  if (!cloudflareAccountInfo.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
+    throw new Error('cloudflareAccountInfo is invalid');
+  }
+  const cookiesMap: ICookiesMap = {
+    updateTime: Date.now(),
+    createTime: oldCookieMap?.createTime || Date.now(),
+    domainCookieMap: {
+      ...(oldCookieMap.domainCookieMap || {}),
+      [domain]: {
+        updateTime: Date.now(),
+        createTime: oldCookieMap.domainCookieMap?.[domain]?.createTime || Date.now(),
+        cookies: cookies,
+      },
+    },
+  };
+
+  const res = await writeCookiesMap(cloudflareAccountInfo, cookiesMap);
+  return [res, cookiesMap];
 };
