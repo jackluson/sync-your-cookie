@@ -3,7 +3,7 @@ import { BaseStorage, createStorage, StorageType } from './base';
 
 interface Cookie extends ICookiesMap {}
 
-export const storage = createStorage<ICookiesMap>(
+export const storage: BaseStorage<Cookie> = createStorage<Cookie>(
   'cookie-storage-key',
   {},
   {
@@ -12,14 +12,15 @@ export const storage = createStorage<ICookiesMap>(
   },
 );
 
-type CookieStorage = BaseStorage<Cookie> & {
-  update: (updateInfo: Cookie) => Promise<void>;
-  updateItem: (domain: string, updateInfo: ICookie[]) => Promise<void>;
-};
-
-export const cookieStorage: CookieStorage = {
+export const cookieStorage = {
   ...storage,
+  reset: async () => {
+    await storage.set(() => {
+      return {};
+    });
+  },
   updateItem: async (domain: string, updateCookies: ICookie[]) => {
+    let newVal: Cookie = {};
     await storage.set(currentInfo => {
       const domainCookieMap = currentInfo.domainCookieMap || {};
       currentInfo.createTime = currentInfo.createTime || Date.now();
@@ -28,12 +29,17 @@ export const cookieStorage: CookieStorage = {
         ...domainCookieMap[domain],
         cookies: updateCookies,
       };
-      return { ...currentInfo, domainCookieMap };
+      newVal = { ...currentInfo, domainCookieMap };
+      return newVal;
     });
+    return newVal;
   },
-  update: async (updateInfo: Cookie) => {
+  update: async (updateInfo: Cookie, isInit = false) => {
+    let newVal: Cookie = {};
     await storage.set(currentInfo => {
-      return { ...currentInfo, ...updateInfo };
+      newVal = isInit ? updateInfo : { ...currentInfo, ...updateInfo };
+      return newVal;
     });
+    return newVal;
   },
 };

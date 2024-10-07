@@ -1,7 +1,7 @@
 import {
   ErrorCode,
-  mergeAndWriteCookies,
   pullCookies,
+  pushCookies,
   useStorageSuspense,
   useTheme,
   withErrorBoundary,
@@ -91,14 +91,13 @@ const Popup = () => {
       async cookies => {
         console.log('push->cookies', cookies);
         if (cookies) {
-          const [res, newCookiesMap] = await mergeAndWriteCookies(cloudflareAccountInfo, domain, cookies, cookieInfo);
+          const res = await pushCookies(domain, cookies);
           // const accoundId = 'e0a55339ba8e15b97db21d0f9d80a255';
           // const namespaceId = '8181fed01e874d25be35da06564df74f';
           // const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
           console.log(res);
           if (res.success) {
             toast.success('Pushed success');
-            cookieStorage.update(newCookiesMap);
           } else {
             console.log('json.errors[0]', res.errors[0]);
             if (res.errors?.length && res.errors[0].code === ErrorCode.NotFoundRoute) {
