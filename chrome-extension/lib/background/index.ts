@@ -1,28 +1,12 @@
 // sort-imports-ignore
 import 'webextension-polyfill';
 
-import { cloudflareStorage, cookieStorage } from '@sync-your-cookie/storage';
-
-import { readCookiesMap } from '@sync-your-cookie/shared';
-
-function badge(text: string, color: string = '#7246e4', delay?: number) {
-  chrome.action.setBadgeText({ text });
-  chrome.action.setBadgeBackgroundColor({ color });
-  if (delay) {
-    setTimeout(() => {
-      chrome.action.setBadgeText({ text: '' });
-    }, delay);
-  }
-}
+import { pullCookies } from '@sync-your-cookie/shared';
+import { initSubscribe } from './subscribe';
 
 const init = async () => {
-  badge('↓');
-  const cloudflareInfo = await cloudflareStorage.get();
-  console.log('cloudflareInfo-->bg', cloudflareInfo);
-  const cookieMap = await readCookiesMap(cloudflareInfo);
-  console.log('bg-> cookieMap', cookieMap);
-  cookieStorage.update(cookieMap);
-  badge('');
+  initSubscribe();
+  await pullCookies(true);
 };
 
 chrome.runtime.onInstalled.addListener(async () => {
