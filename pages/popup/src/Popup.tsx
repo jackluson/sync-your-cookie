@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 
 import { toast } from 'sonner';
 import { AutoSwitch } from './components/AutoSwtich';
+import { useAuto } from './hooks/useAuto';
 import { extractDomain } from './utils';
 
 const Popup = () => {
@@ -23,9 +24,9 @@ const Popup = () => {
 
   console.log('cookieInfo', cookieInfo, cookieInfo);
   const { theme } = useTheme();
-  const [domain, setDomain] = useState('');
   const [activeTabUrl, setActiveTabUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const { togglePushState, togglePullState, domain, setDomain, domainConfig } = useAuto();
 
   useEffect(() => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, async function (tabs) {
@@ -177,7 +178,7 @@ const Popup = () => {
                 <CloudUpload size={16} className="mr-2" />
                 Push cookie
               </Button>
-              <AutoSwitch />
+              <AutoSwitch onChange={togglePushState} id="autoPush" value={!!domainConfig.autoPush} />
             </div>
 
             <div className="flex items-center mb-2 ">
@@ -192,7 +193,7 @@ const Popup = () => {
                 )}
                 Pull cookie
               </Button>
-              <AutoSwitch />
+              <AutoSwitch onChange={togglePullState} id="autoPull" value={!!domainConfig.autoPull} />
             </div>
 
             <Button
