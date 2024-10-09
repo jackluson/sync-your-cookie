@@ -21,5 +21,6 @@ export function setPushingBadge() {
 }
 
 export function setPushingAndPullingBadge() {
-  badge('↕');
+  // badge('↓↑');
+  badge('⇅');
 }

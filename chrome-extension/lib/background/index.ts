@@ -5,7 +5,7 @@ import { pullCookies } from '@sync-your-cookie/shared';
 import { initSubscribe } from './subscribe';
 
 const init = async () => {
-  initSubscribe();
+  await initSubscribe(); // await state reset finish
   await pullCookies(true);
 };
 

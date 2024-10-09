@@ -7,7 +7,7 @@ import {
   withErrorBoundary,
   withSuspense,
 } from '@sync-your-cookie/shared';
-import { cloudflareStorage, cookieStorage } from '@sync-your-cookie/storage';
+import { cloudflareStorage } from '@sync-your-cookie/storage';
 
 import { Button, Spinner, Toaster } from '@sync-your-cookie/ui';
 import { CloudDownload, CloudUpload, Copyright, PanelRightOpen, RotateCw, Settings } from 'lucide-react';
@@ -15,18 +15,24 @@ import { useEffect, useState } from 'react';
 
 import { toast } from 'sonner';
 import { AutoSwitch } from './components/AutoSwtich';
-import { useAuto } from './hooks/useAuto';
+import { useDomainConfig } from './hooks/useDomainConfig';
 import { extractDomain } from './utils';
 
 const Popup = () => {
   const cloudflareAccountInfo = useStorageSuspense(cloudflareStorage);
-  const cookieInfo = useStorageSuspense(cookieStorage);
 
-  console.log('cookieInfo', cookieInfo, cookieInfo);
   const { theme } = useTheme();
   const [activeTabUrl, setActiveTabUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { togglePushState, togglePullState, domain, setDomain, domainConfig } = useAuto();
+  const {
+    togglePullingState,
+    togglePushingState,
+    toggleAutoPushState,
+    toggleAutoPullState,
+    domain,
+    setDomain,
+    domainConfig,
+  } = useDomainConfig();
+  console.log('domainConfig in Popup', domainConfig);
 
   useEffect(() => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, async function (tabs) {
@@ -78,68 +84,79 @@ const Popup = () => {
   };
 
   const handlePush = async () => {
-    console.log('handle load');
-    console.log('hostname', domain);
-    console.log('exist cookies', await cookieStorage.get(), cookieInfo);
-    await check();
-
-    chrome.cookies.getAll(
-      {
-        url: activeTabUrl,
+    try {
+      togglePushingState(true);
+      await check();
+      const cookies = await chrome.cookies.getAll({
+        // url: activeTabUrl,
         domain: domain,
-        path: '/',
-      },
-      async cookies => {
-        console.log('push->cookies', cookies);
-        if (cookies) {
-          const res = await pushCookies(domain, cookies);
-          // const accoundId = 'e0a55339ba8e15b97db21d0f9d80a255';
-          // const namespaceId = '8181fed01e874d25be35da06564df74f';
-          // const token = 'e3st0CUmtGr-DdTC7kuKxYhQgFpi6ZnxOSQcdr2N';
-          console.log(res);
-          if (res.success) {
-            toast.success('Pushed success');
-          } else {
-            console.log('json.errors[0]', res.errors[0]);
-            if (res.errors?.length && res.errors[0].code === ErrorCode.NotFoundRoute) {
-              toast.error('cloudflare account info is incorrect', {
-                action: {
-                  label: 'go to settings',
-                  onClick: () => {
-                    chrome.runtime.openOptionsPage();
-                  },
+      });
+      console.log('push->cookies', cookies);
+      if (cookies) {
+        const res = await pushCookies(domain, cookies);
+        console.log(res);
+        if (res.success) {
+          toast.success('Pushed success');
+        } else {
+          console.log('json.errors[0]', res.errors[0]);
+          if (res.errors?.length && res.errors[0].code === ErrorCode.NotFoundRoute) {
+            toast.error('cloudflare account info is incorrect', {
+              action: {
+                label: 'go to settings',
+                onClick: () => {
+                  chrome.runtime.openOptionsPage();
                 },
-              });
-            } else {
-              toast.error('Pushed fail');
-            }
+              },
+            });
+          } else {
+            toast.error('Pushed fail');
           }
         }
-      },
-    );
-
-    // chrome.tts.speak('Hello, world.', (res)=> {
-    //   console.log("res", res);
-    //   console.log('done')
-
-    // });
+      }
+    } finally {
+      togglePushingState(false);
+    }
   };
 
   const handlePull = async () => {
-    await check();
-    const cookieMap = await pullCookies();
-    console.log('cookieMap', cookieMap);
-    const cookieDetails = cookieMap.domainCookieMap?.[domain]?.cookies || [];
-    if (cookieDetails.length === 0) {
-      toast.error('No cookies to pull, push first please');
-    } else {
-      for (const cookie of cookieDetails) {
-        if (cookie.domain?.includes(domain)) {
-          chrome.cookies.set({ ...cookie, url: activeTabUrl } as chrome.cookies.SetDetails, res => {
-            console.log('set cookie', res);
-          });
+    try {
+      togglePullingState(true);
+      await check();
+      const cookieMap = await pullCookies();
+      const cookieDetails = cookieMap.domainCookieMap?.[domain]?.cookies || [];
+      if (cookieDetails.length === 0) {
+        toast.error('No cookies to pull, push first please');
+      } else {
+        for (const cookie of cookieDetails) {
+          if (cookie.domain?.includes(domain)) {
+            console.log('cookie', cookie);
+            const cookieDetail: chrome.cookies.SetDetails = {
+              domain: cookie.domain,
+              name: cookie.name ?? undefined,
+              url: activeTabUrl,
+              storeId: cookie.storeId ?? undefined,
+              value: cookie.value ?? undefined,
+              expirationDate: cookie.expirationDate ?? undefined,
+              path: cookie.path ?? undefined,
+              httpOnly: cookie.httpOnly ?? undefined,
+              secure: cookie.secure ?? undefined,
+              sameSite: (cookie.sameSite ?? undefined) as chrome.cookies.SameSiteStatus,
+            };
+            try {
+              chrome.cookies.set(cookieDetail, res => {
+                console.log('set cookier result', res);
+              });
+            } catch (error) {
+              console.log('error', error);
+            }
+          }
         }
+        toast.success('Pull success');
       }
+    } finally {
+      setTimeout(() => {
+        togglePullingState(false);
+      }, 1000);
     }
   };
 
@@ -164,7 +181,7 @@ const Popup = () => {
         </Button>
       </header>
       <main className="p-4 ">
-        <Spinner show={loading}>
+        <Spinner show={false}>
           {domain ? (
             <h3 className=" mb-2 text-center whitespace-nowrap text-xl text-primary font-bold"> {domain}</h3>
           ) : null}
@@ -174,39 +191,42 @@ const Popup = () => {
             Update Token
           </Button> */}
             <div className="flex items-center mb-2 ">
-              <Button disabled={!activeTabUrl} className=" mr-2 w-[160px] justify-start" onClick={handlePush}>
-                <CloudUpload size={16} className="mr-2" />
+              <Button
+                disabled={!activeTabUrl || domainConfig?.pushing}
+                className=" mr-2 w-[160px] justify-start"
+                onClick={handlePush}>
+                {domainConfig.pushing ? (
+                  <RotateCw size={16} className="mr-2 animate-spin" />
+                ) : (
+                  <CloudUpload size={16} className="mr-2" />
+                )}
                 Push cookie
               </Button>
-              <AutoSwitch onChange={togglePushState} id="autoPush" value={!!domainConfig.autoPush} />
+              <AutoSwitch onChange={toggleAutoPushState} id="autoPush" value={!!domainConfig.autoPush} />
             </div>
 
             <div className="flex items-center mb-2 ">
               <Button
-                disabled={!activeTabUrl || loading}
+                disabled={!activeTabUrl || domainConfig.pulling}
                 className=" w-[160px] mr-2 justify-start"
                 onClick={handlePull}>
-                {loading ? (
+                {domainConfig.pulling ? (
                   <RotateCw size={16} className="mr-2 animate-spin" />
                 ) : (
                   <CloudDownload size={16} className="mr-2" />
                 )}
                 Pull cookie
               </Button>
-              <AutoSwitch onChange={togglePullState} id="autoPull" value={!!domainConfig.autoPull} />
+              <AutoSwitch onChange={toggleAutoPullState} id="autoPull" value={!!domainConfig.autoPull} />
             </div>
 
             <Button
               className="mb-2 justify-start"
               onClick={async () => {
-                // const tab = await chrome.tabs.getCurrent();
-                // console.log('tab', tab);
                 chrome.windows.getCurrent(async currentWindow => {
-                  console.log('currentWindow', currentWindow);
-                  const res = await chrome.sidePanel.getOptions({
-                    tabId: currentWindow.id,
-                  });
-                  console.log('res', res);
+                  // const res = await chrome.sidePanel.getOptions({
+                  //   tabId: currentWindow.id,
+                  // });
                   chrome.sidePanel
                     .open({ windowId: currentWindow.id! })
                     .then(() => {
@@ -225,7 +245,7 @@ const Popup = () => {
             theme={theme}
             closeButton
             toastOptions={{
-              duration: 2000,
+              duration: 1500,
               style: {
                 // width: 'max-content',
                 // margin: '0 auto',

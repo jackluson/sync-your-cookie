@@ -1,8 +1,10 @@
-import { BaseStorage, createStorage, StorageType } from './base';
+import { createStorage, StorageType } from './base';
 
 type DomainItemConfig = {
   autoPull?: boolean;
   autoPush?: boolean;
+  pulling?: boolean;
+  pushing?: boolean;
 };
 
 interface DomainConfig {
@@ -12,11 +14,6 @@ interface DomainConfig {
     [domain: string]: DomainItemConfig;
   };
 }
-
-type DomainConfigStorage = BaseStorage<DomainConfig> & {
-  update: (updateInfo: Partial<DomainConfig>) => Promise<void>;
-  updateItem: (domain: string, updateConf: DomainItemConfig) => Promise<void>;
-};
 
 const storage = createStorage<DomainConfig>(
   'domainConfig-storage-key',
@@ -31,20 +28,42 @@ const storage = createStorage<DomainConfig>(
   },
 );
 
-export const domainConfigStorage: DomainConfigStorage = {
+export const domainConfigStorage = {
   ...storage,
+  resetState: async () => {
+    return await storage.set(currentInfo => {
+      console.log('currentInfo in resetState', currentInfo);
+      const domainMap = currentInfo?.domainMap || {};
+      for (const domain in domainMap) {
+        domainMap[domain] = {
+          ...domainMap[domain],
+          pulling: false,
+          pushing: false,
+        };
+      }
+      console.log('domainMap in reset', domainMap);
+      const resetInfo = {
+        pulling: false,
+        pushing: false,
+        domainMap: domainMap,
+      };
+      console.log('resetInfo', resetInfo);
+      return resetInfo;
+    });
+  },
   updateItem: async (domain: string, updateConf: DomainItemConfig) => {
-    await storage.set(currentInfo => {
-      const domainMap = currentInfo.domainMap || {};
+    return await storage.set(currentInfo => {
+      const domainMap = currentInfo?.domainMap || {};
       domainMap[domain] = {
         ...domainMap[domain],
         ...updateConf,
       };
-      return { ...currentInfo, domainMap };
+      return { ...(currentInfo || {}), domainMap };
     });
   },
   update: async (updateInfo: Partial<DomainConfig>) => {
-    await storage.set(currentInfo => {
+    return await storage.set(currentInfo => {
+      console.log('currentInfo', currentInfo);
       return { ...currentInfo, ...updateInfo };
     });
   },

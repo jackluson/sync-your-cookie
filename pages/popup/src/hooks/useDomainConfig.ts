@@ -2,19 +2,31 @@ import { useStorageSuspense } from '@sync-your-cookie/shared';
 import { domainConfigStorage } from '@sync-your-cookie/storage';
 import { useState } from 'react';
 
-export const useAuto = () => {
+export const useDomainConfig = () => {
   const [domain, setDomain] = useState('');
   const domainConfig = useStorageSuspense(domainConfigStorage);
 
-  const togglePullState = (checked?: boolean) => {
+  const toggleAutoPullState = (checked?: boolean) => {
     domainConfigStorage.updateItem(domain, {
       autoPull: checked ?? !domainConfig.domainMap[domain]?.autoPull,
     });
   };
 
-  const togglePushState = (checked?: boolean) => {
+  const togglePullingState = (checked?: boolean) => {
+    domainConfigStorage.updateItem(domain, {
+      pulling: checked ?? !domainConfig.domainMap[domain]?.pulling,
+    });
+  };
+
+  const toggleAutoPushState = (checked?: boolean) => {
     domainConfigStorage.updateItem(domain, {
       autoPush: checked ?? !domainConfig.domainMap[domain]?.autoPush,
+    });
+  };
+
+  const togglePushingState = (checked?: boolean) => {
+    domainConfigStorage.updateItem(domain, {
+      pushing: checked ?? !domainConfig.domainMap[domain]?.pushing,
     });
   };
 
@@ -22,7 +34,9 @@ export const useAuto = () => {
     domain,
     setDomain,
     domainConfig: domainConfig.domainMap[domain] || {},
-    togglePullState,
-    togglePushState,
+    toggleAutoPullState,
+    toggleAutoPushState,
+    togglePullingState,
+    togglePushingState,
   };
 };
