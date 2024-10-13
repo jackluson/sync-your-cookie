@@ -1,6 +1,6 @@
 import {
   ErrorCode,
-  pullCookies,
+  pullAndSetCookies,
   pushCookies,
   useStorageSuspense,
   useTheme,
@@ -120,41 +120,15 @@ const Popup = () => {
     try {
       togglePullingState(true);
       await check();
-      const cookieMap = await pullCookies();
-      const cookieDetails = cookieMap.domainCookieMap?.[domain]?.cookies || [];
-      if (cookieDetails.length === 0) {
-        toast.error('No cookies to pull, push first please');
-      } else {
-        for (const cookie of cookieDetails) {
-          if (cookie.domain?.includes(domain)) {
-            console.log('cookie', cookie);
-            const cookieDetail: chrome.cookies.SetDetails = {
-              domain: cookie.domain,
-              name: cookie.name ?? undefined,
-              url: activeTabUrl,
-              storeId: cookie.storeId ?? undefined,
-              value: cookie.value ?? undefined,
-              expirationDate: cookie.expirationDate ?? undefined,
-              path: cookie.path ?? undefined,
-              httpOnly: cookie.httpOnly ?? undefined,
-              secure: cookie.secure ?? undefined,
-              sameSite: (cookie.sameSite ?? undefined) as chrome.cookies.SameSiteStatus,
-            };
-            try {
-              chrome.cookies.set(cookieDetail, res => {
-                console.log('set cookier result', res);
-              });
-            } catch (error) {
-              console.log('error', error);
-            }
-          }
-        }
-        toast.success('Pull success');
+      const cookieMap = await pullAndSetCookies(activeTabUrl, domain);
+      console.log('cookieMap in handlePull', cookieMap);
+      toast.success('Pull success');
+    } catch (error) {
+      if ((error as Error)?.message) {
+        toast.error((error as Error).message);
       }
     } finally {
-      setTimeout(() => {
-        togglePullingState(false);
-      }, 1000);
+      togglePullingState(false);
     }
   };
 
@@ -200,7 +174,12 @@ const Popup = () => {
                 )}
                 Push cookie
               </Button>
-              <AutoSwitch onChange={toggleAutoPushState} id="autoPush" value={!!domainConfig.autoPush} />
+              <AutoSwitch
+                disabled={!activeTabUrl}
+                onChange={toggleAutoPushState}
+                id="autoPush"
+                value={!!domainConfig.autoPush}
+              />
             </div>
 
             <div className="flex items-center mb-2 ">
@@ -215,7 +194,13 @@ const Popup = () => {
                 )}
                 Pull cookie
               </Button>
-              <AutoSwitch onChange={toggleAutoPullState} id="autoPull" value={!!domainConfig.autoPull} />
+
+              <AutoSwitch
+                disabled={!activeTabUrl}
+                onChange={toggleAutoPullState}
+                id="autoPull"
+                value={!!domainConfig.autoPull}
+              />
             </div>
 
             <Button
@@ -261,7 +246,7 @@ const Popup = () => {
           <Copyright size={16} />
         </span>
         <a
-          className=" inline-flex items-center mx-1 text-sm underline"
+          className=" inline-flex items-center mx-1 text-sm underline "
           href="https://github.com/jackluson"
           target="_blank"
           rel="noopener noreferrer">

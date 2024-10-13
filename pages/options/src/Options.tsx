@@ -136,7 +136,11 @@ const Options = () => {
 
       <div className="mt-2 text-sm">
         Built by
-        <a className="mx-0.5 font-bold " target="_blank" href="https://github.com/jackluson" rel="noreferrer">
+        <a
+          className="mx-0.5 font-bold text-primary "
+          target="_blank"
+          href="https://github.com/jackluson"
+          rel="noreferrer">
           jackluson
         </a>
         . The source code is available on{' '}

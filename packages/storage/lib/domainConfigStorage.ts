@@ -32,8 +32,8 @@ export const domainConfigStorage = {
   ...storage,
   resetState: async () => {
     return await storage.set(currentInfo => {
-      console.log('currentInfo in resetState', currentInfo);
       const domainMap = currentInfo?.domainMap || {};
+      console.log('domainMap in resetState', domainMap);
       for (const domain in domainMap) {
         domainMap[domain] = {
           ...domainMap[domain],
@@ -41,13 +41,11 @@ export const domainConfigStorage = {
           pushing: false,
         };
       }
-      console.log('domainMap in reset', domainMap);
       const resetInfo = {
         pulling: false,
         pushing: false,
         domainMap: domainMap,
       };
-      console.log('resetInfo', resetInfo);
       return resetInfo;
     });
   },

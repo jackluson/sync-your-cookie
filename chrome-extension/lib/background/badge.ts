@@ -1,11 +1,6 @@
-export function badge(text: string, color: string = '#7246e4', delay?: number) {
+export function setBadge(text: string, color: string = '#7246e4') {
   chrome.action.setBadgeText({ text });
   chrome.action.setBadgeBackgroundColor({ color });
-  if (delay) {
-    setTimeout(() => {
-      chrome.action.setBadgeText({ text: '' });
-    }, delay);
-  }
 }
 
 export function clearBadge() {
@@ -13,14 +8,14 @@ export function clearBadge() {
 }
 
 export function setPullingBadge() {
-  badge('↓');
+  setBadge('↓');
 }
 
 export function setPushingBadge() {
-  badge('↑');
+  setBadge('↑');
 }
 
 export function setPushingAndPullingBadge() {
   // badge('↓↑');
-  badge('⇅');
+  setBadge('⇅');
 }
