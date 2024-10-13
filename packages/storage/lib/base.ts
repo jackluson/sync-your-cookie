@@ -132,6 +132,7 @@ function checkStoragePermission(storageType: StorageType): void {
  */
 export function createStorage<D = string>(key: string, fallback: D, config?: StorageConfig<D>): BaseStorage<D> {
   let cache: D | null = null;
+  let initedCache = false;
   let listeners: Array<() => void> = [];
   const storageType = config?.storageType ?? StorageType.Local;
   const liveUpdate = config?.liveUpdate ?? false;
@@ -168,6 +169,9 @@ export function createStorage<D = string>(key: string, fallback: D, config?: Sto
   };
 
   const set = async (valueOrUpdate: ValueOrUpdate<D>) => {
+    if (initedCache === false) {
+      cache = await _getDataFromStorage();
+    }
     cache = await updateCache(valueOrUpdate, cache);
 
     await chrome.storage[storageType].set({ [key]: serialize(cache) });
@@ -187,6 +191,7 @@ export function createStorage<D = string>(key: string, fallback: D, config?: Sto
 
   _getDataFromStorage().then(data => {
     cache = data;
+    initedCache = true;
     _emitChange();
   });
 
