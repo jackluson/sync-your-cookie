@@ -35,7 +35,7 @@ const Popup = () => {
 
   useEffect(() => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, async function (tabs) {
-      console.log('tab', tabs);
+      console.log('tab in Popup', tabs);
       if (tabs.length > 0) {
         const activeTab = tabs[0];
         if (activeTab.url && activeTab.url.startsWith('http')) {
@@ -148,7 +148,7 @@ const Popup = () => {
           onClick={() => {
             chrome.runtime.openOptionsPage();
           }}
-          className="cursor-pointer text-sm text-slate-700 mr-[-8px] ">
+          className="cursor-pointer text-sm mr-[-8px] ">
           <Settings size={20} />
         </Button>
       </header>

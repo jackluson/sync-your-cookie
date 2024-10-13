@@ -65,9 +65,8 @@ let previousActiveTabList: chrome.tabs.Tab[] = [];
 chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
   // 1. current tab not exist in the tabMap
   // read changeInfo data and do something with it (like read the url)
+  console.log('tab', tab);
   if (changeInfo.status === 'loading' && changeInfo.url) {
-    console.log('tab', tab);
-
     const domainConfig = await domainConfigStorage.get();
     let pullDomain = '';
     let needPull = false;
