@@ -5,7 +5,6 @@ export const initSubscribe = async () => {
   await domainConfigStorage.resetState();
   domainConfigStorage.subscribe(() => {
     const domainConfig = domainConfigStorage.getSnapshot();
-    console.log('domainConfig', domainConfig);
     if (domainConfig?.pulling && domainConfig.pushing) {
       setPushingAndPullingBadge();
     } else if (domainConfig?.pushing) {

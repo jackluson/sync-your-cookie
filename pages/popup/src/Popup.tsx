@@ -32,7 +32,6 @@ const Popup = () => {
     setDomain,
     domainConfig,
   } = useDomainConfig();
-  console.log('domainConfig in Popup', domainConfig);
 
   useEffect(() => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, async function (tabs) {
@@ -40,7 +39,6 @@ const Popup = () => {
       if (tabs.length > 0) {
         const activeTab = tabs[0];
         if (activeTab.url && activeTab.url.startsWith('http')) {
-          console.log('actieTab', activeTab.url, new URL(activeTab.url));
           setActiveTabUrl(activeTab.url);
           const domain = await extractDomain(activeTab.url);
           setDomain(domain);
