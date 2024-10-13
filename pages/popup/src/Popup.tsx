@@ -134,14 +134,14 @@ const Popup = () => {
 
   return (
     <div className="flex flex-col items-center min-w-[400px] justify-center bg-background ">
-      <header className=" p-2 flex w-full justify-between items-center bg-slate-50/50 shadow-md border-b border-gray-200 ">
+      <header className=" p-2 flex w-full justify-between items-center bg-card/50 shadow-md border-b border-border ">
         <div className="flex items-center">
           <img
             src={chrome.runtime.getURL('options/logo.png')}
             className="h-10 w-10 overflow-hidden object-contain "
             alt="logo"
           />
-          <h2 className="text-base text-slate-700	 font-bold">SyncYourCookie</h2>
+          <h2 className="text-base text-foreground	font-bold">SyncYourCookie</h2>
         </div>
         <Button
           variant="ghost"
@@ -241,7 +241,7 @@ const Popup = () => {
           />
         </Spinner>
       </main>
-      <footer className="w-full text-center justify-center p-4 flex items-center border-t border-gray-200 ">
+      <footer className="w-full text-center justify-center p-4 flex items-center border-t border-border/90 ">
         <span>
           <Copyright size={16} />
         </span>
