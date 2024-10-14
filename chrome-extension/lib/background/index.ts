@@ -57,7 +57,7 @@ chrome.cookies.onChanged.addListener(changeInfo => {
       await pushMultipleDomainCookies(uploadDomainCookies);
     }
     changedDomainSet.clear();
-  }, 5000);
+  }, 15000);
 });
 
 let previousActiveTabList: chrome.tabs.Tab[] = [];

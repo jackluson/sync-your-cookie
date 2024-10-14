@@ -42,4 +42,14 @@ export const cookieStorage = {
     });
     return newVal;
   },
+  removeItem: async (domain: string) => {
+    let newVal: Cookie = {};
+    await storage.set(currentInfo => {
+      const domainCookieMap = currentInfo.domainCookieMap || {};
+      delete domainCookieMap[domain];
+      newVal = { ...currentInfo, domainCookieMap };
+      return newVal;
+    });
+    return newVal;
+  },
 };

@@ -12,6 +12,7 @@
     "build": "turbo build",
     "build:firefox": "cross-env __FIREFOX__=true turbo build",
     "dev-server": "pnpm -F hmr build && pnpm -F hmr dev-server",
+    "dev:apps": "cross-env __DEV__=true turbo run dev --filter=./pages/* --filter=chrome-extension --filter=@sync-your-cookie/hmr --concurrency 15",
     "dev": "cross-env __DEV__=true turbo run dev --concurrency 25",
     "dev:firefox": "cross-env __DEV__=true __FIREFOX__=true turbo dev --concurrency 20",
     "test": "turbo test",

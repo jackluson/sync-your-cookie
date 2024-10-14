@@ -88,3 +88,26 @@ export const mergeAndWriteMultipleDomainCookies = async (
   const res = await writeCookiesMap(cloudflareAccountInfo, cookiesMap);
   return [res, cookiesMap];
 };
+
+export const removeAndWriteCookies = async (
+  cloudflareAccountInfo: AccountInfo,
+  domain: string,
+  oldCookieMap: ICookiesMap = {},
+): Promise<[WriteResponse, ICookiesMap]> => {
+  if (!cloudflareAccountInfo.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
+    throw new Error('cloudflareAccountInfo is invalid');
+  }
+  const cookiesMap: ICookiesMap = {
+    updateTime: Date.now(),
+    createTime: oldCookieMap?.createTime || Date.now(),
+    domainCookieMap: {
+      ...(oldCookieMap.domainCookieMap || {}),
+    },
+  };
+  if (cookiesMap.domainCookieMap) {
+    delete cookiesMap.domainCookieMap[domain];
+  }
+
+  const res = await writeCookiesMap(cloudflareAccountInfo, cookiesMap);
+  return [res, cookiesMap];
+};

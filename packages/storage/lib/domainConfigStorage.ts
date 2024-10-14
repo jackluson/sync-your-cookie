@@ -5,6 +5,7 @@ type DomainItemConfig = {
   autoPush?: boolean;
   pulling?: boolean;
   pushing?: boolean;
+  favIconUrl?: string;
 };
 
 interface DomainConfig {
@@ -33,7 +34,6 @@ export const domainConfigStorage = {
   resetState: async () => {
     return await storage.set(currentInfo => {
       const domainMap = currentInfo?.domainMap || {};
-      console.log('domainMap in resetState', domainMap);
       for (const domain in domainMap) {
         domainMap[domain] = {
           ...domainMap[domain],
@@ -63,6 +63,14 @@ export const domainConfigStorage = {
     return await storage.set(currentInfo => {
       console.log('currentInfo', currentInfo);
       return { ...currentInfo, ...updateInfo };
+    });
+  },
+
+  removeItem: async (domain: string) => {
+    await storage.set(currentInfo => {
+      const domainCookieMap = currentInfo.domainMap || {};
+      delete domainCookieMap[domain];
+      return { ...currentInfo, domainCookieMap };
     });
   },
 };

@@ -24,6 +24,7 @@ const Popup = () => {
   const { theme } = useTheme();
   const [activeTabUrl, setActiveTabUrl] = useState('');
   const {
+    pushing,
     togglePullingState,
     togglePushingState,
     toggleAutoPushState,
@@ -164,7 +165,7 @@ const Popup = () => {
           </Button> */}
             <div className="flex items-center mb-2 ">
               <Button
-                disabled={!activeTabUrl || domainConfig?.pushing}
+                disabled={!activeTabUrl || domainConfig?.pushing || pushing}
                 className=" mr-2 w-[160px] justify-start"
                 onClick={handlePush}>
                 {domainConfig.pushing ? (

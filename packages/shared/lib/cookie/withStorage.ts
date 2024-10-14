@@ -1,7 +1,12 @@
 import { ICookie, ICookiesMap } from '@sync-your-cookie/protobuf';
 import { cloudflareStorage, cookieStorage, domainConfigStorage } from '@sync-your-cookie/storage';
 import { WriteResponse } from '../cloudflare';
-import { mergeAndWriteCookies, mergeAndWriteMultipleDomainCookies, readCookiesMap } from './withCloudflare';
+import {
+  mergeAndWriteCookies,
+  mergeAndWriteMultipleDomainCookies,
+  readCookiesMap,
+  removeAndWriteCookies,
+} from './withCloudflare';
 
 export const pullCookies = async (isInit = false): Promise<ICookiesMap> => {
   const cloudflareInfo = await cloudflareStorage.get();
@@ -27,7 +32,6 @@ export const pullCookies = async (isInit = false): Promise<ICookiesMap> => {
 
 export const pullAndSetCookies = async (activeTabUrl: string, domain: string): Promise<ICookiesMap> => {
   const cookieMap = await pullCookies();
-  console.log('cookieMap', cookieMap);
   const cookieDetails = cookieMap.domainCookieMap?.[domain]?.cookies || [];
   if (cookieDetails.length === 0) {
     throw new Error('No cookies to pull, push first please');
@@ -77,10 +81,11 @@ export const pullAndSetCookies = async (activeTabUrl: string, domain: string): P
 export const pushCookies = async (domain: string, cookies: ICookie[]): Promise<WriteResponse> => {
   const cloudflareInfo = await cloudflareStorage.get();
   try {
+    const isPushing = await domainConfigStorage.get();
+    if (isPushing) return Promise.reject('the cookie is pushing');
     await domainConfigStorage.update({
       pushing: true,
     });
-    // const oldCookie = await cookieStorage.get();
     const oldCookie = await readCookiesMap(cloudflareInfo);
     console.log('oldCookie', oldCookie);
     const [res, cookieMap] = await mergeAndWriteCookies(cloudflareInfo, domain, cookies, oldCookie);
@@ -106,11 +111,40 @@ export const pushMultipleDomainCookies = async (
 ): Promise<WriteResponse> => {
   const cloudflareInfo = await cloudflareStorage.get();
   try {
+    const isPushing = await domainConfigStorage.get();
+    if (isPushing) return Promise.reject('cookie is pushing');
     await domainConfigStorage.update({
       pushing: true,
     });
     const oldCookie = await readCookiesMap(cloudflareInfo);
     const [res, cookieMap] = await mergeAndWriteMultipleDomainCookies(cloudflareInfo, domainCookies, oldCookie);
+    await domainConfigStorage.update({
+      pushing: false,
+    });
+    if (res.success) {
+      cookieStorage.update(cookieMap);
+    }
+    return res;
+  } catch (e) {
+    console.log('pushCookies fail err', e);
+    await domainConfigStorage.update({
+      pushing: false,
+    });
+    return Promise.reject(e);
+  }
+};
+
+export const removeCookies = async (domain: string): Promise<WriteResponse> => {
+  const cloudflareInfo = await cloudflareStorage.get();
+  try {
+    const isPushing = await domainConfigStorage.get();
+    if (isPushing) return Promise.reject('the cookie is pushing');
+    await domainConfigStorage.update({
+      pushing: true,
+    });
+    // const oldCookie = await cookieStorage.get();
+    const oldCookie = await readCookiesMap(cloudflareInfo);
+    const [res, cookieMap] = await removeAndWriteCookies(cloudflareInfo, domain, oldCookie);
     await domainConfigStorage.update({
       pushing: false,
     });

@@ -33,6 +33,8 @@ export const useDomainConfig = () => {
   return {
     domain,
     setDomain,
+    pulling: domainConfig.pulling,
+    pushing: domainConfig.pushing,
     domainConfig: domainConfig.domainMap[domain] || {},
     toggleAutoPullState,
     toggleAutoPushState,

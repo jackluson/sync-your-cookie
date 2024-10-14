@@ -1,8 +1,5 @@
-import { useStorageSuspense } from '@sync-your-cookie/shared';
+import { removeCookies, useStorageSuspense } from '@sync-your-cookie/shared';
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
   Button,
   DataTable,
   DropdownMenu,
@@ -16,6 +13,7 @@ import {
 } from '@sync-your-cookie/ui';
 import { Ellipsis } from 'lucide-react';
 
+import Favicon from '@src/components/Favicon';
 import { cookieStorage, domainConfigStorage } from '@sync-your-cookie/storage';
 import type { ColumnDef } from '@sync-your-cookie/ui';
 import { useState } from 'react';
@@ -27,22 +25,10 @@ export type CookieItem = {
   autoPull: boolean;
 };
 
-const randomBgColor = [
-  '#ec6a5e',
-  '#f5bd4f',
-  '#61c455',
-  '#3a82f7',
-  '#7246e4',
-  '#bef653',
-  '#e97a35',
-  '#4c9f54',
-  '#3266e3',
-];
-
 const CookieTable = () => {
   const domainConfig = useStorageSuspense(domainConfigStorage);
   const cookieMap = useStorageSuspense(cookieStorage);
-  const cookieList = [];
+  let cookieList = [];
   for (const [key, value] of Object.entries(cookieMap?.domainCookieMap || {})) {
     const config = domainConfig.domainMap[key];
     cookieList.push({
@@ -51,13 +37,24 @@ const CookieTable = () => {
       list: value.cookies,
       autoPush: config?.autoPush ?? false,
       autoPull: config?.autoPull ?? false,
+      createTime: value.createTime,
     });
   }
   console.log('cookieList', cookieList);
+  cookieList = cookieList.sort((a, b) => {
+    return b.createTime - a.createTime;
+  });
+
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async (cookie: CookieItem) => {
-    await cookieStorage.removeItem(cookie.domain);
+    try {
+      setLoading(true);
+      await removeCookies(cookie.domain);
+      await domainConfigStorage.removeItem(cookie.domain);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const columns: ColumnDef<CookieItem>[] = [
@@ -66,21 +63,15 @@ const CookieTable = () => {
       header: 'Domain',
       cell: ({ row, getValue }) => {
         const value = getValue<string>() || '';
-        const randomIndex = row.index % randomBgColor.length;
         return (
-          <a target="_blank" className="block w-[110%]" href={`http://${row.original.domain}`} rel="noreferrer">
-            <p className="flex items-center">
-              <Avatar className=" h-5 w-5 inline-block mr-2 rounded-full">
-                <AvatarImage src={`https://${row.original.domain}/favicon.ico`} />
-                <AvatarFallback
-                  delayMs={500}
-                  style={{
-                    backgroundColor: randomBgColor[randomIndex],
-                  }}
-                  className=" text-white text-sm ">
-                  {value?.slice(0, 1).toLocaleUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+          <a
+            key={row.original.domain}
+            target="_blank"
+            className="block w-[110%]"
+            href={`http://${row.original.domain}`}
+            rel="noreferrer">
+            <div className="flex items-center">
+              <Favicon key={row.original.domain} index={row.index} domain={row.original.domain} value={value} />
               <p
                 style={{
                   overflowWrap: 'anywhere',
@@ -88,14 +79,16 @@ const CookieTable = () => {
                 className=" underline min-w-[100px] ">
                 {value}
               </p>
-            </p>
+            </div>
           </a>
         );
       },
+      id: 'domain',
     },
     {
       accessorKey: 'autoPush',
       header: 'AutoPush',
+      id: 'autoPush',
       cell: record => {
         return (
           <p className="w-[60px]">
@@ -116,6 +109,7 @@ const CookieTable = () => {
     {
       accessorKey: 'autoPull',
       header: 'AutoPull',
+      id: 'autoPull',
       cell: record => {
         return (
           <p className="w-[60px]">
@@ -137,7 +131,6 @@ const CookieTable = () => {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        if (row) return null;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -155,9 +148,12 @@ const CookieTable = () => {
               <DropdownMenuItem>View customer</DropdownMenuItem>
               <DropdownMenuItem>View payment details</DropdownMenuItem>
               <DropdownMenuSeparator />
-              {/* <DropdownMenuItem className="cursor-pointer" onClick={() => handleDelete(row.original)}>
+              <DropdownMenuItem
+                disabled={domainConfig.pushing}
+                className="cursor-pointer"
+                onClick={() => handleDelete(row.original)}>
                 Delete
-              </DropdownMenuItem> */}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );
