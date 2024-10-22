@@ -71,9 +71,12 @@ export const pullAndSetCookies = async (activeTabUrl: string, domain: string): P
         cookiesPromiseList.push(promise);
       }
     }
-    // reload window after set cookies
+    // // reload window after set cookies
+    // await new Promise(resolve => {
+    //   setTimeout(resolve, 5000);
+    // });
     await Promise.allSettled(cookiesPromiseList);
-    chrome.tabs.reload();
+    await chrome.tabs.reload();
   }
   return cookieMap;
 };
@@ -81,20 +84,22 @@ export const pullAndSetCookies = async (activeTabUrl: string, domain: string): P
 export const pushCookies = async (domain: string, cookies: ICookie[]): Promise<WriteResponse> => {
   const cloudflareInfo = await cloudflareStorage.get();
   try {
-    const isPushing = await domainConfigStorage.get();
-    if (isPushing) return Promise.reject('the cookie is pushing');
+    const domainConfig = await domainConfigStorage.get();
+    if (domainConfig.pushing) return Promise.reject('the cookie is pushing');
     await domainConfigStorage.update({
       pushing: true,
     });
     const oldCookie = await readCookiesMap(cloudflareInfo);
-    console.log('oldCookie', oldCookie);
     const [res, cookieMap] = await mergeAndWriteCookies(cloudflareInfo, domain, cookies, oldCookie);
-    console.log('cookieMap', cookieMap);
+
+    // await new Promise(resolve => {
+    //   setTimeout(resolve, 5000);
+    // });
     await domainConfigStorage.update({
       pushing: false,
     });
     if (res.success) {
-      cookieStorage.update(cookieMap);
+      await cookieStorage.update(cookieMap);
     }
     return res;
   } catch (e) {
@@ -111,8 +116,8 @@ export const pushMultipleDomainCookies = async (
 ): Promise<WriteResponse> => {
   const cloudflareInfo = await cloudflareStorage.get();
   try {
-    const isPushing = await domainConfigStorage.get();
-    if (isPushing) return Promise.reject('cookie is pushing');
+    const domainConfig = await domainConfigStorage.get();
+    if (domainConfig.pushing) return Promise.reject('cookie is pushing');
     await domainConfigStorage.update({
       pushing: true,
     });
@@ -126,7 +131,7 @@ export const pushMultipleDomainCookies = async (
     }
     return res;
   } catch (e) {
-    console.log('pushCookies fail err', e);
+    console.log('pushMultipleDomainCookies fail err', e);
     await domainConfigStorage.update({
       pushing: false,
     });
@@ -153,7 +158,7 @@ export const removeCookies = async (domain: string): Promise<WriteResponse> => {
     }
     return res;
   } catch (e) {
-    console.log('pushCookies fail err', e);
+    console.log('removeCookies fail err', e);
     await domainConfigStorage.update({
       pushing: false,
     });

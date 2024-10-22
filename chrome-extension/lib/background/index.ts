@@ -3,16 +3,18 @@ import 'webextension-polyfill';
 
 import { pullAndSetCookies, pullCookies, pushMultipleDomainCookies } from '@sync-your-cookie/shared';
 import { domainConfigStorage } from '@sync-your-cookie/storage';
+import { initListen } from './listen';
 import { initSubscribe } from './subscribe';
 
 const init = async () => {
+  await initListen();
   await initSubscribe(); // await state reset finish
   await pullCookies(true);
 };
 
 chrome.runtime.onInstalled.addListener(async () => {
   init();
-  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
+  // chrome.sidePanel.setPanexlBehavior({ openPanelOnActionClick: false });
   chrome.contextMenus.create({
     id: 'openSidePanel',
     title: 'Open Cookie Manager',
@@ -27,12 +29,32 @@ chrome.runtime.onInstalled.addListener(async () => {
   });
 });
 
-let changeTimer: NodeJS.Timeout | null = null;
+let delayTimer: NodeJS.Timeout | null = null;
+let checkDelayTimer: NodeJS.Timeout | null = null;
+let timeoutFlag = false;
 const changedDomainSet = new Set<string>();
-chrome.cookies.onChanged.addListener(changeInfo => {
-  changeTimer && clearTimeout(changeTimer);
-  changedDomainSet.add(changeInfo.cookie.domain);
-  changeTimer = setTimeout(async () => {
+chrome.cookies.onChanged.addListener(async changeInfo => {
+  const domainConfigSnapShot = await domainConfigStorage.getSnapshot();
+  const domain = changeInfo.cookie.domain;
+  const domainMap = domainConfigSnapShot?.domainMap || {};
+  let flag = false;
+  for (const key in domainMap) {
+    if (domain.endsWith(key) && domainMap[key]?.autoPush) {
+      flag = true;
+      break;
+    }
+  }
+  if (!flag) return;
+  if (delayTimer && timeoutFlag) {
+    return;
+  }
+  delayTimer && clearTimeout(delayTimer);
+  changedDomainSet.add(domain);
+  delayTimer = setTimeout(async () => {
+    timeoutFlag = false;
+    if (checkDelayTimer) {
+      clearTimeout(checkDelayTimer);
+    }
     const domainConfig = await domainConfigStorage.get();
     const pushDomainSet = new Set<string>();
     for (const domain of changedDomainSet) {
@@ -55,9 +77,19 @@ chrome.cookies.onChanged.addListener(changeInfo => {
     }
     if (uploadDomainCookies.length) {
       await pushMultipleDomainCookies(uploadDomainCookies);
+      changedDomainSet.clear();
     }
-    changedDomainSet.clear();
-  }, 15000);
+  }, 8000);
+
+  if (!checkDelayTimer) {
+    checkDelayTimer = setTimeout(() => {
+      if (delayTimer) {
+        console.info('checkDelayTimer timeout');
+        timeoutFlag = true;
+      }
+      checkDelayTimer = null;
+    }, 30000);
+  }
 });
 
 let previousActiveTabList: chrome.tabs.Tab[] = [];
