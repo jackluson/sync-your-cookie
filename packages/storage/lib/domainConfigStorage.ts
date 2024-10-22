@@ -65,12 +65,56 @@ export const domainConfigStorage = {
       return { ...currentInfo, ...updateInfo };
     });
   },
-
   removeItem: async (domain: string) => {
     await storage.set(currentInfo => {
       const domainCookieMap = currentInfo.domainMap || {};
       delete domainCookieMap[domain];
       return { ...currentInfo, domainCookieMap };
+    });
+  },
+
+  togglePullingState: async (domain: string, checked?: boolean) => {
+    return await storage.set(currentInfo => {
+      const domainMap = currentInfo?.domainMap || {};
+      domainMap[domain] = {
+        ...domainMap[domain],
+        pulling: checked ?? !domainMap[domain]?.pulling,
+      };
+      return { ...(currentInfo || {}), domainMap };
+    });
+  },
+
+  togglePushingState: async (domain: string, checked?: boolean) => {
+    return await storage.set(currentInfo => {
+      console.log('currentInfo', currentInfo);
+      const domainMap = currentInfo?.domainMap || {};
+      domainMap[domain] = {
+        ...domainMap[domain],
+        pushing: checked ?? !domainMap[domain]?.pushing,
+      };
+      return { ...(currentInfo || {}), domainMap };
+    });
+  },
+
+  toggleAutoPullState: async (domain: string, checked?: boolean) => {
+    return await storage.set(currentInfo => {
+      const domainMap = currentInfo?.domainMap || {};
+      domainMap[domain] = {
+        ...domainMap[domain],
+        autoPull: checked ?? !domainMap[domain]?.autoPull,
+      };
+      return { ...(currentInfo || {}), domainMap };
+    });
+  },
+
+  toggleAutoPushState: async (domain: string, checked?: boolean) => {
+    return await storage.set(currentInfo => {
+      const domainMap = currentInfo?.domainMap || {};
+      domainMap[domain] = {
+        ...domainMap[domain],
+        autoPush: checked ?? !domainMap[domain]?.autoPush,
+      };
+      return { ...(currentInfo || {}), domainMap };
     });
   },
 };

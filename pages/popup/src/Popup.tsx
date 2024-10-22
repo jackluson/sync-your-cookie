@@ -1,37 +1,25 @@
-import {
-  ErrorCode,
-  pullAndSetCookies,
-  pushCookies,
-  useStorageSuspense,
-  useTheme,
-  withErrorBoundary,
-  withSuspense,
-} from '@sync-your-cookie/shared';
-import { cloudflareStorage } from '@sync-your-cookie/storage';
+import { useTheme, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
 
 import { Button, Spinner, Toaster } from '@sync-your-cookie/ui';
 import { CloudDownload, CloudUpload, Copyright, PanelRightOpen, RotateCw, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { toast } from 'sonner';
 import { AutoSwitch } from './components/AutoSwtich';
 import { useDomainConfig } from './hooks/useDomainConfig';
 import { extractDomain } from './utils';
 
 const Popup = () => {
-  const cloudflareAccountInfo = useStorageSuspense(cloudflareStorage);
-
   const { theme } = useTheme();
   const [activeTabUrl, setActiveTabUrl] = useState('');
   const {
     pushing,
-    togglePullingState,
-    togglePushingState,
     toggleAutoPushState,
     toggleAutoPullState,
     domain,
     setDomain,
-    domainConfig,
+    domainItemConfig,
+    handlePush,
+    handlePull,
   } = useDomainConfig();
 
   useEffect(() => {
@@ -56,82 +44,6 @@ const Popup = () => {
       chrome.cookies?.onChanged.removeListener(handler);
     };
   }, []);
-
-  const check = ({ isSilent = false } = {}) => {
-    if (!cloudflareAccountInfo.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
-      let message = 'Account ID is empty';
-      if (!cloudflareAccountInfo.namespaceId) {
-        message = 'NamespaceId ID is empty';
-      } else if (!cloudflareAccountInfo.token) {
-        message = 'Token is empty';
-      }
-      if (isSilent === false) {
-        toast.error(message, {
-          // description: 'Please set cloudflare account id',
-          action: {
-            label: 'go to settings',
-            onClick: () => {
-              chrome.runtime.openOptionsPage();
-            },
-          },
-          position: 'top-right',
-        });
-      }
-
-      throw new Error('Please set cloudflare account correctly');
-    }
-  };
-
-  const handlePush = async () => {
-    try {
-      togglePushingState(true);
-      await check();
-      const cookies = await chrome.cookies.getAll({
-        // url: activeTabUrl,
-        domain: domain,
-      });
-      console.log('push->cookies', cookies);
-      if (cookies) {
-        const res = await pushCookies(domain, cookies);
-        console.log(res);
-        if (res.success) {
-          toast.success('Pushed success');
-        } else {
-          console.log('json.errors[0]', res.errors[0]);
-          if (res.errors?.length && res.errors[0].code === ErrorCode.NotFoundRoute) {
-            toast.error('cloudflare account info is incorrect', {
-              action: {
-                label: 'go to settings',
-                onClick: () => {
-                  chrome.runtime.openOptionsPage();
-                },
-              },
-            });
-          } else {
-            toast.error('Pushed fail');
-          }
-        }
-      }
-    } finally {
-      togglePushingState(false);
-    }
-  };
-
-  const handlePull = async () => {
-    try {
-      togglePullingState(true);
-      await check();
-      const cookieMap = await pullAndSetCookies(activeTabUrl, domain);
-      console.log('cookieMap in handlePull', cookieMap);
-      toast.success('Pull success');
-    } catch (error) {
-      if ((error as Error)?.message) {
-        toast.error((error as Error).message);
-      }
-    } finally {
-      togglePullingState(false);
-    }
-  };
 
   return (
     <div className="flex flex-col items-center min-w-[400px] justify-center bg-background ">
@@ -165,10 +77,10 @@ const Popup = () => {
           </Button> */}
             <div className="flex items-center mb-2 ">
               <Button
-                disabled={!activeTabUrl || domainConfig?.pushing || pushing}
+                disabled={!activeTabUrl || domainItemConfig?.pushing || pushing}
                 className=" mr-2 w-[160px] justify-start"
                 onClick={handlePush}>
-                {domainConfig.pushing ? (
+                {domainItemConfig.pushing ? (
                   <RotateCw size={16} className="mr-2 animate-spin" />
                 ) : (
                   <CloudUpload size={16} className="mr-2" />
@@ -177,18 +89,18 @@ const Popup = () => {
               </Button>
               <AutoSwitch
                 disabled={!activeTabUrl}
-                onChange={toggleAutoPushState}
+                onChange={() => toggleAutoPushState(domain)}
                 id="autoPush"
-                value={!!domainConfig.autoPush}
+                value={!!domainItemConfig.autoPush}
               />
             </div>
 
             <div className="flex items-center mb-2 ">
               <Button
-                disabled={!activeTabUrl || domainConfig.pulling}
+                disabled={!activeTabUrl || domainItemConfig.pulling}
                 className=" w-[160px] mr-2 justify-start"
-                onClick={handlePull}>
-                {domainConfig.pulling ? (
+                onClick={() => handlePull(activeTabUrl)}>
+                {domainItemConfig.pulling ? (
                   <RotateCw size={16} className="mr-2 animate-spin" />
                 ) : (
                   <CloudDownload size={16} className="mr-2" />
@@ -198,9 +110,9 @@ const Popup = () => {
 
               <AutoSwitch
                 disabled={!activeTabUrl}
-                onChange={toggleAutoPullState}
+                onChange={() => toggleAutoPullState(domain)}
                 id="autoPull"
-                value={!!domainConfig.autoPull}
+                value={!!domainItemConfig.autoPull}
               />
             </div>
 

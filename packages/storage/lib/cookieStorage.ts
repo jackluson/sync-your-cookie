@@ -1,7 +1,7 @@
 import { ICookie, ICookiesMap } from '@sync-your-cookie/protobuf';
 import { BaseStorage, createStorage, StorageType } from './base';
 
-interface Cookie extends ICookiesMap {}
+export interface Cookie extends ICookiesMap {}
 
 export const storage: BaseStorage<Cookie> = createStorage<Cookie>(
   'cookie-storage-key',

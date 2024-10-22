@@ -71,7 +71,7 @@ export const pullAndSetCookies = async (activeTabUrl: string, domain: string): P
         cookiesPromiseList.push(promise);
       }
     }
-    // // reload window after set cookies
+    // reload window after set cookies
     // await new Promise(resolve => {
     //   setTimeout(resolve, 5000);
     // });
