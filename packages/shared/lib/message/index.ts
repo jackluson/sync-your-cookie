@@ -1,21 +1,31 @@
 export enum MessageType {
   PushCookie = 'PushCookie',
   PullCookie = 'PullCookie',
+  RemoveCookie = 'RemoveCookie',
 }
 
 export type PushCookieMessagePayload = {
   domain: string;
 };
 
+export type RemoveCookieMessagePayload = {
+  domain: string;
+};
+
 export type PullCookieMessagePayload = {
   domain: string;
   activeTabUrl: string;
+  reload: boolean;
 };
 
 export type MessageMap = {
   [MessageType.PushCookie]: {
     type: MessageType.PushCookie;
     payload: PushCookieMessagePayload;
+  };
+  [MessageType.RemoveCookie]: {
+    type: MessageType.RemoveCookie;
+    payload: RemoveCookieMessagePayload;
   };
   [MessageType.PullCookie]: {
     type: MessageType.PullCookie;
@@ -53,6 +63,13 @@ export function pushCookieUsingMessage(payload: PushCookieMessagePayload) {
   return sendMessage<MessageType.PushCookie>({
     payload,
     type: MessageType.PushCookie,
+  });
+}
+
+export function removeCookieUsingMessage(payload: RemoveCookieMessagePayload) {
+  return sendMessage<MessageType.RemoveCookie>({
+    payload,
+    type: MessageType.RemoveCookie,
   });
 }
 

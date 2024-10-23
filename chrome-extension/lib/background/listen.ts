@@ -1,4 +1,11 @@
-import { Message, MessageType, pullAndSetCookies, pushCookies, SendResponse } from '@sync-your-cookie/shared';
+import {
+  Message,
+  MessageType,
+  pullAndSetCookies,
+  pushCookies,
+  removeCookies,
+  SendResponse,
+} from '@sync-your-cookie/shared';
 import { cloudflareStorage, domainConfigStorage } from '@sync-your-cookie/storage';
 
 const check = ({ isSilent = false } = {}) => {
@@ -57,16 +64,32 @@ const handlePush = async (domain: string, callback: HandleCallback) => {
   }
 };
 
-const handlePull = async (activeTabUrl: string, domain: string, callback: HandleCallback) => {
+const handlePull = async (activeTabUrl: string, domain: string, isReload: boolean, callback: HandleCallback) => {
   try {
     await check();
     await domainConfigStorage.togglePullingState(domain, true);
-    const cookieMap = await pullAndSetCookies(activeTabUrl, domain);
+    const cookieMap = await pullAndSetCookies(activeTabUrl, domain, isReload);
     callback({ isOk: true, msg: 'Pull success', result: cookieMap });
   } catch (err) {
     callback({ isOk: false, msg: (err as Error).message || 'pull fail, please try again ', result: err });
   } finally {
     await domainConfigStorage.togglePullingState(domain, false);
+  }
+};
+
+const handleRemove = async (domain: string, callback: HandleCallback) => {
+  try {
+    await check();
+    const res = await removeCookies(domain);
+    console.log(res);
+    if (res.success) {
+      callback({ isOk: true, msg: 'Removed success' });
+    } else {
+      console.log('json.errors[0]', res.errors[0]);
+      callback({ isOk: false, msg: 'Removed fail, please try again ', result: res });
+    }
+  } catch (err) {
+    callback({ isOk: false, msg: (err as Error).message || 'remove fail, please try again ', result: err });
   }
 };
 
@@ -84,9 +107,11 @@ export const initListen = async () => {
       case MessageType.PullCookie:
         // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-non-null-asserted-optional-chain
         const activeTabUrl = message.payload.activeTabUrl || sender.tab?.url!;
-        handlePull(activeTabUrl!, message.payload.domain, callback);
+        handlePull(activeTabUrl!, message.payload.domain, message.payload.reload, callback);
         break;
-
+      case MessageType.RemoveCookie:
+        handleRemove(message.payload.domain, callback);
+        break;
       default:
         break;
     }

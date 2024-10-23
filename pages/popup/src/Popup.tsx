@@ -79,7 +79,7 @@ const Popup = () => {
               <Button
                 disabled={!activeTabUrl || domainItemConfig?.pushing || pushing}
                 className=" mr-2 w-[160px] justify-start"
-                onClick={handlePush}>
+                onClick={() => handlePush()}>
                 {domainItemConfig.pushing ? (
                   <RotateCw size={16} className="mr-2 animate-spin" />
                 ) : (

@@ -30,7 +30,11 @@ export const pullCookies = async (isInit = false): Promise<ICookiesMap> => {
   }
 };
 
-export const pullAndSetCookies = async (activeTabUrl: string, domain: string): Promise<ICookiesMap> => {
+export const pullAndSetCookies = async (
+  activeTabUrl: string,
+  domain: string,
+  isReload = true,
+): Promise<ICookiesMap> => {
   const cookieMap = await pullCookies();
   const cookieDetails = cookieMap.domainCookieMap?.[domain]?.cookies || [];
   if (cookieDetails.length === 0) {
@@ -76,7 +80,9 @@ export const pullAndSetCookies = async (activeTabUrl: string, domain: string): P
     //   setTimeout(resolve, 5000);
     // });
     await Promise.allSettled(cookiesPromiseList);
-    await chrome.tabs.reload();
+    if (isReload) {
+      await chrome.tabs.reload();
+    }
   }
   return cookieMap;
 };
@@ -142,8 +148,8 @@ export const pushMultipleDomainCookies = async (
 export const removeCookies = async (domain: string): Promise<WriteResponse> => {
   const cloudflareInfo = await cloudflareStorage.get();
   try {
-    const isPushing = await domainConfigStorage.get();
-    if (isPushing) return Promise.reject('the cookie is pushing');
+    const domainConfig = await domainConfigStorage.get();
+    if (domainConfig.pushing) return Promise.reject('the cookie is pushing');
     await domainConfigStorage.update({
       pushing: true,
     });

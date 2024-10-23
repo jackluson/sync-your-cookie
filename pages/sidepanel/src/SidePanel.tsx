@@ -1,4 +1,5 @@
-import { withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
+import { useTheme, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
+import { Toaster } from '@sync-your-cookie/ui';
 import { useEffect } from 'react';
 import CookieTable from './components/CookieTable';
 const SidePanel = () => {
@@ -10,11 +11,27 @@ const SidePanel = () => {
       }
     });
   }, []);
+  const { theme } = useTheme();
 
   return (
     <div className="">
       <header></header>
       <CookieTable />
+      <Toaster
+        theme={theme}
+        closeButton
+        toastOptions={{
+          duration: 1500,
+          style: {
+            // width: 'max-content',
+            // margin: '0 auto',
+          },
+          // className: 'w-[240px]',
+        }}
+        visibleToasts={1}
+        richColors
+        position="top-center"
+      />
     </div>
   );
 };

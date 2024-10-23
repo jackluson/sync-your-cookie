@@ -79,7 +79,7 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
       await pushMultipleDomainCookies(uploadDomainCookies);
       changedDomainSet.clear();
     }
-  }, 8000);
+  }, 15000);
 
   if (!checkDelayTimer) {
     checkDelayTimer = setTimeout(() => {
@@ -88,7 +88,7 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
         timeoutFlag = true;
       }
       checkDelayTimer = null;
-    }, 30000);
+    }, 60000);
   }
 });
 
