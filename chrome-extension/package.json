@@ -28,7 +28,7 @@
     "@sync-your-cookie/tsconfig": "workspace:*",
     "@laynezh/vite-plugin-lib-assets": "^0.5.21",
     "@types/ws": "^8.5.10",
-    "magic-string": "^0.30.10",
+    "magic-string": "^0.30.12",
     "ts-loader": "^9.5.1"
   }
 }
