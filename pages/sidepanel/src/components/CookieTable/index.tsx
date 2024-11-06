@@ -1,4 +1,5 @@
-import { removeCookies, useStorageSuspense } from '@sync-your-cookie/shared';
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+import { useStorageSuspense } from '@sync-your-cookie/shared';
 import {
   Button,
   DataTable,
@@ -11,12 +12,24 @@ import {
   Spinner,
   Switch,
 } from '@sync-your-cookie/ui';
-import { Ellipsis } from 'lucide-react';
+import {
+  ArrowUpRight,
+  ChevronLeft,
+  CloudDownload,
+  CloudUpload,
+  Copy,
+  Ellipsis,
+  RotateCw,
+  Table as TableIcon,
+  Trash,
+} from 'lucide-react';
 
 import Favicon from '@src/components/Favicon';
-import { cookieStorage, domainConfigStorage } from '@sync-your-cookie/storage';
+import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
+import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
+
 import type { ColumnDef } from '@sync-your-cookie/ui';
-import { useState } from 'react';
+import { useAction } from './hooks/useAction';
 
 export type CookieItem = {
   id: string;
@@ -28,10 +41,10 @@ export type CookieItem = {
 const CookieTable = () => {
   const domainConfig = useStorageSuspense(domainConfigStorage);
   const cookieMap = useStorageSuspense(cookieStorage);
-  let cookieList = [];
+  let domainList = [];
   for (const [key, value] of Object.entries(cookieMap?.domainCookieMap || {})) {
     const config = domainConfig.domainMap[key];
-    cookieList.push({
+    domainList.push({
       id: key,
       domain: key,
       list: value.cookies,
@@ -40,22 +53,25 @@ const CookieTable = () => {
       createTime: value.createTime,
     });
   }
-  console.log('cookieList', cookieList);
-  cookieList = cookieList.sort((a, b) => {
+  console.log('cookieList', domainList);
+  domainList = domainList.sort((a, b) => {
     return b.createTime - a.createTime;
   });
 
-  const [loading, setLoading] = useState(false);
-
-  const handleDelete = async (cookie: CookieItem) => {
-    try {
-      setLoading(true);
-      await removeCookies(cookie.domain);
-      await domainConfigStorage.removeItem(cookie.domain);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    showCookiesColumns,
+    cookieList,
+    handleBack,
+    setSelectedDomain,
+    selectedDomain,
+    loading,
+    cookieAction,
+    handleDelete,
+    handlePush,
+    handlePull,
+    handleCopy,
+    handleViewCookies,
+  } = useAction(cookieMap);
 
   const columns: ColumnDef<CookieItem>[] = [
     {
@@ -64,23 +80,42 @@ const CookieTable = () => {
       cell: ({ row, getValue }) => {
         const value = getValue<string>() || '';
         return (
-          <a
-            key={row.original.domain}
-            target="_blank"
-            className="block w-[110%]"
-            href={`http://${row.original.domain}`}
-            rel="noreferrer">
-            <div className="flex items-center">
-              <Favicon key={row.original.domain} index={row.index} domain={row.original.domain} value={value} />
-              <p
-                style={{
-                  overflowWrap: 'anywhere',
-                }}
-                className=" underline min-w-[100px] ">
-                {value}
-              </p>
+          <div className="relative group/item ">
+            <div className="block w-[100%] h-[120%] ">
+              <div className="flex items-center">
+                <div
+                  role="button"
+                  className="flex items-center cursor-pointer "
+                  tabIndex={0}
+                  onClick={() => {
+                    setSelectedDomain(value);
+                  }}>
+                  <Favicon key={row.original.domain} index={row.index} domain={row.original.domain} value={value} />
+                  <p
+                    style={{
+                      overflowWrap: 'anywhere',
+                    }}
+                    className=" cursor-pointer hover:underline min-w-[100px] ">
+                    {value}
+                  </p>
+                </div>
+                <a
+                  key={row.original.domain}
+                  target="_blank"
+                  className="block ml-4 "
+                  href={`http://${row.original.domain}`}
+                  onClick={evt => {
+                    // evt.preventDefault();
+                    evt.stopPropagation();
+                  }}
+                  rel="noreferrer">
+                  <Button variant="ghost" className="text-sm ">
+                    <ArrowUpRight className="invisible group-hover/item:visible h-4 w-4 hover:inline cursor-pointer " />
+                  </Button>
+                </a>
+              </div>
             </div>
-          </a>
+          </div>
         );
       },
       id: 'domain',
@@ -131,6 +166,7 @@ const CookieTable = () => {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
+        const itemConfig = cookieAction.getDomainItemConfig(row.original.domain);
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -140,18 +176,65 @@ const CookieTable = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>Cookie Actions</DropdownMenuLabel>
               {/* <DropdownMenuItem onClick={() => navigator.clipboard.writeText(.id)}>
                 Copy payment ID
               </DropdownMenuItem> */}
               <DropdownMenuSeparator />
-              <DropdownMenuItem>View customer</DropdownMenuItem>
-              <DropdownMenuItem>View payment details</DropdownMenuItem>
+
+              <DropdownMenuItem
+                className="cursor-pointer"
+                disabled={itemConfig.pushing || cookieAction.pushing}
+                onClick={() => {
+                  handlePush(row.original);
+                }}>
+                {itemConfig.pushing ? (
+                  <RotateCw size={16} className=" h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <CloudUpload size={16} className="mr-2 h-4 w-4" />
+                )}
+                Push
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                disabled={itemConfig.pulling}
+                onClick={() => {
+                  handlePull(`https://${row.original.domain}`, row.original);
+                }}>
+                {itemConfig.pulling ? (
+                  <RotateCw size={16} className=" h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <CloudDownload size={16} className="mr-2 h-4 w-4" />
+                )}
+                Pull
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => {
+                  handleViewCookies(row.original.domain);
+                }}>
+                <TableIcon size={16} className="mr-2 h-4 w-4" />
+                View
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => {
+                  handleCopy(row.original.domain);
+                }}>
+                <Copy size={16} className="mr-2 h-4 w-4" />
+                Copy
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 disabled={domainConfig.pushing}
                 className="cursor-pointer"
                 onClick={() => handleDelete(row.original)}>
+                {itemConfig.pulling ? (
+                  <RotateCw size={16} className=" h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Trash size={16} className="mr-2 h-4 w-4" />
+                )}
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -161,16 +244,39 @@ const CookieTable = () => {
     },
   ];
   return (
-    <div>
+    <div className="h-screen flex flex-col">
       <div className="space-y-4 p-4 ">
         <div>
           <h2 className="text-xl font-bold tracking-tight">Welcome back!</h2>
           <p className="text-muted-foreground text-sm">Here&apos;s a list of your pushed cookies </p>
         </div>
       </div>
-      <Spinner show={loading}>
-        <DataTable columns={columns} data={cookieList} />
-      </Spinner>
+      <div className="h-0 flex-1 overflow-auto">
+        {selectedDomain ? (
+          <div className="flex flex-col h-full ">
+            <div className="flex items-center px-4 mb-4 ">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-7 w-7 mr-2"
+                onClick={() => {
+                  handleBack();
+                }}>
+                <ChevronLeft className="h-4 w-4" />
+                <span className="sr-only">Back</span>
+              </Button>
+              <h2 className="text-xl font-semibold">{selectedDomain}</h2>
+            </div>
+            <div className="flex-1 overflow-auto">
+              <DataTable columns={showCookiesColumns} data={cookieList} />
+            </div>
+          </div>
+        ) : (
+          <Spinner show={loading}>
+            <DataTable columns={columns} data={domainList} />
+          </Spinner>
+        )}
+      </div>
     </div>
   );
 };

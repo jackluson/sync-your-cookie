@@ -47,7 +47,34 @@ export const useAction = (cookie: Cookie) => {
     setSelectedDomain('');
   };
 
-  console.log('cookies', cookie?.domainCookieMap?.[selectedDomain]);
+  const handleCopy = (domain: string) => {
+    const cookies = cookie.domainCookieMap?.[domain]?.cookies || [];
+    if (cookies.length === 0) {
+      toast.warning('no cookie to copy, check again.');
+      return;
+    }
+    const pairs = [];
+    for (const ck of cookies) {
+      if (ck.value) {
+        const pair = `${ck.name}=${ck.value}`;
+        pairs.push(pair);
+      }
+    }
+    const joinPairStr = pairs.join('; ');
+    if (!navigator.clipboard) {
+      toast.warning('please check clipboard permission settings before copy ');
+      return;
+    }
+    navigator?.clipboard?.writeText(joinPairStr).then(
+      () => {
+        toast.success('Copy success');
+      },
+      err => {
+        console.log('err', err);
+        toast.error('Copy failed');
+      },
+    );
+  };
 
   return {
     handleDelete,
@@ -60,6 +87,7 @@ export const useAction = (cookie: Cookie) => {
     handleBack,
     showCookiesColumns,
     cookieAction,
+    handleCopy,
     // handlePush,
     cookieList,
   };
