@@ -1,4 +1,4 @@
-import { createStorage, StorageType } from './base';
+import { BaseStorage, createStorage, StorageType } from './base';
 
 type DomainItemConfig = {
   autoPull?: boolean;
@@ -15,19 +15,31 @@ interface DomainConfig {
     [domain: string]: DomainItemConfig;
   };
 }
+const key = 'domainConfig-storage-key';
 
-const storage = createStorage<DomainConfig>(
-  'domainConfig-storage-key',
-  {
-    pulling: false,
-    pushing: false,
-    domainMap: {},
-  },
-  {
-    storageType: StorageType.Local,
-    liveUpdate: true,
-  },
-);
+const cacheStorageMap = new Map();
+const initStorage = (): BaseStorage<DomainConfig> => {
+  if (cacheStorageMap.has(key)) {
+    return cacheStorageMap.get(key);
+  }
+  const storage: BaseStorage<DomainConfig> = createStorage<DomainConfig>(
+    key,
+    {
+      pulling: false,
+      pushing: false,
+      domainMap: {},
+    },
+    {
+      storageType: StorageType.Local,
+      liveUpdate: true,
+      // onLoad: onLoad,
+    },
+  );
+  cacheStorageMap.set(key, storage);
+  return storage;
+};
+
+const storage = initStorage();
 
 export const domainConfigStorage = {
   ...storage,
@@ -35,11 +47,15 @@ export const domainConfigStorage = {
     return await storage.set(currentInfo => {
       const domainMap = currentInfo?.domainMap || {};
       for (const domain in domainMap) {
-        domainMap[domain] = {
-          ...domainMap[domain],
-          pulling: false,
-          pushing: false,
-        };
+        if (domain) {
+          domainMap[domain] = {
+            ...domainMap[domain],
+            pulling: false,
+            pushing: false,
+          };
+        } else {
+          delete domainMap[domain];
+        }
       }
       const resetInfo = {
         pulling: false,
@@ -61,7 +77,6 @@ export const domainConfigStorage = {
   },
   update: async (updateInfo: Partial<DomainConfig>) => {
     return await storage.set(currentInfo => {
-      console.log('currentInfo', currentInfo);
       return { ...currentInfo, ...updateInfo };
     });
   },

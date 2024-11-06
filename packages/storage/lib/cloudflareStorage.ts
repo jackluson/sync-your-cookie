@@ -5,15 +5,26 @@ export interface AccountInfo {
   namespaceId?: string;
   token?: string;
 }
+const key = 'cloudflare-account-storage-key';
+const cacheStorageMap = new Map();
 
-const storage = createStorage<AccountInfo>(
-  'cloudflare-account',
-  {},
-  {
-    storageType: StorageType.Local,
-    liveUpdate: true,
-  },
-);
+const initStorage = (): BaseStorage<AccountInfo> => {
+  if (cacheStorageMap.has(key)) {
+    return cacheStorageMap.get(key);
+  }
+  const storage = createStorage<AccountInfo>(
+    key,
+    {},
+    {
+      storageType: StorageType.Local,
+      liveUpdate: true,
+    },
+  );
+  cacheStorageMap.set(key, storage);
+  return storage;
+};
+
+const storage = initStorage();
 
 type CloudflareStorage = BaseStorage<AccountInfo> & {
   update: (updateInfo: AccountInfo) => Promise<void>;

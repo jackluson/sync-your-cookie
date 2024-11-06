@@ -1,6 +1,8 @@
-import type { AccountInfo } from '@sync-your-cookie/storage';
+import { cloudflareStorage, type AccountInfo } from '@sync-your-cookie/storage/lib/cloudflareStorage';
+
 import { readCloudflareKV, writeCloudflareKV, WriteResponse } from '../cloudflare/api';
 
+import { MessageErrorCode } from '@lib/message';
 import {
   arrayBufferToBase64,
   base64ToArrayBuffer,
@@ -10,12 +12,30 @@ import {
   ICookiesMap,
 } from '@sync-your-cookie/protobuf';
 
+export const check = (accountInfo?: AccountInfo) => {
+  const cloudflareAccountInfo = accountInfo || cloudflareStorage.getSnapshot();
+  if (!cloudflareAccountInfo?.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
+    let message = 'Account ID is empty';
+    if (!cloudflareAccountInfo?.namespaceId) {
+      message = 'NamespaceId ID is empty';
+    } else if (!cloudflareAccountInfo.token) {
+      message = 'Token is empty';
+    }
+
+    return Promise.reject({
+      message,
+      code: MessageErrorCode.AccountCheck,
+    });
+  }
+  return cloudflareAccountInfo;
+};
+
 export const readCookiesMap = async (cloudflareAccountInfo: AccountInfo): Promise<ICookiesMap> => {
-  if (!cloudflareAccountInfo.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) return {};
+  await check(cloudflareAccountInfo);
   const res = await readCloudflareKV(
-    cloudflareAccountInfo.accountId,
-    cloudflareAccountInfo.namespaceId,
-    cloudflareAccountInfo.token,
+    cloudflareAccountInfo.accountId!,
+    cloudflareAccountInfo.namespaceId!,
+    cloudflareAccountInfo.token!,
   );
   const compressedBuffer = base64ToArrayBuffer(res);
   const deMsg = await decodeCookiesMap(compressedBuffer);
@@ -40,9 +60,7 @@ export const mergeAndWriteCookies = async (
   cookies: ICookie[],
   oldCookieMap: ICookiesMap = {},
 ): Promise<[WriteResponse, ICookiesMap]> => {
-  if (!cloudflareAccountInfo.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
-    throw new Error('cloudflareAccountInfo is invalid');
-  }
+  await check(cloudflareAccountInfo);
   const cookiesMap: ICookiesMap = {
     updateTime: Date.now(),
     createTime: oldCookieMap?.createTime || Date.now(),
@@ -65,9 +83,8 @@ export const mergeAndWriteMultipleDomainCookies = async (
   domainCookies: { domain: string; cookies: ICookie[] }[],
   oldCookieMap: ICookiesMap = {},
 ): Promise<[WriteResponse, ICookiesMap]> => {
-  if (!cloudflareAccountInfo.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
-    throw new Error('cloudflareAccountInfo is invalid');
-  }
+  await check(cloudflareAccountInfo);
+
   const newDomainCookieMap = {
     ...(oldCookieMap.domainCookieMap || {}),
   };
@@ -94,9 +111,7 @@ export const removeAndWriteCookies = async (
   domain: string,
   oldCookieMap: ICookiesMap = {},
 ): Promise<[WriteResponse, ICookiesMap]> => {
-  if (!cloudflareAccountInfo.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
-    throw new Error('cloudflareAccountInfo is invalid');
-  }
+  await check(cloudflareAccountInfo);
   const cookiesMap: ICookiesMap = {
     updateTime: Date.now(),
     createTime: oldCookieMap?.createTime || Date.now(),

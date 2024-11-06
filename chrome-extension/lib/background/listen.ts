@@ -1,4 +1,6 @@
 import {
+  check,
+  checkCloudflareResponse,
   Message,
   MessageType,
   pullAndSetCookies,
@@ -6,33 +8,7 @@ import {
   removeCookies,
   SendResponse,
 } from '@sync-your-cookie/shared';
-import { cloudflareStorage, domainConfigStorage } from '@sync-your-cookie/storage';
-
-const check = ({ isSilent = false } = {}) => {
-  const cloudflareAccountInfo = cloudflareStorage.getSnapshot();
-  if (!cloudflareAccountInfo?.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
-    let message = 'Account ID is empty';
-    if (!cloudflareAccountInfo?.namespaceId) {
-      message = 'NamespaceId ID is empty';
-    } else if (!cloudflareAccountInfo.token) {
-      message = 'Token is empty';
-    }
-    // if (isSilent === false) {
-    //   toast.error(message, {
-    //     // description: 'Please set cloudflare account id',
-    //     action: {
-    //       label: 'go to settings',
-    //       onClick: () => {
-    //         chrome.runtime.openOptionsPage();
-    //       },
-    //     },
-    //     position: 'top-right',
-    //   });
-    // }
-
-    throw new Error(message);
-  }
-};
+import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 
 type HandleCallback = (response?: SendResponse) => void;
 
@@ -47,18 +23,13 @@ const handlePush = async (domain: string, callback: HandleCallback) => {
     if (cookies?.length) {
       const res = await pushCookies(domain, cookies);
       console.log(res);
-      await domainConfigStorage.togglePushingState(domain, false);
-      if (res.success) {
-        callback({ isOk: true, msg: 'Pushed success' });
-      } else {
-        console.log('json.errors[0]', res.errors[0]);
-        callback({ isOk: false, msg: 'Pushed fail, please try again ', result: res });
-      }
+      checkCloudflareResponse(res, callback);
     } else {
       callback({ isOk: false, msg: 'no cookies found', result: cookies });
     }
-  } catch (err) {
-    callback({ isOk: false, msg: (err as Error).message || 'push fail, please try again ', result: err });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    checkCloudflareResponse(err, callback);
   } finally {
     await domainConfigStorage.togglePushingState(domain, false);
   }

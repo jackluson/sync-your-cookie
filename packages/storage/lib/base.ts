@@ -168,14 +168,34 @@ export function createStorage<D = string>(key: string, fallback: D, config?: Sto
     listeners.forEach(listener => listener());
   };
 
+  let setUpdatePromise: Promise<D> | null = null;
+  let setStoragePromise: Promise<void> | null = null;
+
   const set = async (valueOrUpdate: ValueOrUpdate<D>) => {
     if (initedCache === false) {
       cache = await _getDataFromStorage();
     }
-    cache = await updateCache(valueOrUpdate, cache);
-
-    await chrome.storage[storageType].set({ [key]: serialize(cache) });
-    _emitChange();
+    await Promise.allSettled([setUpdatePromise, setStoragePromise]);
+    setUpdatePromise = updateCache(valueOrUpdate, cache);
+    cache = await setUpdatePromise.then(val => {
+      setUpdatePromise = null;
+      return val;
+    });
+    if (!liveUpdate) {
+      _emitChange();
+    }
+    if (cache) {
+      //FIXME: 存在 set 执行完之后，onChanged 尚没有执行，，如果在 onchange 中再次改变 cache 值，在连续段时间内操作多次 set 操作，最终结果会不符合预期
+      setStoragePromise = chrome.storage[storageType].set({ [key]: serialize(cache) });
+      await setStoragePromise.then(async () => {
+        setStoragePromise = null;
+        return await new Promise(resolve => {
+          setTimeout(() => {
+            resolve(undefined);
+          }, 200);
+        });
+      });
+    }
   };
 
   const subscribe = (listener: () => void) => {

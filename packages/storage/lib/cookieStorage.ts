@@ -3,14 +3,26 @@ import { BaseStorage, createStorage, StorageType } from './base';
 
 export interface Cookie extends ICookiesMap {}
 
-export const storage: BaseStorage<Cookie> = createStorage<Cookie>(
-  'cookie-storage-key',
-  {},
-  {
-    storageType: StorageType.Local,
-    liveUpdate: true,
-  },
-);
+const cacheStorageMap = new Map();
+const key = 'cookie-storage-key';
+
+const initStorage = (): BaseStorage<Cookie> => {
+  if (cacheStorageMap.has(key)) {
+    return cacheStorageMap.get(key);
+  }
+  const storage: BaseStorage<Cookie> = createStorage<Cookie>(
+    key,
+    {},
+    {
+      storageType: StorageType.Local,
+      liveUpdate: true,
+    },
+  );
+  cacheStorageMap.set(key, storage);
+  return storage;
+};
+
+const storage = initStorage();
 
 export const cookieStorage = {
   ...storage,

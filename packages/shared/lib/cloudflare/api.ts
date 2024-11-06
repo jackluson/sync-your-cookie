@@ -53,7 +53,11 @@ export const readCloudflareKV = async (accountId: string, namespaceId: string, t
     },
   };
   return fetch(url, options).then(async res => {
-    const text = await res.text();
-    return text;
+    if (res.status === 200) {
+      const text = await res.text();
+      return text;
+    } else {
+      return Promise.reject(await res.json());
+    }
   });
 };

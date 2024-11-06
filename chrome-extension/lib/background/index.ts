@@ -2,14 +2,18 @@
 import 'webextension-polyfill';
 
 import { pullAndSetCookies, pullCookies, pushMultipleDomainCookies } from '@sync-your-cookie/shared';
-import { domainConfigStorage } from '@sync-your-cookie/storage';
+import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { initListen } from './listen';
 import { initSubscribe } from './subscribe';
 
 const init = async () => {
-  await initListen();
-  await initSubscribe(); // await state reset finish
-  await pullCookies(true);
+  try {
+    await initListen();
+    await initSubscribe(); // await state reset finish
+    await pullCookies(true);
+  } catch (error) {
+    console.log('init-->error', error);
+  }
 };
 
 chrome.runtime.onInstalled.addListener(async () => {

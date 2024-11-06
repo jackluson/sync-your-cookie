@@ -2,6 +2,8 @@
   "extends": "@sync-your-cookie/tsconfig/app.json",
   "compilerOptions": {
     "baseUrl": "./",
+    "declaration": true,
+    "declarationMap": true,
     "types": ["vite/client", "node", "chrome"],
     "paths": {
       "@root/*": ["./*"],
