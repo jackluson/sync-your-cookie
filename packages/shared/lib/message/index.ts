@@ -4,6 +4,11 @@ export enum MessageType {
   RemoveCookie = 'RemoveCookie',
 }
 
+export enum MessageErrorCode {
+  AccountCheck = 'AccountCheck',
+  CloudflareNotFoundRoute = 'CloudflareNotFoundRoute',
+}
+
 export type PushCookieMessagePayload = {
   domain: string;
 };
@@ -44,6 +49,7 @@ export type SendResponse = {
   isOk: boolean;
   msg: string;
   result?: unknown;
+  code?: MessageErrorCode;
 };
 
 export function sendMessage<T extends MessageType>(message: Message<T>) {

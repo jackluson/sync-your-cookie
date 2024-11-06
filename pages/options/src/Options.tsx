@@ -1,5 +1,5 @@
 import { useStorageSuspense, useTheme, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
-import { cloudflareStorage } from '@sync-your-cookie/storage';
+import { cloudflareStorage } from '@sync-your-cookie/storage/lib/cloudflareStorage';
 import {
   Button,
   Card,

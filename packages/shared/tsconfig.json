@@ -6,6 +6,7 @@
     "checkJs": false,
     "allowJs": false,
     "baseUrl": ".",
+    "declarationMap": true,
     "paths": {
       "@lib/*": ["lib/*"]
     },

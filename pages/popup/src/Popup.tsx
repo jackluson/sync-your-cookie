@@ -24,7 +24,6 @@ const Popup = () => {
 
   useEffect(() => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, async function (tabs) {
-      console.log('tab in Popup', tabs);
       if (tabs.length > 0) {
         const activeTab = tabs[0];
         if (activeTab.url && activeTab.url.startsWith('http')) {
@@ -34,16 +33,9 @@ const Popup = () => {
         }
       }
     });
-    // fetchCookies(true);
-    const handler = (changeInfo: chrome.cookies.CookieChangeInfo) => {
-      console.log('changeInfo', changeInfo);
-    };
-
-    chrome.cookies?.onChanged.addListener(handler);
-    return () => {
-      chrome.cookies?.onChanged.removeListener(handler);
-    };
   }, []);
+
+  const isPushingOrPulling = domainItemConfig.pushing || domainItemConfig.pulling;
 
   return (
     <div className="flex flex-col items-center min-w-[400px] justify-center bg-background ">
@@ -77,7 +69,7 @@ const Popup = () => {
           </Button> */}
             <div className="flex items-center mb-2 ">
               <Button
-                disabled={!activeTabUrl || domainItemConfig?.pushing || pushing}
+                disabled={!activeTabUrl || isPushingOrPulling || pushing}
                 className=" mr-2 w-[160px] justify-start"
                 onClick={() => handlePush()}>
                 {domainItemConfig.pushing ? (
@@ -97,7 +89,7 @@ const Popup = () => {
 
             <div className="flex items-center mb-2 ">
               <Button
-                disabled={!activeTabUrl || domainItemConfig.pulling}
+                disabled={!activeTabUrl || isPushingOrPulling}
                 className=" w-[160px] mr-2 justify-start"
                 onClick={() => handlePull(activeTabUrl)}>
                 {domainItemConfig.pulling ? (

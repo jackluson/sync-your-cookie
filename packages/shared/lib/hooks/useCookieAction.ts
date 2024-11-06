@@ -1,8 +1,30 @@
-import { ErrorCode } from '@lib/cloudflare';
-import { pullCookieUsingMessage, pushCookieUsingMessage, removeCookieUsingMessage } from '@lib/message';
-import { domainConfigStorage } from '@sync-your-cookie/storage';
+import {
+  MessageErrorCode,
+  pullCookieUsingMessage,
+  pushCookieUsingMessage,
+  removeCookieUsingMessage,
+} from '@lib/message';
+import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { toast as Toast } from 'sonner';
 import { useStorageSuspense } from './index';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const catchHandler = (err: any, scene: 'push' | 'pull' | 'remove', toast: typeof Toast) => {
+  const defaultMsg = `${scene} fail`;
+  if (err?.code === MessageErrorCode.AccountCheck || err?.code === MessageErrorCode.CloudflareNotFoundRoute) {
+    toast.error(err?.msg || err?.result?.message || defaultMsg, {
+      action: {
+        label: 'go to settings',
+        onClick: () => {
+          chrome.runtime.openOptionsPage();
+        },
+      },
+    });
+  } else {
+    toast.error(err?.msg || defaultMsg);
+  }
+  console.log('err', err);
+};
 
 export const useCookieAction = (domain: string, toast: typeof Toast) => {
   const domainConfig = useStorageSuspense(domainConfigStorage);
@@ -20,19 +42,7 @@ export const useCookieAction = (domain: string, toast: typeof Toast) => {
         console.log('res', res);
       })
       .catch(err => {
-        if (err.result?.errors?.length && err.result.errors[0].code === ErrorCode.NotFoundRoute) {
-          toast.error('cloudflare account info is incorrect', {
-            action: {
-              label: 'go to settings',
-              onClick: () => {
-                chrome.runtime.openOptionsPage();
-              },
-            },
-          });
-        } else {
-          toast.error(err.msg || 'Pushed fail');
-        }
-        console.log('err', err);
+        catchHandler(err, 'push', toast);
       });
   };
 
@@ -51,19 +61,7 @@ export const useCookieAction = (domain: string, toast: typeof Toast) => {
         }
       })
       .catch(err => {
-        console.log('err', err);
-        if (err.result?.errors?.length && err.result.errors[0].code === ErrorCode.NotFoundRoute) {
-          toast.error('cloudflare account info is incorrect', {
-            action: {
-              label: 'go to settings',
-              onClick: () => {
-                chrome.runtime.openOptionsPage();
-              },
-            },
-          });
-        } else {
-          toast.error(err.msg || 'Pull fail');
-        }
+        catchHandler(err, 'pull', toast);
       });
   };
 
@@ -82,19 +80,7 @@ export const useCookieAction = (domain: string, toast: typeof Toast) => {
         console.log('res', res);
       })
       .catch(err => {
-        if (err.result?.errors?.length && err.result.errors[0].code === ErrorCode.NotFoundRoute) {
-          toast.error('cloudflare account info is incorrect', {
-            action: {
-              label: 'go to settings',
-              onClick: () => {
-                chrome.runtime.openOptionsPage();
-              },
-            },
-          });
-        } else {
-          toast.error(err.msg || 'Removed fail');
-        }
-        console.log('err', err);
+        catchHandler(err, 'remove', toast);
       });
   };
 

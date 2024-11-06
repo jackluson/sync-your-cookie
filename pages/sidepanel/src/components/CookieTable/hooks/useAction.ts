@@ -1,5 +1,5 @@
 import { useCookieAction } from '@sync-your-cookie/shared';
-import type { Cookie } from '@sync-your-cookie/storage';
+import type { Cookie } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { CookieItem } from './../index';

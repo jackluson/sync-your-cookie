@@ -20,7 +20,6 @@ interface FaviconProps {
 
 const Favicon: FC<FaviconProps> = ({ index, domain, value }) => {
   const randomIndex = index % randomBgColor.length;
-  console.log('randomIndex', randomIndex);
   return (
     <div>
       <Avatar className=" h-5 w-5 inline-block mr-2 rounded-full">

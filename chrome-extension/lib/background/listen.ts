@@ -23,13 +23,13 @@ const handlePush = async (domain: string, callback: HandleCallback) => {
     if (cookies?.length) {
       const res = await pushCookies(domain, cookies);
       console.log(res);
-      checkCloudflareResponse(res, callback);
+      checkCloudflareResponse(res, 'push', callback);
     } else {
       callback({ isOk: false, msg: 'no cookies found', result: cookies });
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    checkCloudflareResponse(err, callback);
+    checkCloudflareResponse(err, 'push', callback);
   } finally {
     await domainConfigStorage.togglePushingState(domain, false);
   }
@@ -41,7 +41,10 @@ const handlePull = async (activeTabUrl: string, domain: string, isReload: boolea
     await domainConfigStorage.togglePullingState(domain, true);
     const cookieMap = await pullAndSetCookies(activeTabUrl, domain, isReload);
     callback({ isOk: true, msg: 'Pull success', result: cookieMap });
-  } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    checkCloudflareResponse(err, 'pull', callback);
+
     callback({ isOk: false, msg: (err as Error).message || 'pull fail, please try again ', result: err });
   } finally {
     await domainConfigStorage.togglePullingState(domain, false);
@@ -56,11 +59,14 @@ const handleRemove = async (domain: string, callback: HandleCallback) => {
     if (res.success) {
       callback({ isOk: true, msg: 'Removed success' });
     } else {
-      console.log('json.errors[0]', res.errors[0]);
-      callback({ isOk: false, msg: 'Removed fail, please try again ', result: res });
+      checkCloudflareResponse(res, 'remove', callback);
+      // callback({ isOk: false, msg: 'Removed fail, please try again ', result: res });
     }
-  } catch (err) {
-    callback({ isOk: false, msg: (err as Error).message || 'remove fail, please try again ', result: err });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    checkCloudflareResponse(err, 'remove', callback);
+
+    // callback({ isOk: false, msg: (err as Error).message || 'remove fail, please try again ', result: err });
   }
 };
 

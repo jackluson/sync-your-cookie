@@ -1,5 +1,5 @@
 import { useStorageSuspense } from '@lib/hooks/useStorageSuspense';
-import { themeStorage } from '@sync-your-cookie/storage';
+import { themeStorage } from '@sync-your-cookie/storage/lib/themeStorage';
 import { createContext, useEffect } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
