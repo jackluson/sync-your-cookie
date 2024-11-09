@@ -44,6 +44,7 @@ const CookieTable = () => {
   const domainConfig = useStorageSuspense(domainConfigStorage);
   const cookieMap = useStorageSuspense(cookieStorage);
   let domainList = [];
+  let totalCookieItem = 0;
   for (const [key, value] of Object.entries(cookieMap?.domainCookieMap || {})) {
     const config = domainConfig.domainMap[key];
     domainList.push({
@@ -56,6 +57,9 @@ const CookieTable = () => {
       autoPull: config?.autoPull ?? false,
       createTime: value.createTime,
     });
+    if (value.cookies?.length) {
+      totalCookieItem += value.cookies.length;
+    }
   }
   domainList = domainList.sort((a, b) => {
     return b.createTime - a.createTime;
@@ -83,7 +87,7 @@ const CookieTable = () => {
       cell: ({ row, getValue }) => {
         const value = getValue<string>() || '';
         const sourceUrl = row.original.sourceUrl;
-        const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'http:';
+        const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'https:';
         const href = `${protocol}//${row.original.host}`;
         const src = row.original.favIconUrl ?? `https://${row.original.host}/favicon.ico`;
         return (
@@ -176,7 +180,7 @@ const CookieTable = () => {
       cell: ({ row }) => {
         const itemConfig = cookieAction.getDomainItemConfig(row.original.host);
         const sourceUrl = row.original.sourceUrl;
-        const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'http';
+        const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'http:';
         const href = `${protocol}//${row.original.host}`;
         return (
           <DropdownMenu>
@@ -284,6 +288,23 @@ const CookieTable = () => {
           </div>
         ) : (
           <Spinner show={loading}>
+            <div>
+              {domainList.length > 0 ? (
+                <div className=" mx-4 w-1/3 mb-4 rounded-xl border bg-card text-card-foreground shadow">
+                  <div className="p-3">
+                    <div className="flex flex-row items-center justify-between">
+                      <p className="tracking-tight text-sm font-normal">Total Cookie</p>
+                    </div>
+                    <div className="">
+                      <p className="text-2xl font-bold">
+                        {domainList.length} <span className="text-xl">sites</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">{totalCookieItem} cookie items</p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
             <DataTable columns={columns} data={domainList} />
           </Spinner>
         )}

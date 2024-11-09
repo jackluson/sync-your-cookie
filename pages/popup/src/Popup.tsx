@@ -62,9 +62,9 @@ const Popup = () => {
       <main className="p-4 ">
         <Spinner show={false}>
           {domain ? (
-            <div className="flex justify-center items-center ">
+            <div className="flex justify-center items-center mb-2  ">
               <Image src={favIconUrl} />
-              <h3 className=" mb-2 text-center whitespace-nowrap text-xl text-primary font-bold">{domain}</h3>
+              <h3 className="text-center whitespace-nowrap text-xl text-primary font-bold">{domain}</h3>
             </div>
           ) : null}
 
