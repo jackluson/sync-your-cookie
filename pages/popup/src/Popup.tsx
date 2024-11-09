@@ -1,16 +1,17 @@
-import { useTheme, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
+import { extractDomainAndPort, useTheme, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
 
-import { Button, Spinner, Toaster } from '@sync-your-cookie/ui';
+import { Button, Image, Spinner, Toaster } from '@sync-your-cookie/ui';
 import { CloudDownload, CloudUpload, Copyright, PanelRightOpen, RotateCw, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AutoSwitch } from './components/AutoSwtich';
 import { useDomainConfig } from './hooks/useDomainConfig';
-import { extractDomain } from './utils';
 
 const Popup = () => {
   const { theme } = useTheme();
   const [activeTabUrl, setActiveTabUrl] = useState('');
+  const [favIconUrl, setFavIconUrl] = useState('');
+
   const {
     pushing,
     toggleAutoPushState,
@@ -27,9 +28,10 @@ const Popup = () => {
       if (tabs.length > 0) {
         const activeTab = tabs[0];
         if (activeTab.url && activeTab.url.startsWith('http')) {
+          setFavIconUrl(activeTab?.favIconUrl || '');
           setActiveTabUrl(activeTab.url);
-          const domain = await extractDomain(activeTab.url);
-          setDomain(domain);
+          const [domain, tempPort] = await extractDomainAndPort(activeTab.url);
+          setDomain(domain + `${tempPort ? ':' + tempPort : ''}`);
         }
       }
     });
@@ -60,7 +62,10 @@ const Popup = () => {
       <main className="p-4 ">
         <Spinner show={false}>
           {domain ? (
-            <h3 className=" mb-2 text-center whitespace-nowrap text-xl text-primary font-bold"> {domain}</h3>
+            <div className="flex justify-center items-center ">
+              <Image src={favIconUrl} />
+              <h3 className=" mb-2 text-center whitespace-nowrap text-xl text-primary font-bold">{domain}</h3>
+            </div>
           ) : null}
 
           <div className=" flex flex-col">
@@ -71,7 +76,7 @@ const Popup = () => {
               <Button
                 disabled={!activeTabUrl || isPushingOrPulling || pushing}
                 className=" mr-2 w-[160px] justify-start"
-                onClick={() => handlePush()}>
+                onClick={() => handlePush(domain, activeTabUrl, favIconUrl)}>
                 {domainItemConfig.pushing ? (
                   <RotateCw size={16} className="mr-2 animate-spin" />
                 ) : (

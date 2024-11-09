@@ -26,12 +26,14 @@ const catchHandler = (err: any, scene: 'push' | 'pull' | 'remove', toast: typeof
   console.log('err', err);
 };
 
-export const useCookieAction = (domain: string, toast: typeof Toast) => {
+export const useCookieAction = (host: string, toast: typeof Toast) => {
   const domainConfig = useStorageSuspense(domainConfigStorage);
 
-  const handlePush = async (selectedDomain = domain) => {
+  const handlePush = async (selectedHost = host, sourceUrl?: string, favIconUrl?: string) => {
     return pushCookieUsingMessage({
-      domain: selectedDomain,
+      host: selectedHost,
+      sourceUrl,
+      favIconUrl,
     })
       .then(res => {
         if (res.isOk) {
@@ -46,7 +48,7 @@ export const useCookieAction = (domain: string, toast: typeof Toast) => {
       });
   };
 
-  const handlePull = async (activeTabUrl: string, selectedDomain = domain, reload = true) => {
+  const handlePull = async (activeTabUrl: string, selectedDomain = host, reload = true) => {
     return pullCookieUsingMessage({
       activeTabUrl: activeTabUrl,
       domain: selectedDomain,
@@ -65,7 +67,7 @@ export const useCookieAction = (domain: string, toast: typeof Toast) => {
       });
   };
 
-  const handleRemove = async (selectedDomain = domain) => {
+  const handleRemove = async (selectedDomain = host) => {
     return removeCookieUsingMessage({
       domain: selectedDomain,
     })
@@ -73,7 +75,7 @@ export const useCookieAction = (domain: string, toast: typeof Toast) => {
         console.log('res', res);
         if (res.isOk) {
           toast.success(res.msg || 'success');
-          await domainConfigStorage.removeItem(domain);
+          await domainConfigStorage.removeItem(host);
         } else {
           toast.error(res.msg || 'Removed fail');
         }
@@ -88,7 +90,7 @@ export const useCookieAction = (domain: string, toast: typeof Toast) => {
     // domainConfig: domainConfig as typeof domainConfig,
     pulling: domainConfig.pulling,
     pushing: domainConfig.pushing,
-    domainItemConfig: domainConfig.domainMap[domain] || {},
+    domainItemConfig: domainConfig.domainMap[host] || {},
     getDomainItemConfig: (selectedDomain: string) => {
       return domainConfig.domainMap[selectedDomain] || {};
     },

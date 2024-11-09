@@ -50,16 +50,16 @@ export const pullCookies = async (isInit = false): Promise<Cookie> => {
   }
 };
 
-export const pullAndSetCookies = async (activeTabUrl: string, domain: string, isReload = true): Promise<Cookie> => {
+export const pullAndSetCookies = async (activeTabUrl: string, host: string, isReload = true): Promise<Cookie> => {
   const cookieMap = await pullCookies();
-  const cookieDetails = cookieMap?.domainCookieMap?.[domain]?.cookies || [];
+  const cookieDetails = cookieMap?.domainCookieMap?.[host]?.cookies || [];
   if (cookieDetails.length === 0) {
     throw new Error('No cookies to pull, push first please');
   } else {
     const cookiesPromiseList: Promise<unknown>[] = [];
 
     for (const cookie of cookieDetails) {
-      if (cookie.domain?.includes(domain)) {
+      if (cookie.domain?.includes(host)) {
         console.log('cookie', cookie);
         const cookieDetail: chrome.cookies.SetDetails = {
           domain: cookie.domain,

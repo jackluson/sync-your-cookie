@@ -6,13 +6,14 @@ type DomainItemConfig = {
   pulling?: boolean;
   pushing?: boolean;
   favIconUrl?: string;
+  sourceUrl?: string;
 };
 
 interface DomainConfig {
   pulling: boolean;
   pushing: boolean;
   domainMap: {
-    [domain: string]: DomainItemConfig;
+    [host: string]: DomainItemConfig;
   };
 }
 const key = 'domainConfig-storage-key';
@@ -65,11 +66,11 @@ export const domainConfigStorage = {
       return resetInfo;
     });
   },
-  updateItem: async (domain: string, updateConf: DomainItemConfig) => {
+  updateItem: async (host: string, updateConf: DomainItemConfig) => {
     return await storage.set(currentInfo => {
       const domainMap = currentInfo?.domainMap || {};
-      domainMap[domain] = {
-        ...domainMap[domain],
+      domainMap[host] = {
+        ...domainMap[host],
         ...updateConf,
       };
       return { ...(currentInfo || {}), domainMap };

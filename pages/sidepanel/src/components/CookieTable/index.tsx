@@ -9,6 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Image,
   Spinner,
   Switch,
 } from '@sync-your-cookie/ui';
@@ -24,7 +25,6 @@ import {
   Trash,
 } from 'lucide-react';
 
-import Favicon from '@src/components/Favicon';
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 
@@ -33,7 +33,9 @@ import { useAction } from './hooks/useAction';
 
 export type CookieItem = {
   id: string;
-  domain: string;
+  host: string;
+  sourceUrl?: string;
+  favIconUrl?: string;
   autoPush: boolean;
   autoPull: boolean;
 };
@@ -46,14 +48,15 @@ const CookieTable = () => {
     const config = domainConfig.domainMap[key];
     domainList.push({
       id: key,
-      domain: key,
+      host: key,
+      sourceUrl: config.sourceUrl,
+      favIconUrl: config.favIconUrl,
       list: value.cookies,
       autoPush: config?.autoPush ?? false,
       autoPull: config?.autoPull ?? false,
       createTime: value.createTime,
     });
   }
-  console.log('cookieList', domainList);
   domainList = domainList.sort((a, b) => {
     return b.createTime - a.createTime;
   });
@@ -75,22 +78,26 @@ const CookieTable = () => {
 
   const columns: ColumnDef<CookieItem>[] = [
     {
-      accessorKey: 'domain',
-      header: 'Domain',
+      accessorKey: 'host',
+      header: 'Host',
       cell: ({ row, getValue }) => {
         const value = getValue<string>() || '';
+        const sourceUrl = row.original.sourceUrl;
+        const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'http:';
+        const href = `${protocol}//${row.original.host}`;
+        const src = row.original.favIconUrl ?? `https://${row.original.host}/favicon.ico`;
         return (
           <div className="relative group/item ">
             <div className="block w-[100%] h-[120%] ">
               <div className="flex items-center">
                 <div
                   role="button"
-                  className="flex items-center cursor-pointer "
+                  className="flex items-center justify-center cursor-pointer "
                   tabIndex={0}
                   onClick={() => {
                     setSelectedDomain(value);
                   }}>
-                  <Favicon key={row.original.domain} index={row.index} domain={row.original.domain} value={value} />
+                  <Image key={row.original.host} index={row.index} src={src} value={value} />
                   <p
                     style={{
                       overflowWrap: 'anywhere',
@@ -100,10 +107,11 @@ const CookieTable = () => {
                   </p>
                 </div>
                 <a
-                  key={row.original.domain}
+                  key={row.original.host}
                   target="_blank"
+                  title={href}
                   className="block ml-4 "
-                  href={`http://${row.original.domain}`}
+                  href={href}
                   onClick={evt => {
                     // evt.preventDefault();
                     evt.stopPropagation();
@@ -118,7 +126,7 @@ const CookieTable = () => {
           </div>
         );
       },
-      id: 'domain',
+      id: 'host',
     },
     {
       accessorKey: 'autoPush',
@@ -129,10 +137,10 @@ const CookieTable = () => {
           <p className="w-[60px]">
             <Switch
               className="scale-75"
-              id={`autoPush-${record.row.original.domain}`}
+              id={`autoPush-${record.row.original.host}`}
               checked={record.row.original.autoPush}
               onCheckedChange={async () => {
-                await domainConfigStorage.updateItem(record.row.original.domain, {
+                await domainConfigStorage.updateItem(record.row.original.host, {
                   autoPush: !record.row.original.autoPush,
                 });
               }}
@@ -150,10 +158,10 @@ const CookieTable = () => {
           <p className="w-[60px]">
             <Switch
               className="scale-75"
-              id={`autoPull-${record.row.original.domain}`}
+              id={`autoPull-${record.row.original.host}`}
               checked={record.row.original.autoPull}
               onCheckedChange={async () => {
-                await domainConfigStorage.updateItem(record.row.original.domain, {
+                await domainConfigStorage.updateItem(record.row.original.host, {
                   autoPull: !record.row.original.autoPull,
                 });
               }}
@@ -166,7 +174,10 @@ const CookieTable = () => {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const itemConfig = cookieAction.getDomainItemConfig(row.original.domain);
+        const itemConfig = cookieAction.getDomainItemConfig(row.original.host);
+        const sourceUrl = row.original.sourceUrl;
+        const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'http';
+        const href = `${protocol}//${row.original.host}`;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -199,7 +210,7 @@ const CookieTable = () => {
                 className="cursor-pointer"
                 disabled={itemConfig.pulling}
                 onClick={() => {
-                  handlePull(`https://${row.original.domain}`, row.original);
+                  handlePull(href, row.original);
                 }}>
                 {itemConfig.pulling ? (
                   <RotateCw size={16} className=" h-4 w-4 mr-2 animate-spin" />
@@ -212,7 +223,7 @@ const CookieTable = () => {
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => {
-                  handleViewCookies(row.original.domain);
+                  handleViewCookies(row.original.host);
                 }}>
                 <TableIcon size={16} className="mr-2 h-4 w-4" />
                 View
@@ -220,7 +231,7 @@ const CookieTable = () => {
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => {
-                  handleCopy(row.original.domain);
+                  handleCopy(row.original.host);
                 }}>
                 <Copy size={16} className="mr-2 h-4 w-4" />
                 Copy

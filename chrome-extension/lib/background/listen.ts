@@ -1,9 +1,11 @@
 import {
   check,
   checkCloudflareResponse,
+  extractDomainAndPort,
   Message,
   MessageType,
   pullAndSetCookies,
+  PushCookieMessagePayload,
   pushCookies,
   removeCookies,
   SendResponse,
@@ -12,16 +14,23 @@ import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigS
 
 type HandleCallback = (response?: SendResponse) => void;
 
-const handlePush = async (domain: string, callback: HandleCallback) => {
+const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCallback) => {
+  console.log('payload', payload);
+  const { sourceUrl, host, favIconUrl } = payload;
   try {
     await check();
-    await domainConfigStorage.togglePushingState(domain, true);
+    await domainConfigStorage.updateItem(host, {
+      pushing: true,
+      sourceUrl: sourceUrl,
+      favIconUrl,
+    });
+    const [domain] = await extractDomainAndPort(host);
     const cookies = await chrome.cookies.getAll({
       // url: activeTabUrl,
       domain: domain,
     });
     if (cookies?.length) {
-      const res = await pushCookies(domain, cookies);
+      const res = await pushCookies(host, cookies);
       console.log(res);
       checkCloudflareResponse(res, 'push', callback);
     } else {
@@ -31,7 +40,7 @@ const handlePush = async (domain: string, callback: HandleCallback) => {
   } catch (err: any) {
     checkCloudflareResponse(err, 'push', callback);
   } finally {
-    await domainConfigStorage.togglePushingState(domain, false);
+    await domainConfigStorage.togglePushingState(host, false);
   }
 };
 
@@ -79,7 +88,7 @@ export const initListen = async () => {
     const type = message.type;
     switch (type) {
       case MessageType.PushCookie:
-        handlePush(message.payload.domain, callback);
+        handlePush(message.payload, callback);
         break;
       case MessageType.PullCookie:
         // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-non-null-asserted-optional-chain

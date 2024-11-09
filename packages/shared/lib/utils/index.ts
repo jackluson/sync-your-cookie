@@ -36,3 +36,54 @@ export function checkCloudflareResponse(
     }
   }
 }
+function addProtocol(uri: string) {
+  return uri.startsWith('http') ? uri : `http://${uri}`;
+}
+
+export async function extractDomainAndPort(url: string): Promise<[string, string]> {
+  console.log('url', url);
+  let urlObj: URL;
+  try {
+    const maybeValidUrl = addProtocol(url);
+    urlObj = new URL(maybeValidUrl);
+  } catch (error) {
+    return [url, ''];
+  }
+  let domain = urlObj.hostname;
+  const port = urlObj.port;
+  domain = domain.replace('http://', '').replace('https://', '').replace('www.', '');
+  // match ip address
+  if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(domain)) {
+    return [domain, port];
+  }
+  if (domain.split('.').length <= 2) {
+    return [domain, port];
+  }
+  return new Promise(resolve => {
+    try {
+      chrome.cookies.getAll(
+        {
+          url,
+        },
+        async cookies => {
+          console.log('cookies', cookies);
+          if (cookies) {
+            const domain = cookies[0].domain;
+            if (domain.startsWith('.')) {
+              resolve([domain.slice(1), port]);
+            } else {
+              resolve([domain, port]);
+            }
+          } else {
+            const match = domain.match(/([^.]+\.[^.]+)$/);
+            resolve([match ? match[1] : '', port]);
+          }
+        },
+      );
+    } catch (error) {
+      console.error('error', error);
+      const match = domain.match(/([^.]+\.[^.]+)$/);
+      resolve([match ? match[1] : '', port]);
+    }
+  });
+}

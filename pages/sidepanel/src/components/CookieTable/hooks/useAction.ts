@@ -13,7 +13,7 @@ export const useAction = (cookie: Cookie) => {
   const handleDelete = async (cookie: CookieItem) => {
     try {
       setLoading(true);
-      await cookieAction.handleRemove(cookie.domain);
+      await cookieAction.handleRemove(cookie.host);
     } finally {
       setLoading(false);
     }
@@ -22,7 +22,7 @@ export const useAction = (cookie: Cookie) => {
   const handlePull = async (activeTabUrl: string, cookie: CookieItem) => {
     try {
       setLoading(true);
-      await cookieAction.handlePull(activeTabUrl, cookie.domain, false);
+      await cookieAction.handlePull(activeTabUrl, cookie.host, false);
     } finally {
       setLoading(false);
     }
@@ -31,7 +31,7 @@ export const useAction = (cookie: Cookie) => {
   const handlePush = async (cookie: CookieItem) => {
     try {
       setLoading(true);
-      await cookieAction.handlePush(cookie.domain);
+      await cookieAction.handlePush(cookie.host);
     } finally {
       setLoading(false);
     }

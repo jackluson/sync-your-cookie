@@ -10,7 +10,9 @@ export enum MessageErrorCode {
 }
 
 export type PushCookieMessagePayload = {
-  domain: string;
+  host: string;
+  sourceUrl?: string;
+  favIconUrl?: string;
 };
 
 export type RemoveCookieMessagePayload = {

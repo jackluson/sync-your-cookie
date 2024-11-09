@@ -1,7 +1,12 @@
 // sort-imports-ignore
 import 'webextension-polyfill';
 
-import { pullAndSetCookies, pullCookies, pushMultipleDomainCookies } from '@sync-your-cookie/shared';
+import {
+  extractDomainAndPort,
+  pullAndSetCookies,
+  pullCookies,
+  pushMultipleDomainCookies,
+} from '@sync-your-cookie/shared';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { initListen } from './listen';
 import { initSubscribe } from './subscribe';
@@ -70,12 +75,14 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
     }
 
     const uploadDomainCookies = [];
-    for (const domain of pushDomainSet) {
+    for (const host of pushDomainSet) {
+      const [domain] = await extractDomainAndPort(host);
+
       const cookies = await chrome.cookies.getAll({
         domain: domain,
       });
       uploadDomainCookies.push({
-        domain,
+        domain: host,
         cookies,
       });
     }
