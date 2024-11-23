@@ -110,6 +110,7 @@ export const removeAndWriteCookies = async (
   cloudflareAccountInfo: AccountInfo,
   domain: string,
   oldCookieMap: ICookiesMap = {},
+  name?: string,
 ): Promise<[WriteResponse, ICookiesMap]> => {
   await check(cloudflareAccountInfo);
   const cookiesMap: ICookiesMap = {
@@ -120,7 +121,14 @@ export const removeAndWriteCookies = async (
     },
   };
   if (cookiesMap.domainCookieMap) {
-    delete cookiesMap.domainCookieMap[domain];
+    if (name !== undefined) {
+      if (cookiesMap.domainCookieMap[domain]?.cookies) {
+        cookiesMap.domainCookieMap[domain].cookies =
+          cookiesMap.domainCookieMap[domain].cookies?.filter(cookie => cookie.name !== name) || [];
+      }
+    } else {
+      delete cookiesMap.domainCookieMap[domain];
+    }
   }
 
   const res = await writeCookiesMap(cloudflareAccountInfo, cookiesMap);

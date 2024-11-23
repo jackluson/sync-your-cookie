@@ -9,7 +9,7 @@ import { toast as Toast } from 'sonner';
 import { useStorageSuspense } from './index';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const catchHandler = (err: any, scene: 'push' | 'pull' | 'remove', toast: typeof Toast) => {
+export const catchHandler = (err: any, scene: 'push' | 'pull' | 'remove' | 'delete', toast: typeof Toast) => {
   const defaultMsg = `${scene} fail`;
   if (err?.code === MessageErrorCode.AccountCheck || err?.code === MessageErrorCode.CloudflareNotFoundRoute) {
     toast.error(err?.msg || err?.result?.message || defaultMsg, {

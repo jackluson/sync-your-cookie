@@ -14,15 +14,14 @@ export function debounce<T = unknown>(func: (...args: T[]) => void, timeout = 30
 }
 
 export function checkCloudflareResponse(
-  res: WriteResponse,
-  scene: 'push' | 'pull' | 'remove',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  res: WriteResponse | Error | any,
+  scene: 'push' | 'pull' | 'remove' | 'delete',
   callback: (response?: SendResponse) => void,
 ) {
-  if (res?.success) {
+  if ((res as WriteResponse)?.success) {
     callback({ isOk: true, msg: `${scene} success` });
   } else {
-    const defaultErrMsg = `${scene} fail, please try again.`;
-
     const isAccountError = res?.errors?.length && res.errors[0].code === ErrorCode.NotFoundRoute;
     if (isAccountError) {
       callback({
@@ -32,7 +31,9 @@ export function checkCloudflareResponse(
         result: res,
       });
     } else {
-      callback({ isOk: false, msg: defaultErrMsg, result: res });
+      const defaultErrMsg = `${scene} fail, please try again.`;
+      console.log(scene, 'fail res:', res, typeof res);
+      callback({ isOk: false, msg: res?.message || defaultErrMsg, result: res });
     }
   }
 }

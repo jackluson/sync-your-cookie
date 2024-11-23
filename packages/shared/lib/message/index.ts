@@ -2,6 +2,7 @@ export enum MessageType {
   PushCookie = 'PushCookie',
   PullCookie = 'PullCookie',
   RemoveCookie = 'RemoveCookie',
+  RemoveCookieItem = 'RemoveCookieItem',
 }
 
 export enum MessageErrorCode {
@@ -17,6 +18,11 @@ export type PushCookieMessagePayload = {
 
 export type RemoveCookieMessagePayload = {
   domain: string;
+};
+
+export type RemoveCookieItemMessagePayload = {
+  domain: string;
+  name: string;
 };
 
 export type PullCookieMessagePayload = {
@@ -37,6 +43,10 @@ export type MessageMap = {
   [MessageType.PullCookie]: {
     type: MessageType.PullCookie;
     payload: PullCookieMessagePayload;
+  };
+  [MessageType.RemoveCookieItem]: {
+    type: MessageType.RemoveCookieItem;
+    payload: RemoveCookieItemMessagePayload;
   };
 };
 
@@ -85,5 +95,13 @@ export function pullCookieUsingMessage(payload: PullCookieMessagePayload) {
   return sendMessage<MessageType.PullCookie>({
     payload,
     type: MessageType.PullCookie,
+  });
+}
+
+export function removeCookieItemUsingMessage(payload: RemoveCookieItemMessagePayload) {
+  const sendType = MessageType.RemoveCookieItem;
+  return sendMessage<typeof sendType>({
+    payload,
+    type: sendType,
   });
 }

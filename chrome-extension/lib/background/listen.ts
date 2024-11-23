@@ -7,6 +7,7 @@ import {
   pullAndSetCookies,
   PushCookieMessagePayload,
   pushCookies,
+  removeCookieItem,
   removeCookies,
   SendResponse,
 } from '@sync-your-cookie/shared';
@@ -15,7 +16,6 @@ import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigS
 type HandleCallback = (response?: SendResponse) => void;
 
 const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCallback) => {
-  console.log('payload', payload);
   const { sourceUrl, host, favIconUrl } = payload;
   try {
     await check();
@@ -53,8 +53,6 @@ const handlePull = async (activeTabUrl: string, domain: string, isReload: boolea
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     checkCloudflareResponse(err, 'pull', callback);
-
-    callback({ isOk: false, msg: (err as Error).message || 'pull fail, please try again ', result: err });
   } finally {
     await domainConfigStorage.togglePullingState(domain, false);
   }
@@ -79,6 +77,22 @@ const handleRemove = async (domain: string, callback: HandleCallback) => {
   }
 };
 
+const handleRemoveItem = async (domain: string, name: string, callback: HandleCallback) => {
+  try {
+    await check();
+    const res = await removeCookieItem(domain, name);
+    console.log('handleRemoveItem->res', res);
+    if (res.success) {
+      callback({ isOk: true, msg: 'Deleted success' });
+    } else {
+      checkCloudflareResponse(res, 'delete', callback);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    checkCloudflareResponse(err, 'delete', callback);
+  }
+};
+
 export const initListen = async () => {
   function handleMessage(
     message: Message,
@@ -97,6 +111,9 @@ export const initListen = async () => {
         break;
       case MessageType.RemoveCookie:
         handleRemove(message.payload.domain, callback);
+        break;
+      case MessageType.RemoveCookieItem:
+        handleRemoveItem(message.payload.domain, message.payload.name, callback);
         break;
       default:
         break;

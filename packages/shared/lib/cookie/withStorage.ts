@@ -60,11 +60,17 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
 
     for (const cookie of cookieDetails) {
       if (cookie.domain?.includes(host)) {
-        console.log('cookie', cookie);
+        let url = activeTabUrl;
+        if (cookie.domain) {
+          const urlObj = new URL(activeTabUrl);
+          const protocol = activeTabUrl ? urlObj.protocol : 'http:';
+          const itemHost = cookie.domain.startsWith('.') ? cookie.domain.slice(1) : cookie.domain;
+          url = `${protocol}//${itemHost}`;
+        }
         const cookieDetail: chrome.cookies.SetDetails = {
           domain: cookie.domain,
           name: cookie.name ?? undefined,
-          url: activeTabUrl,
+          url: url,
           storeId: cookie.storeId ?? undefined,
           value: cookie.value ?? undefined,
           expirationDate: cookie.expirationDate ?? undefined,
@@ -77,14 +83,15 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
           try {
             try {
               chrome.cookies.set(cookieDetail, res => {
-                console.log('set cookier result', res);
+                // console.log('set cookie result', res);
                 resolve(res);
               });
             } catch (error) {
+              console.error('cookie set error', cookieDetail, error);
               reject(error);
             }
           } catch (error) {
-            console.log('set cookie error', error);
+            console.error('set cookie error', cookieDetail, error);
             reject(error);
           }
         });
@@ -177,6 +184,33 @@ export const removeCookies = async (domain: string): Promise<WriteResponse> => {
     return res;
   } catch (e) {
     console.log('removeCookies fail err', e);
+    await domainConfigStorage.update({
+      pushing: false,
+    });
+    return Promise.reject(e);
+  }
+};
+
+export const removeCookieItem = async (domain: string, name: string): Promise<WriteResponse> => {
+  const cloudflareInfo = await cloudflareStorage.get();
+  try {
+    const domainConfig = await domainConfigStorage.get();
+    if (domainConfig.pushing) return Promise.reject('the cookie is pushing');
+    await domainConfigStorage.update({
+      pushing: true,
+    });
+    // const oldCookie = await cookieStorage.get();
+    const oldCookie = await readCookiesMapWithStatus(cloudflareInfo);
+    const [res, cookieMap] = await removeAndWriteCookies(cloudflareInfo, domain, oldCookie, name);
+    await domainConfigStorage.update({
+      pushing: false,
+    });
+    if (res.success) {
+      cookieStorage.update(cookieMap);
+    }
+    return res;
+  } catch (e) {
+    console.log('removeCookieItem fail err', e);
     await domainConfigStorage.update({
       pushing: false,
     });

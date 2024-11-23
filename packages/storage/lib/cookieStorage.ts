@@ -64,4 +64,21 @@ export const cookieStorage = {
     });
     return newVal;
   },
+
+  removeDomainItem: async (domain: string, name: string) => {
+    let newVal: Cookie = {};
+    await storage.set(currentInfo => {
+      const domainCookieMap = currentInfo.domainCookieMap || {};
+      const domainCookies = domainCookieMap[domain] || {};
+      const cookies = domainCookies.cookies || [];
+      const newCookies = cookies.filter(cookie => cookie.name !== name);
+      domainCookieMap[domain] = {
+        ...domainCookies,
+        cookies: newCookies,
+      };
+      newVal = { ...currentInfo, domainCookieMap };
+      return newVal;
+    });
+    return newVal;
+  },
 };
