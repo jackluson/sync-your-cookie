@@ -64,7 +64,6 @@ const CookieTable = () => {
   let totalCookieItem = 0;
   for (const [key, value] of Object.entries(cookieMap?.domainCookieMap || {})) {
     const config = domainConfig.domainMap[key];
-    // if (!selectedDomain || !key.includes(currentSearchStr)) continue;
     if (!selectedDomain && currentSearchStr.trim() && !key.includes(currentSearchStr.trim())) continue;
     if (value.cookies?.length) {
       totalCookieItem += value.cookies.length;
@@ -320,21 +319,19 @@ const CookieTable = () => {
           ) : (
             <div className="flex flex-col h-full">
               <div>
-                {domainList.length > 0 ? (
-                  <div className=" mx-4 w-1/3 bg-primary/10 mb-4 rounded-xl border text-card-foreground shadow">
-                    <div className="p-3">
-                      <div className="flex flex-row items-center justify-between">
-                        <p className="tracking-tight text-sm font-normal">Total Cookie</p>
-                      </div>
-                      <div className="">
-                        <p className="text-2xl font-bold">
-                          {domainList.length} <span className="text-xl">sites</span>
-                        </p>
-                        <p className="text-xs text-muted-foreground">{totalCookieItem} cookie items</p>
-                      </div>
+                <div className=" mx-4 w-1/3 bg-primary/10 mb-4 rounded-xl border text-card-foreground shadow">
+                  <div className="p-3">
+                    <div className="flex flex-row items-center justify-between">
+                      <p className="tracking-tight text-sm font-normal">Total Cookie</p>
+                    </div>
+                    <div className="">
+                      <p className="text-2xl font-bold">
+                        {domainList.length} <span className="text-xl">sites</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">{totalCookieItem} cookie items</p>
                     </div>
                   </div>
-                ) : null}
+                </div>
               </div>
               <div className="px-4">
                 <SearchInput onEnter={handleSearch} />

@@ -1,6 +1,6 @@
 import { useCookieAction } from '@sync-your-cookie/shared';
 import type { Cookie } from '@sync-your-cookie/storage/lib/cookieStorage';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { CookieItem } from './../index';
 import { useSelected } from './useSelected';
@@ -16,6 +16,11 @@ export const useAction = (cookie: Cookie) => {
     cookieList,
     renderKeyValue,
   } = useSelected(cookie, currentSearchStr);
+
+  useEffect(() => {
+    setCurrentSearchStr('');
+  }, [selectedDomain]);
+
   const cookieAction = useCookieAction(selectedDomain, toast);
   const handleDelete = async (cookie: CookieItem) => {
     try {
