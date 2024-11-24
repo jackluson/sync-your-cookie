@@ -89,7 +89,6 @@ export const mergeAndWriteMultipleDomainCookies = async (
     ...(oldCookieMap.domainCookieMap || {}),
   };
   for (const { domain, cookies } of domainCookies) {
-    console.log('domain, cookies', domain, cookies);
     newDomainCookieMap[domain] = {
       updateTime: Date.now(),
       createTime: oldCookieMap.domainCookieMap?.[domain]?.createTime || Date.now(),
@@ -110,7 +109,7 @@ export const removeAndWriteCookies = async (
   cloudflareAccountInfo: AccountInfo,
   domain: string,
   oldCookieMap: ICookiesMap = {},
-  name?: string,
+  id?: string,
 ): Promise<[WriteResponse, ICookiesMap]> => {
   await check(cloudflareAccountInfo);
   const cookiesMap: ICookiesMap = {
@@ -121,13 +120,52 @@ export const removeAndWriteCookies = async (
     },
   };
   if (cookiesMap.domainCookieMap) {
-    if (name !== undefined) {
+    if (id !== undefined) {
       if (cookiesMap.domainCookieMap[domain]?.cookies) {
+        const oldLength = cookiesMap.domainCookieMap[domain]?.cookies?.length || 0;
         cookiesMap.domainCookieMap[domain].cookies =
-          cookiesMap.domainCookieMap[domain].cookies?.filter(cookie => cookie.name !== name) || [];
+          cookiesMap.domainCookieMap[domain].cookies?.filter(cookie => `${cookie.domain}_${cookie.name}` !== id) || [];
+        const newLength = cookiesMap.domainCookieMap[domain]?.cookies?.length || 0;
+        if (oldLength === newLength) {
+          throw new Error(`${id}: cookie not found`);
+        }
       }
     } else {
       delete cookiesMap.domainCookieMap[domain];
+    }
+  }
+
+  const res = await writeCookiesMap(cloudflareAccountInfo, cookiesMap);
+  return [res, cookiesMap];
+};
+
+export const editAndWriteCookies = async (
+  cloudflareAccountInfo: AccountInfo,
+  host: string,
+  oldCookieMap: ICookiesMap = {},
+  oldItem: ICookie,
+  newItem: ICookie,
+): Promise<[WriteResponse, ICookiesMap]> => {
+  await check(cloudflareAccountInfo);
+  const cookiesMap: ICookiesMap = {
+    updateTime: Date.now(),
+    createTime: oldCookieMap?.createTime || Date.now(),
+    domainCookieMap: {
+      ...(oldCookieMap.domainCookieMap || {}),
+    },
+  };
+  if (cookiesMap.domainCookieMap) {
+    const cookieLength = cookiesMap.domainCookieMap[host]?.cookies?.length || 0;
+    for (let i = 0; i < cookieLength; i++) {
+      const cookieItem = cookiesMap.domainCookieMap[host]?.cookies?.[i];
+      if (cookieItem?.name === oldItem.name && cookieItem?.domain === oldItem.domain) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (cookiesMap.domainCookieMap[host].cookies as any)[i] = {
+          ...cookieItem,
+          ...newItem,
+        };
+        break;
+      }
     }
   }
 

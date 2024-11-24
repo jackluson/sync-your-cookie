@@ -16,7 +16,7 @@ export function debounce<T = unknown>(func: (...args: T[]) => void, timeout = 30
 export function checkCloudflareResponse(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   res: WriteResponse | Error | any,
-  scene: 'push' | 'pull' | 'remove' | 'delete',
+  scene: 'push' | 'pull' | 'remove' | 'delete' | 'edit',
   callback: (response?: SendResponse) => void,
 ) {
   if ((res as WriteResponse)?.success) {
@@ -31,9 +31,10 @@ export function checkCloudflareResponse(
         result: res,
       });
     } else {
-      const defaultErrMsg = `${scene} fail, please try again.`;
-      console.log(scene, 'fail res:', res, typeof res);
-      callback({ isOk: false, msg: res?.message || defaultErrMsg, result: res });
+      const defaultErrMsg = res?.message?.toLowerCase().includes?.(scene)
+        ? res?.message
+        : `${scene} fail, please try again.`;
+      callback({ isOk: false, msg: defaultErrMsg, result: res });
     }
   }
 }

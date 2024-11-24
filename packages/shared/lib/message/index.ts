@@ -1,8 +1,12 @@
+import { ICookie } from '@sync-your-cookie/protobuf';
+
+export type { ICookie };
 export enum MessageType {
   PushCookie = 'PushCookie',
   PullCookie = 'PullCookie',
   RemoveCookie = 'RemoveCookie',
   RemoveCookieItem = 'RemoveCookieItem',
+  EditCookieItem = 'EditCookieItem',
 }
 
 export enum MessageErrorCode {
@@ -22,13 +26,19 @@ export type RemoveCookieMessagePayload = {
 
 export type RemoveCookieItemMessagePayload = {
   domain: string;
-  name: string;
+  id: string;
 };
 
 export type PullCookieMessagePayload = {
   domain: string;
   activeTabUrl: string;
   reload: boolean;
+};
+
+export type EditCookieItemMessagePayload = {
+  domain: string;
+  oldItem: ICookie;
+  newItem: ICookie;
 };
 
 export type MessageMap = {
@@ -47,6 +57,10 @@ export type MessageMap = {
   [MessageType.RemoveCookieItem]: {
     type: MessageType.RemoveCookieItem;
     payload: RemoveCookieItemMessagePayload;
+  };
+  [MessageType.EditCookieItem]: {
+    type: MessageType.EditCookieItem;
+    payload: EditCookieItemMessagePayload;
   };
 };
 
@@ -100,6 +114,14 @@ export function pullCookieUsingMessage(payload: PullCookieMessagePayload) {
 
 export function removeCookieItemUsingMessage(payload: RemoveCookieItemMessagePayload) {
   const sendType = MessageType.RemoveCookieItem;
+  return sendMessage<typeof sendType>({
+    payload,
+    type: sendType,
+  });
+}
+
+export function editCookieItemUsingMessage(payload: EditCookieItemMessagePayload) {
+  const sendType = MessageType.EditCookieItem;
   return sendMessage<typeof sendType>({
     payload,
     type: sendType,

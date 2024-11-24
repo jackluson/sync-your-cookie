@@ -9,4 +9,7 @@ export * from './label';
 export * from './sonner';
 export * from './switch';
 // export * from './table';
+export * from './alert-dialog';
+export * from './popover';
 export * from './tooltip';
+

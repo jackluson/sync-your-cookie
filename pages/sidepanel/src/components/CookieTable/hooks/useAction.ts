@@ -7,8 +7,15 @@ import { useSelected } from './useSelected';
 
 export const useAction = (cookie: Cookie) => {
   const [loading, setLoading] = useState(false);
-
-  const { selectedDomain, showCookiesColumns, setSelectedDomain, cookieList } = useSelected(cookie);
+  const [currentSearchStr, setCurrentSearchStr] = useState('');
+  const {
+    loading: loadingWithSelected,
+    selectedDomain,
+    showCookiesColumns,
+    setSelectedDomain,
+    cookieList,
+    renderKeyValue,
+  } = useSelected(cookie, currentSearchStr);
   const cookieAction = useCookieAction(selectedDomain, toast);
   const handleDelete = async (cookie: CookieItem) => {
     try {
@@ -38,34 +45,38 @@ export const useAction = (cookie: Cookie) => {
   };
 
   const handleViewCookies = async (domain: string) => {
-    console.log('domain', domain);
     setSelectedDomain(domain);
-    console.log('cookie', cookie);
   };
 
   const handleBack = () => {
+    setCurrentSearchStr('');
     setSelectedDomain('');
   };
 
-  const handleCopy = (domain: string) => {
+  const handleCopy = (domain: string, isJSON: boolean = false) => {
     const cookies = cookie.domainCookieMap?.[domain]?.cookies || [];
     if (cookies.length === 0) {
       toast.warning('no cookie to copy, check again.');
       return;
     }
-    const pairs = [];
-    for (const ck of cookies) {
-      if (ck.value) {
-        const pair = `${ck.name}=${ck.value}`;
-        pairs.push(pair);
-      }
-    }
-    const joinPairStr = pairs.join('; ');
     if (!navigator.clipboard) {
       toast.warning('please check clipboard permission settings before copy ');
       return;
     }
-    navigator?.clipboard?.writeText(joinPairStr).then(
+    let copyText = '';
+    if (isJSON) {
+      copyText = JSON.stringify(cookies, undefined, 2);
+    } else {
+      const pairs = [];
+      for (const ck of cookies) {
+        if (ck.value) {
+          const pair = `${ck.name}=${ck.value}`;
+          pairs.push(pair);
+        }
+      }
+      copyText = pairs.join('; ');
+    }
+    navigator?.clipboard?.writeText(copyText).then(
       () => {
         toast.success('Copy success');
       },
@@ -76,19 +87,35 @@ export const useAction = (cookie: Cookie) => {
     );
   };
 
+  const handleSearch = (val: string) => {
+    setCurrentSearchStr(val);
+  };
+
   return {
     handleDelete,
     handlePull,
     handlePush,
     handleViewCookies,
-    loading,
+    loading: loading || loadingWithSelected,
     selectedDomain,
     setSelectedDomain,
     handleBack,
     showCookiesColumns,
     cookieAction,
     handleCopy,
+    currentSearchStr,
     // handlePush,
-    cookieList,
+    handleSearch,
+    renderKeyValue,
+    cookieList: cookieList.filter(item => {
+      if (currentSearchStr.trim()) {
+        return (
+          item.domain.includes(currentSearchStr) ||
+          item.name.includes(currentSearchStr) ||
+          item.value.includes(currentSearchStr)
+        );
+      }
+      return true;
+    }),
   };
 };

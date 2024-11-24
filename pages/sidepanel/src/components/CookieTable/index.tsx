@@ -16,6 +16,7 @@ import {
 import {
   ArrowUpRight,
   ChevronLeft,
+  ClipboardList,
   CloudDownload,
   CloudUpload,
   Copy,
@@ -27,10 +28,9 @@ import {
 
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
-
 import type { ColumnDef } from '@sync-your-cookie/ui';
 import { useAction } from './hooks/useAction';
-
+import { SearchInput } from './SearchInput';
 export type CookieItem = {
   id: string;
   host: string;
@@ -43,27 +43,6 @@ export type CookieItem = {
 const CookieTable = () => {
   const domainConfig = useStorageSuspense(domainConfigStorage);
   const cookieMap = useStorageSuspense(cookieStorage);
-  let domainList = [];
-  let totalCookieItem = 0;
-  for (const [key, value] of Object.entries(cookieMap?.domainCookieMap || {})) {
-    const config = domainConfig.domainMap[key];
-    domainList.push({
-      id: key,
-      host: key,
-      sourceUrl: config.sourceUrl,
-      favIconUrl: config.favIconUrl,
-      list: value.cookies,
-      autoPush: config?.autoPush ?? false,
-      autoPull: config?.autoPull ?? false,
-      createTime: value.createTime,
-    });
-    if (value.cookies?.length) {
-      totalCookieItem += value.cookies.length;
-    }
-  }
-  domainList = domainList.sort((a, b) => {
-    return b.createTime - a.createTime;
-  });
 
   const {
     showCookiesColumns,
@@ -78,7 +57,32 @@ const CookieTable = () => {
     handlePull,
     handleCopy,
     handleViewCookies,
+    handleSearch,
+    currentSearchStr,
   } = useAction(cookieMap);
+  let domainList = [];
+  let totalCookieItem = 0;
+  for (const [key, value] of Object.entries(cookieMap?.domainCookieMap || {})) {
+    const config = domainConfig.domainMap[key];
+    // if (!selectedDomain || !key.includes(currentSearchStr)) continue;
+    if (!selectedDomain && currentSearchStr.trim() && !key.includes(currentSearchStr.trim())) continue;
+    if (value.cookies?.length) {
+      totalCookieItem += value.cookies.length;
+    }
+    domainList.push({
+      id: key,
+      host: key,
+      sourceUrl: config.sourceUrl,
+      favIconUrl: config.favIconUrl,
+      list: value.cookies,
+      autoPush: config?.autoPush ?? false,
+      autoPull: config?.autoPull ?? false,
+      createTime: value.createTime,
+    });
+  }
+  domainList = domainList.sort((a, b) => {
+    return b.createTime - a.createTime;
+  });
 
   const columns: ColumnDef<CookieItem>[] = [
     {
@@ -182,6 +186,8 @@ const CookieTable = () => {
         const sourceUrl = row.original.sourceUrl;
         const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'http:';
         const href = `${protocol}//${row.original.host}`;
+        const disabled = itemConfig.pushing || cookieAction.pushing;
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -199,7 +205,7 @@ const CookieTable = () => {
 
               <DropdownMenuItem
                 className="cursor-pointer"
-                disabled={itemConfig.pushing || cookieAction.pushing}
+                disabled={disabled}
                 onClick={() => {
                   handlePush(row.original);
                 }}>
@@ -240,6 +246,14 @@ const CookieTable = () => {
                 <Copy size={16} className="mr-2 h-4 w-4" />
                 Copy
               </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => {
+                  handleCopy(row.original.host, true);
+                }}>
+                <ClipboardList size={16} className="mr-2 h-4 w-4" />
+                Copy With JSON
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 disabled={domainConfig.pushing}
@@ -258,6 +272,10 @@ const CookieTable = () => {
       },
     },
   ];
+  const selectedRow = domainConfig.domainMap[selectedDomain];
+  const sourceUrl = selectedRow?.sourceUrl;
+  const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'https:';
+  const href = `${protocol}//${selectedDomain}`;
   return (
     <div className="h-screen flex flex-col">
       <div className="space-y-4 p-4 ">
@@ -267,47 +285,66 @@ const CookieTable = () => {
         </div>
       </div>
       <div className="h-0 flex-1 overflow-auto">
-        {selectedDomain ? (
-          <div className="flex flex-col h-full ">
-            <div className="flex items-center px-4 mb-4 ">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-7 w-7 mr-2"
-                onClick={() => {
-                  handleBack();
-                }}>
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Back</span>
-              </Button>
-              <h2 className="text-xl font-semibold">{selectedDomain}</h2>
-            </div>
-            <div className="flex-1 overflow-auto">
-              <DataTable columns={showCookiesColumns} data={cookieList} />
-            </div>
-          </div>
-        ) : (
-          <Spinner show={loading}>
-            <div>
-              {domainList.length > 0 ? (
-                <div className=" mx-4 w-1/3 mb-4 rounded-xl border bg-card text-card-foreground shadow">
-                  <div className="p-3">
-                    <div className="flex flex-row items-center justify-between">
-                      <p className="tracking-tight text-sm font-normal">Total Cookie</p>
-                    </div>
-                    <div className="">
-                      <p className="text-2xl font-bold">
-                        {domainList.length} <span className="text-xl">sites</span>
-                      </p>
-                      <p className="text-xs text-muted-foreground">{totalCookieItem} cookie items</p>
+        <Spinner show={loading}>
+          {selectedDomain ? (
+            <>
+              <div className="flex flex-col h-full ">
+                <div className="flex items-center px-4 mb-4 ">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-7 w-7 mr-2"
+                    onClick={() => {
+                      handleBack();
+                    }}>
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="sr-only">Back</span>
+                  </Button>
+                  <a
+                    href={href}
+                    target="_blank"
+                    className=" flex text-xl items-center font-semibold hover:underline "
+                    rel="noreferrer">
+                    {selectedRow?.favIconUrl ? <Image src={selectedRow?.favIconUrl} /> : null}
+                    {selectedDomain}
+                  </a>
+                </div>
+                <div className="mb-1 px-4">
+                  <SearchInput onEnter={handleSearch} />
+                </div>
+                <div className="flex-1 pl-4 pr-2 mt-4 overflow-auto">
+                  <DataTable columns={showCookiesColumns} data={cookieList} />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col h-full">
+              <div>
+                {domainList.length > 0 ? (
+                  <div className=" mx-4 w-1/3 bg-primary/10 mb-4 rounded-xl border text-card-foreground shadow">
+                    <div className="p-3">
+                      <div className="flex flex-row items-center justify-between">
+                        <p className="tracking-tight text-sm font-normal">Total Cookie</p>
+                      </div>
+                      <div className="">
+                        <p className="text-2xl font-bold">
+                          {domainList.length} <span className="text-xl">sites</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">{totalCookieItem} cookie items</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : null}
+                ) : null}
+              </div>
+              <div className="px-4">
+                <SearchInput onEnter={handleSearch} />
+              </div>
+              <div className="flex-1 overflow-auto my-4 pl-4 pr-1">
+                <DataTable columns={columns} data={domainList} />
+              </div>
             </div>
-            <DataTable columns={columns} data={domainList} />
-          </Spinner>
-        )}
+          )}
+        </Spinner>
       </div>
     </div>
   );
