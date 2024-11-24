@@ -22,11 +22,15 @@ export function checkCloudflareResponse(
   if ((res as WriteResponse)?.success) {
     callback({ isOk: true, msg: `${scene} success` });
   } else {
-    const isAccountError = res?.errors?.length && res.errors[0].code === ErrorCode.NotFoundRoute;
+    const cloudFlareErrors = [ErrorCode.NotFoundRoute, ErrorCode.NamespaceIdError, ErrorCode.AuthenicationError];
+    const isAccountError = res?.errors?.length && cloudFlareErrors.includes(res.errors[0].code);
     if (isAccountError) {
       callback({
         isOk: false,
-        msg: 'cloudflare account info is incorrect.',
+        msg:
+          res.errors[0].code === ErrorCode.NamespaceIdError
+            ? 'cloudflare namespace Id info is incorrect.'
+            : 'cloudflare account info is incorrect.',
         code: MessageErrorCode.CloudflareNotFoundRoute,
         result: res,
       });
