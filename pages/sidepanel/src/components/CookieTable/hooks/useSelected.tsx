@@ -56,10 +56,16 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
     setSelectedRow(null);
   };
 
-  const handleSave = async () => {
-    console.log(inputRowRef.current, selectedRow);
-    handleEditItem(selectedRow!, inputRowRef.current!);
+  const handleSave = async (isSet: boolean = false) => {
+    const prevSelectedRow = selectedRow;
     setSelectedRow(null);
+    if (JSON.stringify(inputRowRef.current) !== JSON.stringify(prevSelectedRow)) {
+      await handleEditItem(prevSelectedRow!, inputRowRef.current!);
+    }
+    if (isSet && inputRowRef.current) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      handleSet(inputRowRef.current as CookieShowItem);
+    }
   };
 
   const renderKeyValue = (value: string, key?: string) => {
@@ -203,7 +209,7 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
                     <Button disabled={loading} onClick={() => handleSave()} size="sm" className="ml-2">
                       Save
                     </Button>
-                    <Button disabled={loading} size="sm" className="ml-2">
+                    <Button onClick={() => handleSave(true)} disabled={loading} size="sm" className="ml-2">
                       Save And Set
                     </Button>
                   </div>
@@ -329,13 +335,13 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
                 <Trash2 size={16} className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>
-              <DropdownMenuItem
+              {/* <DropdownMenuItem
                 disabled={disabled}
                 className="cursor-pointer"
                 onClick={() => handleDelete(row.original)}>
                 <Trash2 size={16} className="mr-2 h-4 w-4" />
                 Delete And Set
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </DropdownMenuContent>
           </DropdownMenu>
         );
