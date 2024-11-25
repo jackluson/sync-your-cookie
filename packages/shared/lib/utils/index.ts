@@ -34,7 +34,7 @@ export function checkCloudflareResponse(
       const defaultErrMsg = res?.message?.toLowerCase().includes?.(scene)
         ? res?.message
         : `${scene} fail, please try again.`;
-      callback({ isOk: false, msg: defaultErrMsg, result: res });
+      callback({ isOk: false, code: res?.code, msg: defaultErrMsg, result: res });
     }
   }
 }

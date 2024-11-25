@@ -14,8 +14,11 @@ import { initSubscribe } from './subscribe';
 const init = async () => {
   try {
     await initListen();
+    console.log('initListen finish');
     await initSubscribe(); // await state reset finish
+    console.log('initSubscribe finish');
     await pullCookies(true);
+    console.log('init pullCookies finish');
   } catch (error) {
     console.log('init-->error', error);
   }
