@@ -31,9 +31,8 @@ export function checkCloudflareResponse(
         result: res,
       });
     } else {
-      const defaultErrMsg = res?.message?.toLowerCase().includes?.(scene)
-        ? res?.message
-        : `${scene} fail, please try again.`;
+      const defaultErrMsg =
+        res?.message?.toLowerCase().includes?.(scene) || res?.code ? res?.message : `${scene} fail, please try again.`;
       callback({ isOk: false, code: res?.code, msg: defaultErrMsg, result: res });
     }
   }
