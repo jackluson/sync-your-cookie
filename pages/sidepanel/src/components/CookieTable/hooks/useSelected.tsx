@@ -3,7 +3,6 @@ import { Cookie } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import {
   Button,
-  cn,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -14,6 +13,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  cn,
   type ColumnDef,
 } from '@sync-your-cookie/ui';
 
@@ -26,14 +26,14 @@ export type CookieShowItem = {
   domain: string;
   name: string;
   value: string;
-  expirationDate?: number;
-  hostOnly?: boolean;
-  httpOnly?: boolean;
-  path?: string;
-  sameSite?: string;
-  secure?: boolean;
-  session?: boolean;
-  storeId?: string;
+  expirationDate?: number | null;
+  hostOnly?: boolean | null;
+  httpOnly?: boolean | null;
+  path?: string | null;
+  sameSite?: string | null;
+  secure?: boolean | null;
+  session?: boolean | null;
+  storeId?: string | null;
 };
 
 export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
