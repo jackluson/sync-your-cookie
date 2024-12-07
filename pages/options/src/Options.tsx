@@ -76,7 +76,7 @@ const Options = () => {
                     value={token}
                     onChange={handleTokenInput}
                     className="w-full mb-2"
-                    type="text"
+                    type="password"
                     placeholder="please input your cloudflare token "
                     required
                   />
@@ -98,12 +98,12 @@ const Options = () => {
                 <div className="grid gap-2">
                   <div className="flex justify-between items-center ">
                     <Label htmlFor="namespaceId">Namespace ID</Label>
-                    {namespaceId ? null : (
+                    {/* {namespaceId ? null : (
                       <div className="text-center ml-16 text-sm">
                         Don’t have an ID yet?
                         <span className=" cursor-pointer underline ml-2">Create</span>
                       </div>
-                    )}
+                    )} */}
                   </div>
                   <Input
                     id="namespaceId"
