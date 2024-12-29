@@ -1,6 +1,6 @@
 <div align="center">
 <img src="chrome-extension/public/icon-128.png" alt="logo"/>
-<h1> Sync your cookie to <br/>Cloudflare</h1>
+<h1> Sync your cookie to Your Cloudflare</h1>
 
 ![](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![](https://img.shields.io/badge/Typescript-3178C6?style=flat-square&logo=typescript&logoColor=white)
@@ -36,3 +36,8 @@ Cookie Sync Popup Page
 Cookie Manager Sidebar Panel
 
 <img width="600" src="./screenshots/panel.png" alt="cookie manager sidebar panel"/>
+
+
+### Privacy Policy
+
+Please refer to [Privacy Policy](./private-policy.md) for more information.
