@@ -19,7 +19,7 @@ import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigS
 type HandleCallback = (response?: SendResponse) => void;
 
 const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCallback) => {
-  const { sourceUrl, host, favIconUrl } = payload;
+  const { sourceUrl, host, favIconUrl } = payload || {};
   try {
     await check();
     await domainConfigStorage.updateItem(host, {

@@ -71,8 +71,8 @@ const CookieTable = () => {
     domainList.push({
       id: key,
       host: key,
-      sourceUrl: config.sourceUrl,
-      favIconUrl: config.favIconUrl,
+      sourceUrl: config?.sourceUrl,
+      favIconUrl: config?.favIconUrl,
       list: value.cookies,
       autoPush: config?.autoPush ?? false,
       autoPull: config?.autoPull ?? false,

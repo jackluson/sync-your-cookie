@@ -225,7 +225,7 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
   const handleSet = async (item: CookieShowItem) => {
     const domainCnf = await domainConfigStorage.get();
     const itemDomainCnf = domainCnf.domainMap[selectedDomain];
-    const sourceUrl = itemDomainCnf.sourceUrl;
+    const sourceUrl = itemDomainCnf?.sourceUrl;
     const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'http:';
     const itemHost = item.domain.startsWith('.') ? item.domain.slice(1) : item.domain;
     const href = `${protocol}//${itemHost || selectedDomain}`;
