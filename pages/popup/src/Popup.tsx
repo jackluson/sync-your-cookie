@@ -30,8 +30,13 @@ const Popup = () => {
         if (activeTab.url && activeTab.url.startsWith('http')) {
           setFavIconUrl(activeTab?.favIconUrl || '');
           setActiveTabUrl(activeTab.url);
-          const [domain, tempPort] = await extractDomainAndPort(activeTab.url, false);
-          setDomain(domain + `${tempPort ? ':' + tempPort : ''}`);
+          if (activeTab.url.includes('www.')) {
+            const urlObj = new URL(activeTab.url);
+            setDomain(urlObj.hostname + `${urlObj.port ? ':' + urlObj.port : ''}`);
+          } else {
+            const [domain, tempPort] = await extractDomainAndPort(activeTab.url, false);
+            setDomain(domain + `${tempPort ? ':' + tempPort : ''}`);
+          }
         }
       }
     });
