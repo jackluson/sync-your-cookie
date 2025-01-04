@@ -47,8 +47,7 @@ function addProtocol(uri: string) {
   return uri.startsWith('http') ? uri : `http://${uri}`;
 }
 
-export async function extractDomainAndPort(url: string): Promise<[string, string]> {
-  console.log('url', url);
+export async function extractDomainAndPort(url: string, isRemoveWWW = true): Promise<[string, string]> {
   let urlObj: URL;
   try {
     const maybeValidUrl = addProtocol(url);
@@ -58,7 +57,10 @@ export async function extractDomainAndPort(url: string): Promise<[string, string
   }
   let domain = urlObj.hostname;
   const port = urlObj.port;
-  domain = domain.replace('http://', '').replace('https://', '').replace('www.', '');
+  domain = domain.replace('http://', '').replace('https://', '');
+  if (isRemoveWWW) {
+    domain = domain.replace('www.', '');
+  }
   // match ip address
   if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(domain)) {
     return [domain, port];

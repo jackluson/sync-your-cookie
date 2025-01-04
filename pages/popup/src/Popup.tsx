@@ -30,7 +30,7 @@ const Popup = () => {
         if (activeTab.url && activeTab.url.startsWith('http')) {
           setFavIconUrl(activeTab?.favIconUrl || '');
           setActiveTabUrl(activeTab.url);
-          const [domain, tempPort] = await extractDomainAndPort(activeTab.url);
+          const [domain, tempPort] = await extractDomainAndPort(activeTab.url, false);
           setDomain(domain + `${tempPort ? ':' + tempPort : ''}`);
         }
       }
