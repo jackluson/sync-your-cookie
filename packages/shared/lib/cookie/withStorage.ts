@@ -60,7 +60,8 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
     const cookiesPromiseList: Promise<unknown>[] = [];
 
     for (const cookie of cookieDetails) {
-      if (cookie.domain?.includes(host)) {
+      const removeWWWHost = host.replace('www.', '');
+      if (cookie.domain?.includes(removeWWWHost)) {
         let url = activeTabUrl;
         if (cookie.domain) {
           const urlObj = new URL(activeTabUrl);
@@ -97,6 +98,9 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
         });
         cookiesPromiseList.push(promise);
       }
+    }
+    if (cookiesPromiseList.length === 0) {
+      throw new Error('No cookies to pull, push first please');
     }
     // reload window after set cookies
     // await new Promise(resolve => {
