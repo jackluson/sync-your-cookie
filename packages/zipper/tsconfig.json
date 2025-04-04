@@ -1,0 +1,10 @@
+{
+  "extends": "@sync-your-cookie/tsconfig/utils",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "dist",
+    "module": "esnext",
+    "target": "esnext"
+  },
+  "include": ["index.mts", "lib"]
+}
