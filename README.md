@@ -14,6 +14,9 @@
 
 `Sync your cookie` is a chrome extension that helps you to sync your cookie to Cloudflare. It's a useful tool for web developers to share cookies between different devices. 
 
+### Install
+[Sync Your Cookie](https://chromewebstore.google.com/detail/sync-your-cookie/bcegpckmgklcpcapnbigfdadedcneopf)
+
 
 ### Features
 
