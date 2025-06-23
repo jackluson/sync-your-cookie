@@ -27,6 +27,9 @@ export const readCookiesMapWithStatus = async (cloudflareInfo: AccountInfo) => {
 
 export const pullCookies = async (isInit = false): Promise<Cookie> => {
   const cloudflareInfo = await cloudflareStorage.get();
+  if (isInit && (!cloudflareInfo.accountId || !cloudflareInfo.namespaceId || !cloudflareInfo.token)) {
+    return {};
+  }
   try {
     const domainConfig = await domainConfigStorage.get();
     if (domainConfig.pulling) {
