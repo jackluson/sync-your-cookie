@@ -107,36 +107,36 @@ const handleEditItem = async (domain: string, oldItem: ICookie, newItem: ICookie
     checkCloudflareResponse(err, 'edit', callback);
   }
 };
-
-export const initListen = async () => {
-  function handleMessage(
-    message: Message,
-    sender: chrome.runtime.MessageSender,
-    callback: (response?: SendResponse) => void,
-  ) {
-    const type = message.type;
-    switch (type) {
-      case MessageType.PushCookie:
-        handlePush(message.payload, callback);
-        break;
-      case MessageType.PullCookie:
-        // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-non-null-asserted-optional-chain
-        const activeTabUrl = message.payload.activeTabUrl || sender.tab?.url!;
-        handlePull(activeTabUrl!, message.payload.domain, message.payload.reload, callback);
-        break;
-      case MessageType.RemoveCookie:
-        handleRemove(message.payload.domain, callback);
-        break;
-      case MessageType.RemoveCookieItem:
-        handleRemoveItem(message.payload.domain, message.payload.id, callback);
-        break;
-      case MessageType.EditCookieItem:
-        handleEditItem(message.payload.domain, message.payload.oldItem, message.payload.newItem, callback);
-        break;
-      default:
-        break;
-    }
-    return true;
+function handleMessage(
+  message: Message,
+  sender: chrome.runtime.MessageSender,
+  callback: (response?: SendResponse) => void,
+) {
+  const type = message.type;
+  switch (type) {
+    case MessageType.PushCookie:
+      handlePush(message.payload, callback);
+      break;
+    case MessageType.PullCookie:
+      // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-non-null-asserted-optional-chain
+      const activeTabUrl = message.payload.activeTabUrl || sender.tab?.url!;
+      handlePull(activeTabUrl!, message.payload.domain, message.payload.reload, callback);
+      break;
+    case MessageType.RemoveCookie:
+      handleRemove(message.payload.domain, callback);
+      break;
+    case MessageType.RemoveCookieItem:
+      handleRemoveItem(message.payload.domain, message.payload.id, callback);
+      break;
+    case MessageType.EditCookieItem:
+      handleEditItem(message.payload.domain, message.payload.oldItem, message.payload.newItem, callback);
+      break;
+    default:
+      break;
   }
+  return true;
+}
+export const refreshListen = async () => {
+  chrome.runtime.onMessage.removeListener(handleMessage);
   chrome.runtime.onMessage.addListener(handleMessage);
 };

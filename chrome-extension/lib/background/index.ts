@@ -8,12 +8,12 @@ import {
   pushMultipleDomainCookies,
 } from '@sync-your-cookie/shared';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
-import { initListen } from './listen';
+import { refreshListen } from './listen';
 import { initSubscribe } from './subscribe';
 
 const init = async () => {
   try {
-    await initListen();
+    await refreshListen();
     console.log('initListen finish');
     await initSubscribe(); // await state reset finish
     console.log('initSubscribe finish');
@@ -111,7 +111,6 @@ let previousActiveTabList: chrome.tabs.Tab[] = [];
 chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
   // 1. current tab not exist in the tabMap
   // read changeInfo data and do something with it (like read the url)
-  console.log('tab', tab);
   if (changeInfo.status === 'loading' && changeInfo.url) {
     const domainConfig = await domainConfigStorage.get();
     let pullDomain = '';
@@ -127,7 +126,6 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
     if (needPull) {
       const allOpendTabs = await chrome.tabs.query({});
       const otherExistedTabs = allOpendTabs.filter(itemTab => tab.id !== itemTab.id);
-      console.log('otherExistedTabs', otherExistedTabs);
       for (const itemTab of otherExistedTabs) {
         if (itemTab.url && new URL(itemTab.url).host === new URL(changeInfo.url).host) {
           needPull = false;
@@ -137,7 +135,6 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
     }
 
     if (needPull) {
-      console.log('previousActiveTabList', previousActiveTabList);
       for (const itemTab of previousActiveTabList) {
         if (itemTab.url && new URL(itemTab.url).host === new URL(changeInfo.url).host) {
           needPull = false;
@@ -146,7 +143,6 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
       }
     }
     if (needPull) {
-      console.log('need to pullCookies', changeInfo);
       await pullAndSetCookies(changeInfo.url, pullDomain);
     }
     const allActiveTabs = await chrome.tabs.query({
@@ -176,4 +172,5 @@ chrome.tabs.onActivated.addListener(async function () {
     active: true,
   });
   previousActiveTabList = allActiveTabs;
+  refreshListen();
 });
