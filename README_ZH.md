@@ -30,8 +30,13 @@ Cookie 管理侧边栏面板
 
 <img width="600" src="./screenshots/panel.png" alt="cookie manager sidebar panel"/>
 
-### 使用
+### 使用指引
 
+[How to use](./how-to-use.md)
+
+### Privacy Policy
+
+Please refer to [Privacy Policy](./private-policy.md) for more information.
 
 
 
