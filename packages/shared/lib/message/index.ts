@@ -78,10 +78,27 @@ export type SendResponse = {
   code?: MessageErrorCode;
 };
 
-export function sendMessage<T extends MessageType>(message: Message<T>) {
+export function sendMessage<T extends MessageType>(message: Message<T>, isTab = false) {
+  if (isTab) {
+    return new Promise<SendResponse>((resolve, reject) => {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        if (tabs.length === 0) {
+          reject({ isOk: false, msg: 'No active tab found' } as SendResponse);
+          return;
+        }
+        chrome.tabs.sendMessage(tabs[0].id!, message, function (result) {
+          console.log('isTab', isTab, 'result->', result);
+          if (result?.isOk) {
+            resolve(result);
+          } else {
+            reject(result as SendResponse);
+          }
+        });
+      });
+    });
+  }
   return new Promise<SendResponse>((resolve, reject) => {
     chrome.runtime.sendMessage(message, function (result: SendResponse) {
-      console.log('result->', result);
       if (result?.isOk) {
         resolve(result);
       } else {
