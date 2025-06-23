@@ -41,6 +41,10 @@ Cookie Manager Sidebar Panel
 <img width="600" src="./screenshots/panel.png" alt="cookie manager sidebar panel"/>
 
 
+### Usage
+
+[How to use](./how-to-use.md)
+
 ### Privacy Policy
 
 Please refer to [Privacy Policy](./private-policy.md) for more information.
