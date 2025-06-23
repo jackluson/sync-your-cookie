@@ -37,9 +37,13 @@ export const readCookiesMap = async (cloudflareAccountInfo: AccountInfo): Promis
     cloudflareAccountInfo.namespaceId!,
     cloudflareAccountInfo.token!,
   );
-  const compressedBuffer = base64ToArrayBuffer(res);
-  const deMsg = await decodeCookiesMap(compressedBuffer);
-  return deMsg;
+  if (res) {
+    const compressedBuffer = base64ToArrayBuffer(res);
+    const deMsg = await decodeCookiesMap(compressedBuffer);
+    return deMsg;
+  } else {
+    return {};
+  }
 };
 
 export const writeCookiesMap = async (cloudflareAccountInfo: AccountInfo, cookiesMap: ICookiesMap = {}) => {
