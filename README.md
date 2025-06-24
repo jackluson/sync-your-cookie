@@ -40,6 +40,11 @@ Cookie Manager Sidebar Panel
 
 <img width="600" src="./screenshots/panel.png" alt="cookie manager sidebar panel"/>
 
+Cookie Detail
+
+<img width="600" src="./screenshots/panel_item.png" alt="cookie manager sidebar panel"/>
+
+
 
 ### Usage
 

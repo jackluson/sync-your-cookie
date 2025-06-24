@@ -30,6 +30,12 @@ Cookie 管理侧边栏面板
 
 <img width="600" src="./screenshots/panel.png" alt="cookie manager sidebar panel"/>
 
+Cookie 详情
+
+<img width="600" src="./screenshots/panel_item.png" alt="cookie manager sidebar panel"/>
+
+
+
 ### 使用指引
 
 [How to use](./how-to-use.md)
