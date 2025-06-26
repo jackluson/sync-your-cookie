@@ -12,8 +12,10 @@ import {
   ThemeDropdown,
   Toaster,
 } from '@sync-your-cookie/ui';
+import { SlidersVertical } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { SettingsPopover } from './components/SettingsPopover';
 
 const Options = () => {
   const cloudflareAccountInfo = useStorageSuspense(cloudflareStorage);
@@ -59,11 +61,18 @@ const Options = () => {
         />
         <div className="w-full">
           <Card className="mx-auto min-w-[400px] max-w-lg">
-            <CardHeader>
+            <CardHeader className="relative">
               <div className="flex justify-between">
                 <CardTitle className="text-xl">Settings</CardTitle>
               </div>
               <CardDescription>Enter your cloudflare account to store Cookie</CardDescription>
+              <SettingsPopover
+                trigger={
+                  <Button variant="secondary" size="icon" className="size-6 absolute right-4 top-4">
+                    <SlidersVertical size={18} />
+                  </Button>
+                }
+              />
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
