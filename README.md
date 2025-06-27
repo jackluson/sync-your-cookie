@@ -50,6 +50,11 @@ Cookie Detail
 
 [How to use](./how-to-use.md)
 
+### TODO
+
+- [ ] Custom Store Configure
+- [ ] More Cloud Platform (First github gist)
+
 ### Privacy Policy
 
 Please refer to [Privacy Policy](./private-policy.md) for more information.
