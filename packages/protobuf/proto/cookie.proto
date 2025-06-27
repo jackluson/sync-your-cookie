@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+message Cookie {
+  string domain = 1;
+  string name = 2;
+  string storeId = 3;
+  string value = 4;
+  bool session = 5;
+  bool hostOnly = 6;
+  float expirationDate = 7;
+  string path = 8;
+  bool httpOnly = 9;
+  bool secure = 10;
+  string sameSite = 11;
+}
+
+message DomainCookie {
+  int64 createTime = 1;
+  int64 updateTime = 2;
+  repeated Cookie cookies = 5;
+}
+
+message CookiesMap {
+  int64 createTime = 1;
+  int64 updateTime = 2;
+  map<string, DomainCookie> domainCookieMap = 5;
+}
