@@ -12,12 +12,13 @@ import {
   ThemeDropdown,
   Toaster,
 } from '@sync-your-cookie/ui';
+import { SlidersVertical } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { SettingsPopover } from './components/SettingsPopover';
 
 const Options = () => {
   const cloudflareAccountInfo = useStorageSuspense(cloudflareStorage);
-  console.log('cloudflareAccountInfo', cloudflareAccountInfo);
 
   const [token, setToken] = useState(cloudflareAccountInfo.token);
   const [accountId, setAccountId] = useState(cloudflareAccountInfo.accountId);
@@ -59,11 +60,18 @@ const Options = () => {
         />
         <div className="w-full">
           <Card className="mx-auto min-w-[400px] max-w-lg">
-            <CardHeader>
+            <CardHeader className="relative">
               <div className="flex justify-between">
                 <CardTitle className="text-xl">Settings</CardTitle>
               </div>
               <CardDescription>Enter your cloudflare account to store Cookie</CardDescription>
+              <SettingsPopover
+                trigger={
+                  <Button variant="secondary" size="icon" className="size-6 absolute right-4 top-4">
+                    <SlidersVertical size={18} />
+                  </Button>
+                }
+              />
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
@@ -98,6 +106,16 @@ const Options = () => {
                 <div className="grid gap-2">
                   <div className="flex justify-between items-center ">
                     <Label htmlFor="namespaceId">Namespace ID</Label>
+                    {namespaceId?.trim() && accountId?.trim() ? (
+                      <a
+                        href={`https://dash.cloudflare.com/${accountId.trim()}/workers/kv/namespaces/${namespaceId.trim()}`}
+                        target="_blank"
+                        className=" cursor-pointer underline ml-2"
+                        rel="noreferrer">
+                        Go to namespace
+                      </a>
+                    ) : null}
+
                     {/* {namespaceId ? null : (
                       <div className="text-center ml-16 text-sm">
                         Don’t have an ID yet?

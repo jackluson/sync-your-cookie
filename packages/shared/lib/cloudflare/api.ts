@@ -1,4 +1,4 @@
-const DEFAULT_KEY = 'sync-your-cookie';
+import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 export interface WriteResponse {
   success: boolean;
@@ -17,7 +17,8 @@ export interface WriteResponse {
  * @returns promise<res>
  */
 export const writeCloudflareKV = async (value: string, accountId: string, namespaceId: string, token: string) => {
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${DEFAULT_KEY}`;
+  const storageKey = settingsStorage.getSnapshot()?.storageKey;
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${storageKey}`;
   // const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/bulk`;
   // const payload = [
   //   {
@@ -44,7 +45,8 @@ export const writeCloudflareKV = async (value: string, accountId: string, namesp
  * @returns Promise<res>
  */
 export const readCloudflareKV = async (accountId: string, namespaceId: string, token: string) => {
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${DEFAULT_KEY}`;
+  const storageKey = settingsStorage.getSnapshot()?.storageKey;
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${storageKey}`;
   const options = {
     method: 'GET',
     headers: {
