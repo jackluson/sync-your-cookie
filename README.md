@@ -52,7 +52,7 @@ Cookie Detail
 
 ### TODO
 
-- [ ] Custom Store Configure
+- [x] Custom Store Configure
 - [ ] More Cloud Platform (First github gist)
 
 ### Privacy Policy
