@@ -19,7 +19,6 @@ import { SettingsPopover } from './components/SettingsPopover';
 
 const Options = () => {
   const cloudflareAccountInfo = useStorageSuspense(cloudflareStorage);
-  console.log('cloudflareAccountInfo', cloudflareAccountInfo);
 
   const [token, setToken] = useState(cloudflareAccountInfo.token);
   const [accountId, setAccountId] = useState(cloudflareAccountInfo.accountId);
@@ -107,6 +106,16 @@ const Options = () => {
                 <div className="grid gap-2">
                   <div className="flex justify-between items-center ">
                     <Label htmlFor="namespaceId">Namespace ID</Label>
+                    {namespaceId?.trim() && accountId?.trim() ? (
+                      <a
+                        href={`https://dash.cloudflare.com/${accountId.trim()}/workers/kv/namespaces/${namespaceId.trim()}`}
+                        target="_blank"
+                        className=" cursor-pointer underline ml-2"
+                        rel="noreferrer">
+                        Go to namespace
+                      </a>
+                    ) : null}
+
                     {/* {namespaceId ? null : (
                       <div className="text-center ml-16 text-sm">
                         Don’t have an ID yet?

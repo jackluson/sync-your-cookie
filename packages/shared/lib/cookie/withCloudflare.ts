@@ -1,4 +1,5 @@
 import { cloudflareStorage, type AccountInfo } from '@sync-your-cookie/storage/lib/cloudflareStorage';
+import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 import { readCloudflareKV, writeCloudflareKV, WriteResponse } from '../cloudflare/api';
 
@@ -38,20 +39,37 @@ export const readCookiesMap = async (cloudflareAccountInfo: AccountInfo): Promis
     cloudflareAccountInfo.token!,
   );
   if (res) {
-    const compressedBuffer = base64ToArrayBuffer(res);
-    const deMsg = await decodeCookiesMap(compressedBuffer);
-    return deMsg;
+    try {
+      const protobufEncoding = settingsStorage.getSnapshot()?.protobufEncoding;
+      if (protobufEncoding) {
+        const compressedBuffer = base64ToArrayBuffer(res);
+        const deMsg = await decodeCookiesMap(compressedBuffer);
+        return deMsg;
+      } else {
+        return JSON.parse(res);
+      }
+    } catch (error) {
+      console.log('decode error', error);
+      return {};
+    }
   } else {
     return {};
   }
 };
 
 export const writeCookiesMap = async (cloudflareAccountInfo: AccountInfo, cookiesMap: ICookiesMap = {}) => {
-  const buffered = await encodeCookiesMap(cookiesMap);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const base64Str = arrayBufferToBase64(buffered as any);
+  const protobufEncoding = settingsStorage.getSnapshot()?.protobufEncoding;
+  let encodingStr = '';
+  if (protobufEncoding) {
+    const buffered = await encodeCookiesMap(cookiesMap);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    encodingStr = arrayBufferToBase64(buffered as any);
+  } else {
+    encodingStr = JSON.stringify(cookiesMap);
+    console.log('cookiesMap', cookiesMap);
+  }
   const res = await writeCloudflareKV(
-    base64Str,
+    encodingStr,
     cloudflareAccountInfo.accountId!,
     cloudflareAccountInfo.namespaceId!,
     cloudflareAccountInfo.token!,

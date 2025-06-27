@@ -6,6 +6,7 @@ export interface ISettings {
 }
 const key = 'settings-storage-key';
 const cacheStorageMap = new Map();
+export const defaultKey = 'sync-your-cookie';
 
 const initStorage = (): BaseStorage<ISettings> => {
   if (cacheStorageMap.has(key)) {
@@ -14,7 +15,7 @@ const initStorage = (): BaseStorage<ISettings> => {
   const storage = createStorage<ISettings>(
     key,
     {
-      storageKey: 'sync-your-cookie',
+      storageKey: defaultKey,
       protobufEncoding: true,
     },
     {
