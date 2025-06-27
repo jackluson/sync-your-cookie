@@ -13,7 +13,7 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
       <PopoverContent className="w-80">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <h3 className="leading-none font-medium text-base">Store Settings</h3>
+            <h3 className="leading-none font-medium text-base">Storage Settings</h3>
             <p className="text-muted-foreground text-sm">Set to how to store in cloudflare KV.</p>
           </div>
           <div className="gap-2">
