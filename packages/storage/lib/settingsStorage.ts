@@ -1,6 +1,7 @@
 import { BaseStorage, createStorage, StorageType } from './base';
 
 export interface ISettings {
+  storageKeyList: string[];
   storageKey?: string;
   protobufEncoding?: boolean;
 }
@@ -15,6 +16,7 @@ const initStorage = (): BaseStorage<ISettings> => {
   const storage = createStorage<ISettings>(
     key,
     {
+      storageKeyList: [defaultKey],
       storageKey: defaultKey,
       protobufEncoding: true,
     },
@@ -30,12 +32,12 @@ const initStorage = (): BaseStorage<ISettings> => {
 const storage = initStorage();
 
 type TSettingsStorage = BaseStorage<ISettings> & {
-  update: (updateInfo: ISettings) => Promise<void>;
+  update: (updateInfo: Partial<ISettings>) => Promise<void>;
 };
 
 export const settingsStorage: TSettingsStorage = {
   ...storage,
-  update: async (updateInfo: ISettings) => {
+  update: async (updateInfo: Partial<ISettings>) => {
     await storage.set(currentInfo => {
       return { ...currentInfo, ...updateInfo };
     });

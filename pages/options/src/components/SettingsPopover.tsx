@@ -1,8 +1,9 @@
 import { useStorageSuspense } from '@sync-your-cookie/shared';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { defaultKey, settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
-import { Input, Label, Popover, PopoverContent, PopoverTrigger, Switch } from '@sync-your-cookie/ui';
+import { Label, Popover, PopoverContent, PopoverTrigger, Switch } from '@sync-your-cookie/ui';
 import React, { useState } from 'react';
+import { StorageSelect } from './StorageSelect';
 interface SettingsPopover {
   trigger: React.ReactNode;
 }
@@ -10,6 +11,7 @@ interface SettingsPopover {
 export function SettingsPopover({ trigger }: SettingsPopover) {
   const settingsInfo = useStorageSuspense(settingsStorage);
   const [storageKey, setStorageKey] = useState(settingsInfo.storageKey);
+  const [selectOpen, setSelectOpen] = useState(false);
 
   const handleCheckChange = (checked: boolean) => {
     settingsStorage.update({
@@ -27,6 +29,8 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   };
 
   const handleOpenChange = (open: boolean) => {
+    if (selectOpen) return;
+    console.log('popover open', open);
     if (open === false && (settingsInfo.storageKey !== storageKey || !storageKey)) {
       console.log('open', open);
       settingsStorage.update({
@@ -37,10 +41,15 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
     }
   };
 
+  const handleSelectOpenChange = (open: boolean) => {
+    console.log('select open', open);
+    setSelectOpen(open);
+  };
+
   return (
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent className="w-80">
+      <PopoverContent className="w-[320px]">
         <div className="grid gap-4">
           <div className="space-y-2">
             <h3 className="leading-none font-medium text-base">Storage Settings</h3>
@@ -51,13 +60,14 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
               <Label className="w-[116px] block text-right" htmlFor="storage-key">
                 Storage Key
               </Label>
-              <Input
+              {/* <Input
                 onChange={handleKeyInputChange}
                 id="storage-key"
                 value={storageKey}
                 className="h-8 flex-1"
                 placeholder={defaultKey}
-              />
+              /> */}
+              <StorageSelect options={settingsInfo.storageKeyList} open={selectOpen} onOpenChange={handleSelectOpenChange} value={settingsInfo.storageKey || ''} />
             </div>
             <div className="flex items-center gap-4">
               <Label className="whitespace-nowrap block w-[116px] text-right" htmlFor="encoding">
