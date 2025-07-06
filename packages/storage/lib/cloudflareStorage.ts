@@ -16,7 +16,7 @@ const initStorage = (): BaseStorage<AccountInfo> => {
     key,
     {},
     {
-      storageType: StorageType.Local,
+      storageType: StorageType.Sync,
       liveUpdate: true,
     },
   );

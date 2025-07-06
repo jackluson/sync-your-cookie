@@ -1,14 +1,15 @@
 import { useStorageSuspense } from '@sync-your-cookie/shared';
+import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { defaultKey, settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 import { Input, Label, Popover, PopoverContent, PopoverTrigger, Switch } from '@sync-your-cookie/ui';
-import React from 'react';
-
+import React, { useState } from 'react';
 interface SettingsPopover {
   trigger: React.ReactNode;
 }
 
 export function SettingsPopover({ trigger }: SettingsPopover) {
   const settingsInfo = useStorageSuspense(settingsStorage);
+  const [storageKey, setStorageKey] = useState(settingsInfo.storageKey);
 
   const handleCheckChange = (checked: boolean) => {
     settingsStorage.update({
@@ -19,16 +20,20 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   const handleKeyInputChange: React.ChangeEventHandler<HTMLInputElement> = evt => {
     console.log('evt', evt);
     const value = evt.target.value.trim();
-    settingsStorage.update({
-      storageKey: value,
-    });
+    setStorageKey(value);
+    // settingsStorage.update({
+    //   storageKey: value,
+    // });
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (open === false && !settingsInfo.storageKey) {
+    if (open === false && (settingsInfo.storageKey !== storageKey || !storageKey)) {
+      console.log('open', open);
       settingsStorage.update({
-        storageKey: defaultKey,
+        storageKey: storageKey || defaultKey,
       });
+      setStorageKey(storageKey || defaultKey);
+      domainConfigStorage.resetState();
     }
   };
 
@@ -49,7 +54,7 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
               <Input
                 onChange={handleKeyInputChange}
                 id="storage-key"
-                value={settingsInfo.storageKey}
+                value={storageKey}
                 className="h-8 flex-1"
                 placeholder={defaultKey}
               />

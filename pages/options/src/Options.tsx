@@ -12,7 +12,7 @@ import {
   ThemeDropdown,
   Toaster,
 } from '@sync-your-cookie/ui';
-import { SlidersVertical } from 'lucide-react';
+import { Eye, EyeOff, SlidersVertical } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { SettingsPopover } from './components/SettingsPopover';
@@ -23,6 +23,7 @@ const Options = () => {
   const [token, setToken] = useState(cloudflareAccountInfo.token);
   const [accountId, setAccountId] = useState(cloudflareAccountInfo.accountId);
   const [namespaceId, setNamespaceId] = useState(cloudflareAccountInfo.namespaceId);
+  const [openEye, setOpenEye] = useState(false);
 
   const { setTheme } = useTheme();
 
@@ -45,6 +46,10 @@ const Options = () => {
       token: token,
     });
     toast.success('Save Success');
+  };
+
+  const handleToggleEye = () => {
+    setOpenEye(!openEye);
   };
 
   return (
@@ -78,13 +83,25 @@ const Options = () => {
                 <div className="grid gap-2">
                   <div className="flex justify-between items-center ">
                     <Label htmlFor="token">Authorization Token</Label>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleToggleEye()}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          handleToggleEye();
+                        }
+                      }}
+                      className="cursor-pointer">
+                      {openEye ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </span>
                   </div>
                   <Input
                     id="token"
                     value={token}
                     onChange={handleTokenInput}
                     className="w-full mb-2"
-                    type="password"
+                    type={openEye ? 'text' : 'password'}
                     placeholder="please input your cloudflare token "
                     required
                   />

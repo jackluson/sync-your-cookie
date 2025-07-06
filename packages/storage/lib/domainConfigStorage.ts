@@ -31,7 +31,7 @@ const initStorage = (): BaseStorage<DomainConfig> => {
       domainMap: {},
     },
     {
-      storageType: StorageType.Local,
+      storageType: StorageType.Session,
       liveUpdate: true,
       // onLoad: onLoad,
     },
@@ -102,7 +102,6 @@ export const domainConfigStorage = {
 
   togglePushingState: async (domain: string, checked?: boolean) => {
     return await storage.set(currentInfo => {
-      console.log('currentInfo', currentInfo);
       const domainMap = currentInfo?.domainMap || {};
       domainMap[domain] = {
         ...domainMap[domain],
