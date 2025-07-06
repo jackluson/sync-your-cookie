@@ -1,6 +1,6 @@
 {
   "name": "@sync-your-cookie/zipper",
-  "version": "0.4.3",
+  "version": "0.8.0",
   "description": "chrome extension - zipper",
   "type": "module",
   "private": true,
@@ -15,7 +15,7 @@
     "clean:node_modules": "pnpx rimraf node_modules",
     "clean:turbo": "rimraf .turbo",
     "clean": "pnpm clean:bundle && pnpm clean:node_modules && pnpm clean:turbo",
-    "zip": "node dist/index.mjs",
+    "zip": "npm run ready && node dist/index.mjs",
     "lint": "eslint .",
     "ready": "tsc -b",
     "lint:fix": "pnpm lint --fix",
@@ -24,9 +24,7 @@
   },
   "devDependencies": {
     "@sync-your-cookie/tsconfig": "workspace:*",
-    "fflate": "^0.8.2"
-  },
-  "dependencies": {
+    "fflate": "^0.8.2",
     "fast-glob": "^3.3.3"
   }
 }

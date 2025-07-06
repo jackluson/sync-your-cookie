@@ -15,6 +15,7 @@
     "dev:apps": "cross-env __DEV__=true turbo run dev --filter=./pages/* --filter=chrome-extension --filter=@sync-your-cookie/hmr --concurrency 15",
     "dev": "cross-env __DEV__=true turbo run dev --concurrency 25",
     "dev:firefox": "cross-env __DEV__=true __FIREFOX__=true turbo dev --concurrency 20",
+    "zip": "pnpm build && pnpm -F zipper zip",
     "test": "turbo test",
     "type-check": "turbo type-check",
     "lint": "turbo lint",
