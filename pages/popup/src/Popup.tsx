@@ -102,7 +102,7 @@ const Popup = () => {
                 disabled={!activeTabUrl || isPushingOrPulling}
                 className=" w-[160px] mr-2 justify-start"
                 onClick={() => handlePull(activeTabUrl)}>
-                {domainItemConfig.pulling ? (
+                {domainItemConfig?.pulling ? (
                   <RotateCw size={16} className="mr-2 animate-spin" />
                 ) : (
                   <CloudDownload size={16} className="mr-2" />
