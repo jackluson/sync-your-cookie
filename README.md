@@ -53,7 +53,7 @@ Cookie Detail
 ### TODO
 
 - [x] Custom Store Configure
-- [ ] Multi-account synchronization based on Storage-key
+- [x] Multi-account synchronization based on Storage-key
 - [ ] Sync LocalStorage
 - [ ] More Cloud Platform (First github gist)
 
