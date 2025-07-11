@@ -8,58 +8,65 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@sync-your-cookie/ui';
-import { useEffect, useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import { CircleX, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface StorageSelectProps extends React.ComponentProps<typeof Select> {
   options: string[]
   value: string
   onAdd: (key:string)=> void
+  onRemove: (key: string) => void;
 }
 
 export function StorageSelect(props: StorageSelectProps) {
-  const { value, options } = props;
-  console.log("options", options);
+  const { value, onRemove, options, onValueChange, ...rest } = props;
+  const [inputValue, setInputValue] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
-  const handleRemove = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.nativeEvent.preventDefault();
-    e.nativeEvent.stopPropagation();
-    e.nativeEvent.stopImmediatePropagation();
-    return false;
-  };
-  useEffect(() => {
-    if (containerRef.current) {
-      console.log("containerRef", containerRef);
-      containerRef.current.addEventListener('click', (evt) => {
-        console.log("evt", evt);
-      })
+
+  const handleAdd = () => {
+    const newKey = inputValue.trim().replaceAll(/\s+/g, '');
+    if(options.includes(newKey)) {
+      console.warn('Key already exists or is empty');
+      toast.error('Key already exists');
+      return;
     }
-  }, [])
+    props.onAdd(newKey);
+    setInputValue('');
+  }
+
+  const handleRemoveKey = (key: string) => {
+    // Handle removing a storage key
+    console.log('Remove storage key', key);
+    onRemove(key);
+  };
   return (
     <div ref={containerRef}>
-      <Select onValueChange={(evt) => {
-        console.log('evt', evt)
-      }} {...props}>
+      <Select value={value} onValueChange={(val) => {
+        if(val === value) {
+          return;
+        }
+        onValueChange?.(val);
+
+      }} {...rest}>
         <SelectTrigger className="w-[160px] scale-90 ">
           <SelectValue className="ml-[-8px]" placeholder="Select a Storage Key" />
         </SelectTrigger>
         <SelectPortal >
           <SelectContent onCloseAutoFocus={(evt) => evt.preventDefault()} >
             {
-              options.map((item) => {
+              options.map((item, index) => {
                 return <div key={item} className='relative group'>
                   <SelectItem className=" w-full" value={item}>
-                      <span>{item}</span>
+                      <span className='cursor-pointer'>{item}</span>
                   </SelectItem>
                   {
-                    options.length > 1 ? <span
+                    options.length > 1 && item !== value ? <span
                       ref={containerRef}
-                      onClick={(e) => handleRemove(e)}
+                      onClick={(e) => handleRemoveKey(item)}
                       role="button"
-                      tabIndex={0}
+                      tabIndex={index}
                       className="absolute top-2 invisible right-[6px] cursor-pointer group-hover:visible">
                       <CircleX size={18} />
                     </span> : null
@@ -68,12 +75,10 @@ export function StorageSelect(props: StorageSelectProps) {
                 </div>
               })
             }
-            <SelectItem value="banana">Banana</SelectItem>
-
 
             <div className="flex mx-2 items-center mt-2 gap-2">
-              <Input className="h-8 " />
-              <Button className="ml-2" size="sm" type="submit" variant="outline">
+              <Input value={inputValue} onChange={(event)=> {setInputValue(event?.target.value.replaceAll(/\s+/g, ''))}} className="h-8 " />
+              <Button disabled={!inputValue.replaceAll(/\s+/g, '')} onClick={()=> handleAdd()} className="ml-0 scale-90" size="sm" type="submit" variant="outline">
                 <Plus size={18} />
                 Add
               </Button>

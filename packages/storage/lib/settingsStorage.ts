@@ -21,7 +21,7 @@ const initStorage = (): BaseStorage<ISettings> => {
       protobufEncoding: true,
     },
     {
-      storageType: StorageType.Local,
+      storageType: StorageType.Sync,
       liveUpdate: true,
     },
   );
@@ -33,6 +33,9 @@ const storage = initStorage();
 
 type TSettingsStorage = BaseStorage<ISettings> & {
   update: (updateInfo: Partial<ISettings>) => Promise<void>;
+  addStorageKey: (key: string) => Promise<void>;
+  removeStorageKey: (key: string) => Promise<void>;
+  // getStorageKeyList: () => Promise<string[]>;
 };
 
 export const settingsStorage: TSettingsStorage = {
@@ -40,6 +43,30 @@ export const settingsStorage: TSettingsStorage = {
   update: async (updateInfo: Partial<ISettings>) => {
     await storage.set(currentInfo => {
       return { ...currentInfo, ...updateInfo };
+    });
+  },
+
+  addStorageKey: async (key: string) => {
+    await storage.set(currentInfo => {
+      if (currentInfo.storageKeyList.includes(key)) {
+        return currentInfo;
+      }
+      return {
+        ...currentInfo,
+        storageKeyList: [...currentInfo.storageKeyList, key],
+      };
+    });
+  },
+
+  removeStorageKey: async (key: string) => {
+    await storage.set(currentInfo => {
+      if (!currentInfo.storageKeyList.includes(key)) {
+        return currentInfo;
+      }
+      return {
+        ...currentInfo,
+        storageKeyList: currentInfo.storageKeyList.filter(item => item !== key),
+      };
     });
   },
 };

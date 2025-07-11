@@ -1,8 +1,11 @@
 import { useStorageSuspense } from '@sync-your-cookie/shared';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
-import { defaultKey, settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
+import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
+
+import { pullCookies } from '@sync-your-cookie/shared';
+import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { Label, Popover, PopoverContent, PopoverTrigger, Switch } from '@sync-your-cookie/ui';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StorageSelect } from './StorageSelect';
 interface SettingsPopover {
   trigger: React.ReactNode;
@@ -10,7 +13,6 @@ interface SettingsPopover {
 
 export function SettingsPopover({ trigger }: SettingsPopover) {
   const settingsInfo = useStorageSuspense(settingsStorage);
-  const [storageKey, setStorageKey] = useState(settingsInfo.storageKey);
   const [selectOpen, setSelectOpen] = useState(false);
 
   const handleCheckChange = (checked: boolean) => {
@@ -19,31 +21,51 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
     });
   };
 
-  const handleKeyInputChange: React.ChangeEventHandler<HTMLInputElement> = evt => {
-    console.log('evt', evt);
-    const value = evt.target.value.trim();
-    setStorageKey(value);
-    // settingsStorage.update({
-    //   storageKey: value,
-    // });
+  const handleValueChange = (value: string) => {
+    settingsStorage.update({
+      storageKey: value,
+    });
   };
+
+  const reset = async () => {
+     await domainConfigStorage.resetState();
+    await cookieStorage.reset();
+    await pullCookies();
+  }
+
+  useEffect(()=> {
+     reset();
+  }, [settingsInfo.storageKey])
 
   const handleOpenChange = (open: boolean) => {
     if (selectOpen) return;
     console.log('popover open', open);
-    if (open === false && (settingsInfo.storageKey !== storageKey || !storageKey)) {
-      console.log('open', open);
-      settingsStorage.update({
-        storageKey: storageKey || defaultKey,
-      });
-      setStorageKey(storageKey || defaultKey);
-      domainConfigStorage.resetState();
-    }
+    // if (open === false && (settingsInfo.storageKey !== storageKey || !storageKey)) {
+    //   console.log('open', open);
+    //   settingsStorage.update({
+    //     storageKey: storageKey || defaultKey,
+    //   });
+    //   domainConfigStorage.resetState();
+    // }
   };
 
   const handleSelectOpenChange = (open: boolean) => {
     console.log('select open', open);
     setSelectOpen(open);
+  };
+
+  const handleAddStorageKey = async (key: string) => {
+    await settingsStorage.addStorageKey(key);
+  };
+
+  const handleRemoveStorageKey = async (key: string) => {
+    // if (settingsInfo.storageKey === key) {
+    //   settingsStorage.update({
+    //     storageKey: defaultKey,
+    //   });
+    //   setStorageKey(defaultKey);
+    // }
+    await settingsStorage.removeStorageKey(key);
   };
 
   return (
@@ -67,7 +89,15 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
                 className="h-8 flex-1"
                 placeholder={defaultKey}
               /> */}
-              <StorageSelect options={settingsInfo.storageKeyList} open={selectOpen} onOpenChange={handleSelectOpenChange} value={settingsInfo.storageKey || ''} />
+              <StorageSelect
+                options={settingsInfo.storageKeyList}
+                open={selectOpen}
+                onOpenChange={handleSelectOpenChange}
+                value={settingsInfo.storageKey || ''}
+                onAdd={handleAddStorageKey}
+                onRemove={handleRemoveStorageKey}
+                onValueChange={handleValueChange}
+              />
             </div>
             <div className="flex items-center gap-4">
               <Label className="whitespace-nowrap block w-[116px] text-right" htmlFor="encoding">

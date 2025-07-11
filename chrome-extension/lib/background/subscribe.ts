@@ -1,6 +1,8 @@
 import { cloudflareStorage } from '@sync-your-cookie/storage/lib/cloudflareStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 
+import { pullCookies } from '@sync-your-cookie/shared';
+import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { clearBadge, setPullingBadge, setPushingAndPullingBadge, setPushingBadge } from './badge';
 
 export const initSubscribe = async () => {
@@ -20,5 +22,7 @@ export const initSubscribe = async () => {
 
   cloudflareStorage.subscribe(async () => {
     await domainConfigStorage.resetState();
+    await cookieStorage.reset();
+    await pullCookies();
   });
 };
