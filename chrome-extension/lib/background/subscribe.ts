@@ -24,5 +24,6 @@ export const initSubscribe = async () => {
     await domainConfigStorage.resetState();
     await cookieStorage.reset();
     await pullCookies();
+    console.log("reset finished");
   });
 };

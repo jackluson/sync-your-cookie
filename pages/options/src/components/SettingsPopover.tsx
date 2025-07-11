@@ -28,9 +28,10 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   };
 
   const reset = async () => {
-     await domainConfigStorage.resetState();
+    await domainConfigStorage.resetState();
     await cookieStorage.reset();
     await pullCookies();
+    console.log("reset finished");
   }
 
   useEffect(()=> {
