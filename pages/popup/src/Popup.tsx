@@ -1,11 +1,12 @@
 import { extractDomainAndPort, useTheme, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
 
 import { Button, Image, Spinner, Toaster } from '@sync-your-cookie/ui';
-import { CloudDownload, CloudUpload, Copyright, PanelRightOpen, RotateCw, Settings } from 'lucide-react';
+import { CloudDownload, CloudUpload, Copyright, PanelRightOpen, RotateCw, Settings, HardDrive } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AutoSwitch } from './components/AutoSwtich';
 import { useDomainConfig } from './hooks/useDomainConfig';
+import { useDomainLocalStorageConfig } from './hooks/useDomainLocalStorageConfig';
 
 const Popup = () => {
   const { theme } = useTheme();
@@ -23,6 +24,14 @@ const Popup = () => {
     handlePull,
   } = useDomainConfig();
 
+  const {
+    pushing: localStoragePushing,
+    domainItemConfig: localStorageDomainItemConfig,
+    handlePush: handleLocalStoragePush,
+    handlePull: handleLocalStoragePull,
+    setDomain: setLocalStorageDomain,
+  } = useDomainLocalStorageConfig();
+
   useEffect(() => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, async function (tabs) {
       if (tabs.length > 0) {
@@ -35,14 +44,16 @@ const Popup = () => {
             setDomain(urlObj.hostname + `${urlObj.port ? ':' + urlObj.port : ''}`);
           } else {
             const [domain, tempPort] = await extractDomainAndPort(activeTab.url);
-            setDomain(domain + `${tempPort ? ':' + tempPort : ''}`);
+            const domainWithPort = domain + `${tempPort ? ':' + tempPort : ''}`;
+            setDomain(domainWithPort);
+            setLocalStorageDomain(domainWithPort);
           }
         }
       }
     });
   }, []);
 
-  const isPushingOrPulling = domainItemConfig.pushing || domainItemConfig.pulling;
+  const isPushingOrPulling = domainItemConfig.pushing || domainItemConfig.pulling || localStorageDomainItemConfig.pushing || localStorageDomainItemConfig.pulling;
 
   return (
     <div className="flex flex-col items-center min-w-[400px] justify-center bg-background ">
@@ -115,6 +126,49 @@ const Popup = () => {
                 onChange={() => toggleAutoPullState(domain)}
                 id="autoPull"
                 value={!!domainItemConfig.autoPull}
+              />
+            </div>
+
+            <hr className="my-3 border-border/60" />
+            
+            <div className="flex items-center mb-2 ">
+              <Button
+                disabled={!activeTabUrl || isPushingOrPulling || localStoragePushing}
+                className=" mr-2 w-[160px] justify-start"
+                onClick={() => handleLocalStoragePush(domain, activeTabUrl, favIconUrl)}>
+                {localStorageDomainItemConfig.pushing ? (
+                  <RotateCw size={16} className="mr-2 animate-spin" />
+                ) : (
+                  <HardDrive size={16} className="mr-2" />
+                )}
+                Push localStorage
+              </Button>
+              <AutoSwitch
+                disabled={!activeTabUrl}
+                onChange={() => toggleAutoPushState(domain)}
+                id="autoLocalStoragePush"
+                value={!!localStorageDomainItemConfig.autoPush}
+              />
+            </div>
+
+            <div className="flex items-center mb-2 ">
+              <Button
+                disabled={!activeTabUrl || isPushingOrPulling}
+                className=" w-[160px] mr-2 justify-start"
+                onClick={() => handleLocalStoragePull(activeTabUrl)}>
+                {localStorageDomainItemConfig.pulling ? (
+                  <RotateCw size={16} className="mr-2 animate-spin" />
+                ) : (
+                  <HardDrive size={16} className="mr-2" />
+                )}
+                Pull localStorage
+              </Button>
+
+              <AutoSwitch
+                disabled={!activeTabUrl}
+                onChange={() => toggleAutoPullState(domain)}
+                id="autoLocalStoragePull"
+                value={!!localStorageDomainItemConfig.autoPull}
               />
             </div>
 

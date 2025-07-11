@@ -1,12 +1,17 @@
-import { ICookie } from '@sync-your-cookie/protobuf';
+import { ICookie, ILocalStorageItem } from '@sync-your-cookie/protobuf';
 
-export type { ICookie };
+export type { ICookie, ILocalStorageItem };
 export enum MessageType {
   PushCookie = 'PushCookie',
   PullCookie = 'PullCookie',
   RemoveCookie = 'RemoveCookie',
   RemoveCookieItem = 'RemoveCookieItem',
   EditCookieItem = 'EditCookieItem',
+  PushLocalStorage = 'PushLocalStorage',
+  PullLocalStorage = 'PullLocalStorage',
+  RemoveLocalStorage = 'RemoveLocalStorage',
+  RemoveLocalStorageItem = 'RemoveLocalStorageItem',
+  EditLocalStorageItem = 'EditLocalStorageItem',
 }
 
 export enum MessageErrorCode {
@@ -41,6 +46,33 @@ export type EditCookieItemMessagePayload = {
   newItem: ICookie;
 };
 
+export type PushLocalStorageMessagePayload = {
+  host: string;
+  sourceUrl?: string;
+  favIconUrl?: string;
+};
+
+export type RemoveLocalStorageMessagePayload = {
+  domain: string;
+};
+
+export type RemoveLocalStorageItemMessagePayload = {
+  domain: string;
+  key: string;
+};
+
+export type PullLocalStorageMessagePayload = {
+  domain: string;
+  activeTabUrl: string;
+  reload: boolean;
+};
+
+export type EditLocalStorageItemMessagePayload = {
+  domain: string;
+  oldItem: ILocalStorageItem;
+  newItem: ILocalStorageItem;
+};
+
 export type MessageMap = {
   [MessageType.PushCookie]: {
     type: MessageType.PushCookie;
@@ -61,6 +93,26 @@ export type MessageMap = {
   [MessageType.EditCookieItem]: {
     type: MessageType.EditCookieItem;
     payload: EditCookieItemMessagePayload;
+  };
+  [MessageType.PushLocalStorage]: {
+    type: MessageType.PushLocalStorage;
+    payload: PushLocalStorageMessagePayload;
+  };
+  [MessageType.RemoveLocalStorage]: {
+    type: MessageType.RemoveLocalStorage;
+    payload: RemoveLocalStorageMessagePayload;
+  };
+  [MessageType.PullLocalStorage]: {
+    type: MessageType.PullLocalStorage;
+    payload: PullLocalStorageMessagePayload;
+  };
+  [MessageType.RemoveLocalStorageItem]: {
+    type: MessageType.RemoveLocalStorageItem;
+    payload: RemoveLocalStorageItemMessagePayload;
+  };
+  [MessageType.EditLocalStorageItem]: {
+    type: MessageType.EditLocalStorageItem;
+    payload: EditLocalStorageItemMessagePayload;
   };
 };
 
@@ -139,6 +191,43 @@ export function removeCookieItemUsingMessage(payload: RemoveCookieItemMessagePay
 
 export function editCookieItemUsingMessage(payload: EditCookieItemMessagePayload) {
   const sendType = MessageType.EditCookieItem;
+  return sendMessage<typeof sendType>({
+    payload,
+    type: sendType,
+  });
+}
+
+export function pushLocalStorageUsingMessage(payload: PushLocalStorageMessagePayload) {
+  return sendMessage<MessageType.PushLocalStorage>({
+    payload,
+    type: MessageType.PushLocalStorage,
+  });
+}
+
+export function removeLocalStorageUsingMessage(payload: RemoveLocalStorageMessagePayload) {
+  return sendMessage<MessageType.RemoveLocalStorage>({
+    payload,
+    type: MessageType.RemoveLocalStorage,
+  });
+}
+
+export function pullLocalStorageUsingMessage(payload: PullLocalStorageMessagePayload) {
+  return sendMessage<MessageType.PullLocalStorage>({
+    payload,
+    type: MessageType.PullLocalStorage,
+  });
+}
+
+export function removeLocalStorageItemUsingMessage(payload: RemoveLocalStorageItemMessagePayload) {
+  const sendType = MessageType.RemoveLocalStorageItem;
+  return sendMessage<typeof sendType>({
+    payload,
+    type: sendType,
+  });
+}
+
+export function editLocalStorageItemUsingMessage(payload: EditLocalStorageItemMessagePayload) {
+  const sendType = MessageType.EditLocalStorageItem;
   return sendMessage<typeof sendType>({
     payload,
     type: sendType,

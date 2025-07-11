@@ -1,7 +1,7 @@
 import pako from 'pako';
 import { compress, decompress } from './../../utils/compress';
-import type { ICookiesMap } from './proto/cookie';
-import { CookiesMap } from './proto/cookie';
+import type { ICookiesMap, ILocalStorageMap } from './proto/cookie';
+import { CookiesMap, LocalStorageMap } from './proto/cookie';
 
 export const encodeCookiesMap = async (
   cookiesMap: ICookiesMap = {},
@@ -32,4 +32,32 @@ export const decodeCookiesMap = async (buffer: Uint8Array, isDeCompress: boolean
   return message;
 };
 
-export type { ICookie, ICookiesMap } from './proto/cookie';
+export const encodeLocalStorageMap = async (
+  localStorageMap: ILocalStorageMap = {},
+  isCompress: boolean = true,
+): Promise<Uint8Array> => {
+  const invalid = LocalStorageMap.verify(localStorageMap);
+  if (invalid) {
+    throw Error(invalid);
+  }
+
+  const message = LocalStorageMap.create(localStorageMap);
+  const buffer = LocalStorageMap.encode(message).finish();
+  if (isCompress) {
+    const compressedBuf = pako.deflate(buffer);
+    return await compress(compressedBuf);
+  }
+  return buffer;
+};
+
+export const decodeLocalStorageMap = async (buffer: Uint8Array, isDeCompress: boolean = true) => {
+  let buf = buffer;
+  if (isDeCompress) {
+    buf = await decompress(buf);
+    buf = pako.inflate(buf);
+  }
+  const message = LocalStorageMap.decode(buf);
+  return message;
+};
+
+export type { ICookie, ICookiesMap, ILocalStorageItem, IDomainLocalStorage, ILocalStorageMap } from './proto/cookie';

@@ -55,16 +55,37 @@ export const pullCookies = async (isInit = false): Promise<Cookie> => {
 };
 
 export const pullAndSetCookies = async (activeTabUrl: string, host: string, isReload = true): Promise<Cookie> => {
+  console.log('pullAndSetCookies called with:', { activeTabUrl, host, isReload });
   const cookieMap = await pullCookies();
+  console.log('Retrieved cookie map:', cookieMap);
+  
   const cookieDetails = cookieMap?.domainCookieMap?.[host]?.cookies || [];
+  console.log('Cookies for domain', host, ':', cookieDetails);
+  
   if (cookieDetails.length === 0) {
     throw new Error('No cookies to pull, push first please');
   } else {
     const cookiesPromiseList: Promise<unknown>[] = [];
 
     for (const cookie of cookieDetails) {
+      console.log('Processing cookie:', cookie);
       const removeWWWHost = host.replace('www.', '');
-      if (cookie.domain?.includes(removeWWWHost)) {
+      
+      // Improved domain matching logic
+      let shouldSetCookie = false;
+      if (cookie.domain) {
+        const cookieDomain = cookie.domain.startsWith('.') ? cookie.domain.slice(1) : cookie.domain;
+        shouldSetCookie = cookieDomain === removeWWWHost || 
+                         cookieDomain === host || 
+                         removeWWWHost.endsWith(cookieDomain) ||
+                         host.endsWith(cookieDomain);
+      } else {
+        shouldSetCookie = true;
+      }
+      
+      console.log('Should set cookie:', shouldSetCookie, 'for domain:', cookie.domain);
+      
+      if (shouldSetCookie) {
         let url = activeTabUrl;
         if (cookie.domain) {
           const urlObj = new URL(activeTabUrl);
@@ -72,46 +93,63 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
           const itemHost = cookie.domain.startsWith('.') ? cookie.domain.slice(1) : cookie.domain;
           url = `${protocol}//${itemHost}`;
         }
+        
         const cookieDetail: chrome.cookies.SetDetails = {
-          domain: cookie.domain,
-          name: cookie.name ?? undefined,
+          domain: cookie.domain || undefined,
+          name: cookie.name || undefined,
           url: url,
-          storeId: cookie.storeId ?? undefined,
-          value: cookie.value ?? undefined,
-          expirationDate: cookie.expirationDate ?? undefined,
-          path: cookie.path ?? undefined,
-          httpOnly: cookie.httpOnly ?? undefined,
-          secure: cookie.secure ?? undefined,
-          sameSite: (cookie.sameSite ?? undefined) as chrome.cookies.SameSiteStatus,
+          storeId: cookie.storeId || undefined,
+          value: cookie.value || undefined,
+          expirationDate: cookie.expirationDate || undefined,
+          path: cookie.path || undefined,
+          httpOnly: cookie.httpOnly || undefined,
+          secure: cookie.secure || undefined,
+          sameSite: (cookie.sameSite || undefined) as chrome.cookies.SameSiteStatus,
         };
+        
+        console.log('Setting cookie with details:', cookieDetail);
+        
         const promise = new Promise((resolve, reject) => {
-          try {
-            try {
-              chrome.cookies.set(cookieDetail, res => {
-                resolve(res);
-              });
-            } catch (error) {
-              console.error('cookie set error', cookieDetail, error);
-              reject(error);
+          chrome.cookies.set(cookieDetail, (result) => {
+            if (chrome.runtime.lastError) {
+              console.error('Chrome cookies.set error:', chrome.runtime.lastError.message, 'for cookie:', cookieDetail);
+              reject(new Error(chrome.runtime.lastError.message));
+            } else if (result) {
+              console.log('Successfully set cookie:', result);
+              resolve(result);
+            } else {
+              console.error('Failed to set cookie, no result returned for:', cookieDetail);
+              reject(new Error('Failed to set cookie'));
             }
-          } catch (error) {
-            console.error('set cookie error', cookieDetail, error);
-            reject(error);
-          }
+          });
         });
         cookiesPromiseList.push(promise);
       }
     }
+    
     if (cookiesPromiseList.length === 0) {
-      throw new Error('No cookies to pull, push first please');
+      throw new Error('No matching cookies to pull for this domain');
     }
-    // reload window after set cookies
-    // await new Promise(resolve => {
-    //   setTimeout(resolve, 5000);
-    // });
-    await Promise.allSettled(cookiesPromiseList);
+    
+    console.log('Setting', cookiesPromiseList.length, 'cookies...');
+    const results = await Promise.allSettled(cookiesPromiseList);
+    
+    // Log results
+    const successful = results.filter(r => r.status === 'fulfilled').length;
+    const failed = results.filter(r => r.status === 'rejected').length;
+    console.log('Cookie setting results:', { successful, failed });
+    
+    if (failed > 0) {
+      console.warn('Some cookies failed to set:', results.filter(r => r.status === 'rejected'));
+    }
+    
     if (isReload) {
-      await chrome.tabs.reload();
+      // Get the current active tab to reload
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0]?.id) {
+        console.log('Reloading tab:', tabs[0].id);
+        await chrome.tabs.reload(tabs[0].id);
+      }
     }
   }
   return cookieMap;
