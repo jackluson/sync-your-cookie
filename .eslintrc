@@ -30,7 +30,8 @@
   "rules": {
     "prettier/prettier": "error",
     "react/react-in-jsx-scope": "off",
-    "import/no-unresolved": "off"
+    "import/no-unresolved": "off",
+    "jsx-a11y/click-events-have-key-events": "warning"
   },
   "globals": {
     "chrome": "readonly"

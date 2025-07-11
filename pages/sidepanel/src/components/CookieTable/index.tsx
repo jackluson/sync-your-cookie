@@ -181,7 +181,7 @@ const CookieTable = () => {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const itemConfig = cookieAction.getDomainItemConfig(row.original.host);
+        const itemConfig = cookieAction.getDomainItemConfig(row.original.host) || {};
         const sourceUrl = row.original.sourceUrl;
         const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'http:';
         const href = `${protocol}//${row.original.host}`;

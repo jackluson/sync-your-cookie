@@ -309,7 +309,7 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const itemConfig = domainConfig.domainMap[selectedDomain];
+        const itemConfig = domainConfig.domainMap[selectedDomain] || {};
         const disabled = domainConfig.pushing || itemConfig.pulling || itemConfig.pushing;
         return (
           <DropdownMenu>

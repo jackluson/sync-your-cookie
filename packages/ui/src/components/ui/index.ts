@@ -13,3 +13,4 @@ export * from './alert-dialog';
 export * from './popover';
 export * from './tooltip';
 
+export * from './select';
