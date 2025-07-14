@@ -12,6 +12,8 @@ export enum MessageType {
   RemoveLocalStorage = 'RemoveLocalStorage',
   RemoveLocalStorageItem = 'RemoveLocalStorageItem',
   EditLocalStorageItem = 'EditLocalStorageItem',
+  PushAll = 'PushAll',
+  PullAll = 'PullAll',
 }
 
 export enum MessageErrorCode {
@@ -73,6 +75,18 @@ export type EditLocalStorageItemMessagePayload = {
   newItem: ILocalStorageItem;
 };
 
+export type PushAllMessagePayload = {
+  host: string;
+  sourceUrl?: string;
+  favIconUrl?: string;
+};
+
+export type PullAllMessagePayload = {
+  domain: string;
+  activeTabUrl: string;
+  reload: boolean;
+};
+
 export type MessageMap = {
   [MessageType.PushCookie]: {
     type: MessageType.PushCookie;
@@ -113,6 +127,14 @@ export type MessageMap = {
   [MessageType.EditLocalStorageItem]: {
     type: MessageType.EditLocalStorageItem;
     payload: EditLocalStorageItemMessagePayload;
+  };
+  [MessageType.PushAll]: {
+    type: MessageType.PushAll;
+    payload: PushAllMessagePayload;
+  };
+  [MessageType.PullAll]: {
+    type: MessageType.PullAll;
+    payload: PullAllMessagePayload;
   };
 };
 
@@ -231,5 +253,19 @@ export function editLocalStorageItemUsingMessage(payload: EditLocalStorageItemMe
   return sendMessage<typeof sendType>({
     payload,
     type: sendType,
+  });
+}
+
+export function pushAllUsingMessage(payload: PushAllMessagePayload) {
+  return sendMessage<MessageType.PushAll>({
+    payload,
+    type: MessageType.PushAll,
+  });
+}
+
+export function pullAllUsingMessage(payload: PullAllMessagePayload) {
+  return sendMessage<MessageType.PullAll>({
+    payload,
+    type: MessageType.PullAll,
   });
 }
