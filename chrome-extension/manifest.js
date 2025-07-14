@@ -44,6 +44,13 @@ const manifest = Object.assign(
       128: 'icon-128.png',
     },
     // devtools_page: 'devtools/index.html',
+    content_scripts: [
+      {
+        matches: ['<all_urls>'],
+        js: ['content-scripts/localStorage.js'],
+        run_at: 'document_start',
+      },
+    ],
     web_accessible_resources: [
       {
         resources: ['*.js', '*.css', '*.svg', 'icon-128.png', 'icon-34.png'],

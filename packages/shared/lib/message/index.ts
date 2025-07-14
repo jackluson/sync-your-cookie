@@ -1,12 +1,19 @@
-import { ICookie } from '@sync-your-cookie/protobuf';
+import { ICookie, ILocalStorageItem } from '@sync-your-cookie/protobuf';
 
-export type { ICookie };
+export type { ICookie, ILocalStorageItem };
 export enum MessageType {
   PushCookie = 'PushCookie',
   PullCookie = 'PullCookie',
   RemoveCookie = 'RemoveCookie',
   RemoveCookieItem = 'RemoveCookieItem',
   EditCookieItem = 'EditCookieItem',
+  PushLocalStorage = 'PushLocalStorage',
+  PullLocalStorage = 'PullLocalStorage',
+  RemoveLocalStorage = 'RemoveLocalStorage',
+  RemoveLocalStorageItem = 'RemoveLocalStorageItem',
+  EditLocalStorageItem = 'EditLocalStorageItem',
+  PushAll = 'PushAll',
+  PullAll = 'PullAll',
 }
 
 export enum MessageErrorCode {
@@ -41,6 +48,45 @@ export type EditCookieItemMessagePayload = {
   newItem: ICookie;
 };
 
+export type PushLocalStorageMessagePayload = {
+  host: string;
+  sourceUrl?: string;
+  favIconUrl?: string;
+};
+
+export type RemoveLocalStorageMessagePayload = {
+  domain: string;
+};
+
+export type RemoveLocalStorageItemMessagePayload = {
+  domain: string;
+  key: string;
+};
+
+export type PullLocalStorageMessagePayload = {
+  domain: string;
+  activeTabUrl: string;
+  reload: boolean;
+};
+
+export type EditLocalStorageItemMessagePayload = {
+  domain: string;
+  oldItem: ILocalStorageItem;
+  newItem: ILocalStorageItem;
+};
+
+export type PushAllMessagePayload = {
+  host: string;
+  sourceUrl?: string;
+  favIconUrl?: string;
+};
+
+export type PullAllMessagePayload = {
+  domain: string;
+  activeTabUrl: string;
+  reload: boolean;
+};
+
 export type MessageMap = {
   [MessageType.PushCookie]: {
     type: MessageType.PushCookie;
@@ -61,6 +107,34 @@ export type MessageMap = {
   [MessageType.EditCookieItem]: {
     type: MessageType.EditCookieItem;
     payload: EditCookieItemMessagePayload;
+  };
+  [MessageType.PushLocalStorage]: {
+    type: MessageType.PushLocalStorage;
+    payload: PushLocalStorageMessagePayload;
+  };
+  [MessageType.RemoveLocalStorage]: {
+    type: MessageType.RemoveLocalStorage;
+    payload: RemoveLocalStorageMessagePayload;
+  };
+  [MessageType.PullLocalStorage]: {
+    type: MessageType.PullLocalStorage;
+    payload: PullLocalStorageMessagePayload;
+  };
+  [MessageType.RemoveLocalStorageItem]: {
+    type: MessageType.RemoveLocalStorageItem;
+    payload: RemoveLocalStorageItemMessagePayload;
+  };
+  [MessageType.EditLocalStorageItem]: {
+    type: MessageType.EditLocalStorageItem;
+    payload: EditLocalStorageItemMessagePayload;
+  };
+  [MessageType.PushAll]: {
+    type: MessageType.PushAll;
+    payload: PushAllMessagePayload;
+  };
+  [MessageType.PullAll]: {
+    type: MessageType.PullAll;
+    payload: PullAllMessagePayload;
   };
 };
 
@@ -142,5 +216,56 @@ export function editCookieItemUsingMessage(payload: EditCookieItemMessagePayload
   return sendMessage<typeof sendType>({
     payload,
     type: sendType,
+  });
+}
+
+export function pushLocalStorageUsingMessage(payload: PushLocalStorageMessagePayload) {
+  return sendMessage<MessageType.PushLocalStorage>({
+    payload,
+    type: MessageType.PushLocalStorage,
+  });
+}
+
+export function removeLocalStorageUsingMessage(payload: RemoveLocalStorageMessagePayload) {
+  return sendMessage<MessageType.RemoveLocalStorage>({
+    payload,
+    type: MessageType.RemoveLocalStorage,
+  });
+}
+
+export function pullLocalStorageUsingMessage(payload: PullLocalStorageMessagePayload) {
+  return sendMessage<MessageType.PullLocalStorage>({
+    payload,
+    type: MessageType.PullLocalStorage,
+  });
+}
+
+export function removeLocalStorageItemUsingMessage(payload: RemoveLocalStorageItemMessagePayload) {
+  const sendType = MessageType.RemoveLocalStorageItem;
+  return sendMessage<typeof sendType>({
+    payload,
+    type: sendType,
+  });
+}
+
+export function editLocalStorageItemUsingMessage(payload: EditLocalStorageItemMessagePayload) {
+  const sendType = MessageType.EditLocalStorageItem;
+  return sendMessage<typeof sendType>({
+    payload,
+    type: sendType,
+  });
+}
+
+export function pushAllUsingMessage(payload: PushAllMessagePayload) {
+  return sendMessage<MessageType.PushAll>({
+    payload,
+    type: MessageType.PushAll,
+  });
+}
+
+export function pullAllUsingMessage(payload: PullAllMessagePayload) {
+  return sendMessage<MessageType.PullAll>({
+    payload,
+    type: MessageType.PullAll,
   });
 }
