@@ -1,5 +1,5 @@
 import { useStorageSuspense } from '@sync-your-cookie/shared';
-import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
+import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 import { pullCookies } from '@sync-your-cookie/shared';
@@ -28,7 +28,7 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   };
 
   const reset = async () => {
-    await domainConfigStorage.resetState();
+    await domainStatusStorage.resetState();
     await cookieStorage.reset();
     await pullCookies();
     console.log("reset finished");

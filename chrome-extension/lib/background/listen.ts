@@ -15,6 +15,7 @@ import {
 } from '@sync-your-cookie/shared';
 
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
+import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 
 type HandleCallback = (response?: SendResponse) => void;
 
@@ -23,9 +24,11 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
   try {
     await check();
     await domainConfigStorage.updateItem(host, {
-      pushing: true,
       sourceUrl: sourceUrl,
       favIconUrl,
+    });
+    await domainStatusStorage.updateItem(host, {
+      pushing: true,
     });
     const [domain] = await extractDomainAndPort(host);
     const cookies = await chrome.cookies.getAll({
@@ -42,21 +45,21 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
   } catch (err: any) {
     checkCloudflareResponse(err, 'push', callback);
   } finally {
-    await domainConfigStorage.togglePushingState(host, false);
+    await domainStatusStorage.togglePushingState(host, false);
   }
 };
 
 const handlePull = async (activeTabUrl: string, domain: string, isReload: boolean, callback: HandleCallback) => {
   try {
     await check();
-    await domainConfigStorage.togglePullingState(domain, true);
+    await domainStatusStorage.togglePullingState(domain, true);
     const cookieMap = await pullAndSetCookies(activeTabUrl, domain, isReload);
     callback({ isOk: true, msg: 'Pull success', result: cookieMap });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     checkCloudflareResponse(err, 'pull', callback);
   } finally {
-    await domainConfigStorage.togglePullingState(domain, false);
+    await domainStatusStorage.togglePullingState(domain, false);
   }
 };
 

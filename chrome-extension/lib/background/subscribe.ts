@@ -1,19 +1,19 @@
 import { cloudflareStorage } from '@sync-your-cookie/storage/lib/cloudflareStorage';
-import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
+import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 
 import { pullCookies } from '@sync-your-cookie/shared';
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { clearBadge, setPullingBadge, setPushingAndPullingBadge, setPushingBadge } from './badge';
 
 export const initSubscribe = async () => {
-  await domainConfigStorage.resetState();
-  domainConfigStorage.subscribe(async () => {
-    const domainConfig = await domainConfigStorage.get();
-    if (domainConfig?.pulling && domainConfig.pushing) {
+  await domainStatusStorage.resetState();
+  domainStatusStorage.subscribe(async () => {
+    const domainStatus = await domainStatusStorage.get();
+    if (domainStatus?.pulling && domainStatus.pushing) {
       setPushingAndPullingBadge();
-    } else if (domainConfig?.pushing) {
+    } else if (domainStatus?.pushing) {
       setPushingBadge();
-    } else if (domainConfig?.pulling) {
+    } else if (domainStatus?.pulling) {
       setPullingBadge();
     } else {
       clearBadge();
@@ -21,7 +21,7 @@ export const initSubscribe = async () => {
   });
 
   cloudflareStorage.subscribe(async () => {
-    await domainConfigStorage.resetState();
+    await domainStatusStorage.resetState();
     await cookieStorage.reset();
     await pullCookies();
     console.log("reset finished");

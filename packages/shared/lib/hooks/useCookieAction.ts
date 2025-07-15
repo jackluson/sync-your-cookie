@@ -5,6 +5,8 @@ import {
   removeCookieUsingMessage,
 } from '@lib/message';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
+import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
+
 import { toast as Toast } from 'sonner';
 import { useStorageSuspense } from './index';
 
@@ -27,6 +29,7 @@ export const catchHandler = (err: any, scene: 'push' | 'pull' | 'remove' | 'dele
 };
 
 export const useCookieAction = (host: string, toast: typeof Toast) => {
+  const domainStatus = useStorageSuspense(domainStatusStorage);
   const domainConfig = useStorageSuspense(domainConfigStorage);
 
   const handlePush = async (selectedHost = host, sourceUrl?: string, favIconUrl?: string) => {
@@ -88,16 +91,20 @@ export const useCookieAction = (host: string, toast: typeof Toast) => {
 
   return {
     // domainConfig: domainConfig as typeof domainConfig,
-    pulling: domainConfig.pulling,
-    pushing: domainConfig.pushing,
+    pulling: domainStatus.pulling,
+    pushing: domainStatus.pushing,
     domainItemConfig: domainConfig.domainMap[host] || {},
+    domainItemStatus: domainStatus.domainMap[host] || {},
     getDomainItemConfig: (selectedDomain: string) => {
       return domainConfig.domainMap[selectedDomain] || {};
     },
+    getDomainItemStatus: (selectedDomain: string) => {
+      return domainStatus.domainMap[selectedDomain] || {};
+    },
     toggleAutoPullState: domainConfigStorage.toggleAutoPullState,
     toggleAutoPushState: domainConfigStorage.toggleAutoPushState,
-    togglePullingState: domainConfigStorage.togglePullingState,
-    togglePushingState: domainConfigStorage.togglePushingState,
+    togglePullingState: domainStatusStorage.togglePullingState,
+    togglePushingState: domainStatusStorage.togglePushingState,
     handlePush,
     handlePull,
     handleRemove,

@@ -19,6 +19,7 @@ const Popup = () => {
     domain,
     setDomain,
     domainItemConfig,
+    domainItemStatus,
     handlePush,
     handlePull,
   } = useDomainConfig();
@@ -42,7 +43,7 @@ const Popup = () => {
     });
   }, []);
 
-  const isPushingOrPulling = domainItemConfig.pushing || domainItemConfig.pulling;
+  const isPushingOrPulling = domainItemStatus.pushing || domainItemStatus.pulling;
 
   return (
     <div className="flex flex-col items-center min-w-[400px] justify-center bg-background ">
@@ -82,7 +83,7 @@ const Popup = () => {
                 disabled={!activeTabUrl || isPushingOrPulling || pushing}
                 className=" mr-2 w-[160px] justify-start"
                 onClick={() => handlePush(domain, activeTabUrl, favIconUrl)}>
-                {domainItemConfig.pushing ? (
+                {domainItemStatus.pushing ? (
                   <RotateCw size={16} className="mr-2 animate-spin" />
                 ) : (
                   <CloudUpload size={16} className="mr-2" />
@@ -102,7 +103,7 @@ const Popup = () => {
                 disabled={!activeTabUrl || isPushingOrPulling}
                 className=" w-[160px] mr-2 justify-start"
                 onClick={() => handlePull(activeTabUrl)}>
-                {domainItemConfig?.pulling ? (
+                {domainItemStatus?.pulling ? (
                   <RotateCw size={16} className="mr-2 animate-spin" />
                 ) : (
                   <CloudDownload size={16} className="mr-2" />

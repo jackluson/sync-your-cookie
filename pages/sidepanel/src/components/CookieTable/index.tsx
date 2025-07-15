@@ -28,6 +28,8 @@ import {
 
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
+import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
+
 import type { ColumnDef } from '@sync-your-cookie/ui';
 import { useAction } from './hooks/useAction';
 import { SearchInput } from './SearchInput';
@@ -42,6 +44,8 @@ export type CookieItem = {
 
 const CookieTable = () => {
   const domainConfig = useStorageSuspense(domainConfigStorage);
+  const domainStatus = useStorageSuspense(domainStatusStorage);
+  
   const cookieMap = useStorageSuspense(cookieStorage);
 
   const {
@@ -181,11 +185,11 @@ const CookieTable = () => {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const itemConfig = cookieAction.getDomainItemConfig(row.original.host) || {};
+        const itemStatus = cookieAction.getDomainItemStatus(row.original.host) || {};
         const sourceUrl = row.original.sourceUrl;
         const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'http:';
         const href = `${protocol}//${row.original.host}`;
-        const disabled = itemConfig.pushing || cookieAction.pushing;
+        const disabled = itemStatus.pushing || cookieAction.pushing;
 
         return (
           <DropdownMenu>
@@ -208,7 +212,7 @@ const CookieTable = () => {
                 onClick={() => {
                   handlePush(row.original);
                 }}>
-                {itemConfig.pushing ? (
+                {itemStatus.pushing ? (
                   <RotateCw size={16} className=" h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <CloudUpload size={16} className="mr-2 h-4 w-4" />
@@ -217,11 +221,11 @@ const CookieTable = () => {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
-                disabled={itemConfig.pulling}
+                disabled={itemStatus.pulling}
                 onClick={() => {
                   handlePull(href, row.original);
                 }}>
-                {itemConfig.pulling ? (
+                {itemStatus.pulling ? (
                   <RotateCw size={16} className=" h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <CloudDownload size={16} className="mr-2 h-4 w-4" />
@@ -255,10 +259,10 @@ const CookieTable = () => {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                disabled={domainConfig.pushing}
+                disabled={domainStatus.pushing}
                 className="cursor-pointer"
                 onClick={() => handleDelete(row.original)}>
-                {itemConfig.pulling ? (
+                {itemStatus.pulling ? (
                   <RotateCw size={16} className=" h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Trash size={16} className="mr-2 h-4 w-4" />

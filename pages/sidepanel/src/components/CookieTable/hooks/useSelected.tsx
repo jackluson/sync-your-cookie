@@ -1,6 +1,8 @@
 import { useStorageSuspense } from '@sync-your-cookie/shared';
 import { Cookie } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
+import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
+
 import {
   Button,
   DropdownMenu,
@@ -38,7 +40,7 @@ export type CookieShowItem = {
 
 export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
   const [selectedDomain, setSelectedDomain] = useState('');
-  const domainConfig = useStorageSuspense(domainConfigStorage);
+  const domainStatus = useStorageSuspense(domainStatusStorage);
 
   const [selectedRow, setSelectedRow] = useState<CookieShowItem | null>(null);
   const inputRowRef = useRef<Partial<CookieShowItem>>({});
@@ -309,8 +311,8 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const itemConfig = domainConfig.domainMap[selectedDomain] || {};
-        const disabled = domainConfig.pushing || itemConfig.pulling || itemConfig.pushing;
+        const itemStatus = domainStatus.domainMap[selectedDomain] || {};
+        const disabled = domainStatus.pushing || itemStatus.pulling || itemStatus.pushing;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
