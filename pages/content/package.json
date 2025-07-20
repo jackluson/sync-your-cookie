@@ -1,0 +1,31 @@
+{
+  "name": "@sync-your-cookie/content-script",
+  "version": "0.3.3",
+  "description": "chrome extension - content script",
+  "private": true,
+  "sideEffects": true,
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "clean:node_modules": "pnpx rimraf node_modules",
+    "clean:turbo": "rimraf .turbo",
+    "clean": "pnpm clean:turbo && pnpm clean:node_modules",
+    "build": "vite build",
+    "dev": "vite build --mode development",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "pnpm lint --fix",
+    "prettier": "prettier . --write --ignore-path ../../.prettierignore",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sync-your-cookie/shared": "workspace:*",
+    "@sync-your-cookie/storage": "workspace:*",
+    "eventemitter3": "^5.0.1"
+  },
+  "devDependencies": {
+    "@sync-your-cookie/hmr": "workspace:*",
+    "@sync-your-cookie/tsconfig": "workspace:*",
+    "@sync-your-cookie/vite-config": "workspace:*"
+  }
+}

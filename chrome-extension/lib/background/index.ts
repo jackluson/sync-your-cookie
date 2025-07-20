@@ -87,6 +87,7 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
       uploadDomainCookies.push({
         domain: host,
         cookies,
+        localStorageItems: [],
       });
     }
     if (uploadDomainCookies.length) {

@@ -15,9 +15,9 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   const settingsInfo = useStorageSuspense(settingsStorage);
   const [selectOpen, setSelectOpen] = useState(false);
 
-  const handleCheckChange = (checked: boolean) => {
+  const handleCheckChange = (checked: boolean, checkedKey: 'protobufEncoding' | 'includeLocalStorage') => {
     settingsStorage.update({
-      protobufEncoding: checked,
+      [checkedKey]: checked,
     });
   };
 
@@ -72,7 +72,7 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   return (
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent className="w-[320px]">
+      <PopoverContent className="w-[328px]">
         <div className="grid gap-4">
           <div className="space-y-2">
             <h3 className="leading-none font-medium text-base">Storage Settings</h3>
@@ -80,7 +80,7 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
           </div>
           <div className="gap-2">
             <div className="flex items-center gap-4 mb-4">
-              <Label className="w-[116px] block text-right" htmlFor="storage-key">
+              <Label className="w-[136px] block text-right" htmlFor="storage-key">
                 Storage Key
               </Label>
               {/* <Input
@@ -100,11 +100,18 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
                 onValueChange={handleValueChange}
               />
             </div>
-            <div className="flex items-center gap-4">
-              <Label className="whitespace-nowrap block w-[116px] text-right" htmlFor="encoding">
+            <div className="flex items-center gap-4 mb-4">
+              <Label className="whitespace-nowrap block w-[136px] text-right" htmlFor="encoding">
                 Protobuf Encoding
               </Label>
-              <Switch onCheckedChange={handleCheckChange} checked={settingsInfo.protobufEncoding} id="encoding" />
+              <Switch onCheckedChange={(checked)=>handleCheckChange(checked, 'protobufEncoding')} checked={settingsInfo.protobufEncoding} id="encoding" />
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Label className="whitespace-nowrap block w-[136px] text-right" htmlFor="include">
+                Include LocalStorage
+              </Label>
+              <Switch onCheckedChange={(checked)=>handleCheckChange(checked, 'includeLocalStorage')} checked={settingsInfo.includeLocalStorage} id="include" />
             </div>
           </div>
         </div>

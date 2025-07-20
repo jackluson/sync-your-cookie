@@ -1,4 +1,4 @@
-import { ICookie, ICookiesMap } from '@sync-your-cookie/protobuf';
+import { ICookie, ICookiesMap, ILocalStorageItem } from '@sync-your-cookie/protobuf';
 import { BaseStorage, createStorage, StorageType } from './base';
 
 export interface Cookie extends ICookiesMap {}
@@ -31,7 +31,7 @@ export const cookieStorage = {
       return {};
     });
   },
-  updateItem: async (domain: string, updateCookies: ICookie[]) => {
+  updateItem: async (domain: string, updateCookies: ICookie[], items: ILocalStorageItem[] =[]) => {
     let newVal: Cookie = {};
     await storage.set(currentInfo => {
       const domainCookieMap = currentInfo.domainCookieMap || {};
@@ -40,6 +40,7 @@ export const cookieStorage = {
       domainCookieMap[domain] = {
         ...domainCookieMap[domain],
         cookies: updateCookies,
+        localStorageItems: items
       };
       newVal = { ...currentInfo, domainCookieMap };
       return newVal;

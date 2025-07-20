@@ -1,12 +1,21 @@
 import { ICookie } from '@sync-your-cookie/protobuf';
 
 export type { ICookie };
+export enum LocalStorageMessageType {
+  // LocalStorage
+  GetLocalStorage = 'GetLocalStorage',
+  SetLocalStorage = 'SetLocalStorage',
+  ClearLocalStorage = 'ClearLocalStorage',
+  RemoveLocalStorage = 'RemoveLocalStorage',
+}
 export enum MessageType {
   PushCookie = 'PushCookie',
   PullCookie = 'PullCookie',
   RemoveCookie = 'RemoveCookie',
   RemoveCookieItem = 'RemoveCookieItem',
   EditCookieItem = 'EditCookieItem',
+  // LocalStorage
+  GetLocalStorage = 'GetLocalStorage',
 }
 
 export enum MessageErrorCode {
@@ -19,6 +28,10 @@ export type PushCookieMessagePayload = {
   sourceUrl?: string;
   favIconUrl?: string;
 };
+
+export type DomainPayload = {
+  domain: string;
+}
 
 export type RemoveCookieMessagePayload = {
   domain: string;
@@ -62,6 +75,10 @@ export type MessageMap = {
     type: MessageType.EditCookieItem;
     payload: EditCookieItemMessagePayload;
   };
+  [MessageType.GetLocalStorage]: {
+    type: MessageType.GetLocalStorage;
+    payload: DomainPayload;
+  };
 };
 
 // export type Message<T extends MessageType = MessageType> = {
@@ -79,6 +96,7 @@ export type SendResponse = {
 };
 
 export function sendMessage<T extends MessageType>(message: Message<T>, isTab = false) {
+  console.log("message", message);
   if (isTab) {
     return new Promise<SendResponse>((resolve, reject) => {
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -99,6 +117,7 @@ export function sendMessage<T extends MessageType>(message: Message<T>, isTab = 
   }
   return new Promise<SendResponse>((resolve, reject) => {
     chrome.runtime.sendMessage(message, function (result: SendResponse) {
+      console.log("sendMessage->message", message);
       if (result?.isOk) {
         resolve(result);
       } else {

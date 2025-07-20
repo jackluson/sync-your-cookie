@@ -1,4 +1,4 @@
-import { ICookie } from '@sync-your-cookie/protobuf';
+import { ICookie, ILocalStorageItem } from '@sync-your-cookie/protobuf';
 import { Cookie, cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 
@@ -143,7 +143,7 @@ export const pushCookies = async (domain: string, cookies: ICookie[]): Promise<W
 };
 
 export const pushMultipleDomainCookies = async (
-  domainCookies: { domain: string; cookies: ICookie[] }[],
+  domainCookies: { domain: string; cookies: ICookie[], localStorageItems: ILocalStorageItem [] }[],
 ): Promise<WriteResponse> => {
   const cloudflareInfo = await cloudflareStorage.get();
   try {

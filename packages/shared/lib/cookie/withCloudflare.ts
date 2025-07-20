@@ -11,6 +11,7 @@ import {
   encodeCookiesMap,
   ICookie,
   ICookiesMap,
+  ILocalStorageItem,
 } from '@sync-your-cookie/protobuf';
 
 export const check = (accountInfo?: AccountInfo) => {
@@ -44,8 +45,10 @@ export const readCookiesMap = async (cloudflareAccountInfo: AccountInfo): Promis
       if (protobufEncoding) {
         const compressedBuffer = base64ToArrayBuffer(res);
         const deMsg = await decodeCookiesMap(compressedBuffer);
+        console.log("readCookiesMap->deMsg", deMsg);
         return deMsg;
       } else {
+        console.log("readCookiesMap->res", JSON.parse(res));
         return JSON.parse(res);
       }
     } catch (error) {
@@ -82,6 +85,7 @@ export const mergeAndWriteCookies = async (
   domain: string,
   cookies: ICookie[],
   oldCookieMap: ICookiesMap = {},
+  localStorageItems: ILocalStorageItem[] = [],
 ): Promise<[WriteResponse, ICookiesMap]> => {
   await check(cloudflareAccountInfo);
   const cookiesMap: ICookiesMap = {
@@ -93,6 +97,7 @@ export const mergeAndWriteCookies = async (
         updateTime: Date.now(),
         createTime: oldCookieMap.domainCookieMap?.[domain]?.createTime || Date.now(),
         cookies: cookies,
+        localStorageItems: localStorageItems
       },
     },
   };
@@ -103,7 +108,7 @@ export const mergeAndWriteCookies = async (
 
 export const mergeAndWriteMultipleDomainCookies = async (
   cloudflareAccountInfo: AccountInfo,
-  domainCookies: { domain: string; cookies: ICookie[] }[],
+  domainCookies: { domain: string; cookies: ICookie[], localStorageItems: ILocalStorageItem[]  }[],
   oldCookieMap: ICookiesMap = {},
 ): Promise<[WriteResponse, ICookiesMap]> => {
   await check(cloudflareAccountInfo);
@@ -111,11 +116,12 @@ export const mergeAndWriteMultipleDomainCookies = async (
   const newDomainCookieMap = {
     ...(oldCookieMap.domainCookieMap || {}),
   };
-  for (const { domain, cookies } of domainCookies) {
+  for (const { domain, cookies, localStorageItems } of domainCookies) {
     newDomainCookieMap[domain] = {
       updateTime: Date.now(),
       createTime: oldCookieMap.domainCookieMap?.[domain]?.createTime || Date.now(),
       cookies: cookies,
+      localStorageItems: localStorageItems || [],
     };
   }
   const cookiesMap: ICookiesMap = {

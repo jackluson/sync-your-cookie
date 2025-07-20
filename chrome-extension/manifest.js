@@ -43,6 +43,13 @@ const manifest = Object.assign(
     icons: {
       128: 'icon-128.png',
     },
+    content_scripts: [
+      {
+        matches: ['*://*/*'],
+        js: ['content/index.iife.js'],
+        run_at: 'document_start',
+      }
+    ],
     // devtools_page: 'devtools/index.html',
     web_accessible_resources: [
       {

@@ -4,6 +4,7 @@ export interface ISettings {
   storageKeyList: string[];
   storageKey?: string;
   protobufEncoding?: boolean;
+  includeLocalStorage?: boolean;
 }
 const key = 'settings-storage-key';
 const cacheStorageMap = new Map();

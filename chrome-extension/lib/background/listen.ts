@@ -11,7 +11,8 @@ import {
   pushCookies,
   removeCookieItem,
   removeCookies,
-  SendResponse,
+  sendMessage,
+  SendResponse
 } from '@sync-your-cookie/shared';
 
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
@@ -35,6 +36,14 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
       // url: activeTabUrl,
       domain: domain,
     });
+    
+    sendMessage({
+      type: MessageType.GetLocalStorage,
+      payload: {
+        domain: host
+      }
+    }, true)
+    console.log('payload', 'host', host)
     if (cookies?.length) {
       const res = await pushCookies(host, cookies);
       checkCloudflareResponse(res, 'push', callback);
