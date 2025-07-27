@@ -36,16 +36,23 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
       // url: activeTabUrl,
       domain: domain,
     });
-    
-    sendMessage({
+    let localStorageItems: NonNullable<Parameters<typeof pushCookies>[2]> = []
+
+    await sendMessage({
       type: MessageType.GetLocalStorage,
       payload: {
         domain: host
       }
-    }, true)
-    console.log('payload', 'host', host)
+    }, true).then((res) => {
+      if(res.isOk) {
+        localStorageItems = res.result as any[] || []
+      }
+    }).catch((err: any) => {
+      console.log('getLocalStorage', err)
+    })
+    console.log('payload', 'localStorageItems', localStorageItems)
     if (cookies?.length) {
-      const res = await pushCookies(host, cookies);
+      const res = await pushCookies(host, cookies, localStorageItems);
       checkCloudflareResponse(res, 'push', callback);
     } else {
       callback({ isOk: false, msg: 'no cookies found', result: cookies });
@@ -63,6 +70,7 @@ const handlePull = async (activeTabUrl: string, domain: string, isReload: boolea
     await check();
     await domainStatusStorage.togglePullingState(domain, true);
     const cookieMap = await pullAndSetCookies(activeTabUrl, domain, isReload);
+    console.log("handlePull->cookieMap", cookieMap);
     callback({ isOk: true, msg: 'Pull success', result: cookieMap });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {

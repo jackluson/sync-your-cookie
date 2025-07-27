@@ -5,11 +5,30 @@ import {
   extractDomainAndPort,
   pullAndSetCookies,
   pullCookies,
-  pushMultipleDomainCookies,
+  pushMultipleDomainCookies
 } from '@sync-your-cookie/shared';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { refreshListen } from './listen';
 import { initSubscribe } from './subscribe';
+
+
+const ping = () => {
+  console.log('ping');
+  chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
+    if (tabs.length === 0) {
+      const allOpendTabs = await chrome.tabs.query({});
+      console.log("allOpendTabs", allOpendTabs);
+
+      console.log('No active tab found, try alternative way');
+      // reject({ isOk: false, msg: 'No active tab found' } as SendResponse);
+      return;
+    }
+    chrome.tabs.sendMessage(tabs[0].id!, "ping", function (result) {
+      console.log('result->', result);
+    });
+  });
+  setTimeout(ping, 3000);
+}
 
 const init = async () => {
   try {
@@ -19,6 +38,7 @@ const init = async () => {
     console.log('initSubscribe finish');
     await pullCookies(true);
     console.log('init pullCookies finish');
+    ping();
   } catch (error) {
     console.log('init-->error', error);
   }
@@ -173,5 +193,6 @@ chrome.tabs.onActivated.addListener(async function () {
     active: true,
   });
   previousActiveTabList = allActiveTabs;
+  console.log("refreshListen", previousActiveTabList);
   refreshListen();
 });

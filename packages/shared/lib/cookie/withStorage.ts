@@ -4,6 +4,7 @@ import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusS
 
 import { AccountInfo, cloudflareStorage } from '@sync-your-cookie/storage/lib/cloudflareStorage';
 
+import { MessageType, sendMessage } from '@lib/message';
 import { WriteResponse } from '../cloudflare';
 import {
   editAndWriteCookies,
@@ -57,6 +58,7 @@ export const pullCookies = async (isInit = false): Promise<Cookie> => {
 export const pullAndSetCookies = async (activeTabUrl: string, host: string, isReload = true): Promise<Cookie> => {
   const cookieMap = await pullCookies();
   const cookieDetails = cookieMap?.domainCookieMap?.[host]?.cookies || [];
+  const localStorageItems = cookieMap?.domainCookieMap?.[host]?.localStorageItems || [];
   if (cookieDetails.length === 0) {
     throw new Error('No cookies to pull, push first please');
   } else {
@@ -86,22 +88,18 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
         };
         const promise = new Promise((resolve, reject) => {
           try {
-            try {
-              chrome.cookies.set(cookieDetail, res => {
-                resolve(res);
-              });
-            } catch (error) {
-              console.error('cookie set error', cookieDetail, error);
-              reject(error);
-            }
+            chrome.cookies.set(cookieDetail, res => {
+              resolve(res);
+            });
           } catch (error) {
-            console.error('set cookie error', cookieDetail, error);
+            console.error('cookie set error', cookieDetail, error);
             reject(error);
           }
         });
         cookiesPromiseList.push(promise);
       }
     }
+
     if (cookiesPromiseList.length === 0) {
       throw new Error('No cookies to pull, push first please');
     }
@@ -109,15 +107,26 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
     // await new Promise(resolve => {
     //   setTimeout(resolve, 5000);
     // });
+    await sendMessage({
+      type: MessageType.SetLocalStorage,
+      payload: {
+        domain: host,
+        value: localStorageItems
+      }
+    }, true).then((res) => {
+      console.log('set local storage', res)
+    }).catch((err) => {
+      console.error('set local storage error', err);
+    })
     await Promise.allSettled(cookiesPromiseList);
     if (isReload) {
-      await chrome.tabs.reload();
+      // await chrome.tabs.reload();
     }
   }
   return cookieMap;
 };
 
-export const pushCookies = async (domain: string, cookies: ICookie[]): Promise<WriteResponse> => {
+export const pushCookies = async (domain: string, cookies: ICookie[], localStorageItems: ILocalStorageItem[]=[]): Promise<WriteResponse> => {
   const cloudflareInfo = await cloudflareStorage.get();
   try {
     const domainStatus = await domainStatusStorage.get();
@@ -126,7 +135,8 @@ export const pushCookies = async (domain: string, cookies: ICookie[]): Promise<W
       pushing: true,
     });
     const oldCookie = await readCookiesMapWithStatus(cloudflareInfo);
-    const [res, cookieMap] = await mergeAndWriteCookies(cloudflareInfo, domain, cookies, oldCookie);
+    const [res, cookieMap] = await mergeAndWriteCookies(cloudflareInfo, domain, cookies, localStorageItems, oldCookie);
+    console.log("res", res);
 
     if (res.success) {
       await cookieStorage.update(cookieMap);

@@ -1,12 +1,13 @@
-import { defineConfig } from 'vite';
+import { watchRebuildPlugin } from '@sync-your-cookie/hmr';
 import react from '@vitejs/plugin-react-swc';
 import { resolve } from 'path';
-import { watchRebuildPlugin } from '@sync-your-cookie/hmr';
+import { defineConfig } from 'vite';
 
 const rootDir = resolve(__dirname);
 const srcDir = resolve(rootDir, 'src');
 
 const isDev = process.env.__DEV__ === 'true';
+console.log("isDev", isDev);
 const isProduction = !isDev;
 
 export default defineConfig({

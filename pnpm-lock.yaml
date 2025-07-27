@@ -105,6 +105,9 @@ importers:
       '@sync-your-cookie/storage':
         specifier: workspace:*
         version: link:../packages/storage
+      p-timeout:
+        specifier: ^6.1.4
+        version: 6.1.4
       webextension-polyfill:
         specifier: ^0.12.0
         version: 0.12.0
@@ -189,6 +192,9 @@ importers:
 
   packages/shared:
     dependencies:
+      p-timeout:
+        specifier: ^6.1.4
+        version: 6.1.4
       pako:
         specifier: ^2.1.0
         version: 2.1.0
@@ -305,18 +311,6 @@ importers:
         specifier: ^3.4.10
         version: 3.4.10(typescript@5.2.2)
 
-  packages/vite-config:
-    devDependencies:
-      '@sync-your-cookie/hmr':
-        specifier: workspace:*
-        version: link:../hmr
-      '@sync-your-cookie/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
-      '@vitejs/plugin-react-swc':
-        specifier: ^3.7.2
-        version: 3.11.0(vite@5.3.2(@types/node@20.14.9)(sass@1.74.1)(terser@5.31.1))
-
   packages/zipper:
     devDependencies:
       '@sync-your-cookie/tsconfig':
@@ -347,9 +341,6 @@ importers:
       '@sync-your-cookie/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
-      '@sync-your-cookie/vite-config':
-        specifier: workspace:*
-        version: link:../../packages/vite-config
 
   pages/options:
     dependencies:
@@ -1674,9 +1665,6 @@ packages:
   '@radix-ui/rect@1.1.1':
     resolution: {integrity: sha512-HPwpGIzkl28mWyZqG52jiqDJ12waP11Pa1lGoiyUkIEuMLBP0oeK/C89esbXrxsky5we7dfd8U58nm0SgAWpVw==}
 
-  '@rolldown/pluginutils@1.0.0-beta.27':
-    resolution: {integrity: sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA==}
-
   '@rollup/plugin-sucrase@5.0.2':
     resolution: {integrity: sha512-4MhIVH9Dy2Hwose1/x5QMs0XF7yn9jDd/yozHqzdIrMWIolgFpGnrnVhQkqTaK1RALY/fpyrEKmwH/04vr1THA==}
     engines: {node: '>=14.0.0'}
@@ -2079,11 +2067,6 @@ packages:
 
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
-
-  '@vitejs/plugin-react-swc@3.11.0':
-    resolution: {integrity: sha512-YTJCGFdNMHCMfjODYtxRNVAYmTWQ1Lb8PulP/2/f/oEEtglw8oKxKIZmmRkyXrVrHfsKOaVkAc3NT9/dMutO5w==}
-    peerDependencies:
-      vite: ^4 || ^5 || ^6 || ^7
 
   '@vitejs/plugin-react-swc@3.7.0':
     resolution: {integrity: sha512-yrknSb3Dci6svCd/qhHqhFPDSw0QtjumcqdKMoNNzmOl5lMXTTiqzjWtG4Qask2HdvvzaNgSunbQGet8/GrKdA==}
@@ -3350,6 +3333,10 @@ packages:
   p-locate@5.0.0:
     resolution: {integrity: sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==}
     engines: {node: '>=10'}
+
+  p-timeout@6.1.4:
+    resolution: {integrity: sha512-MyIV3ZA/PmyBN/ud8vV9XzwTrNtR4jFrObymZYnZqMmW0zA8Z17vnT0rBgFE/TlohB+YCHqXMgZzb3Csp49vqg==}
+    engines: {node: '>=14.16'}
 
   package-json-from-dist@1.0.0:
     resolution: {integrity: sha512-dATvCeZN/8wQsGywez1mzHtTlP22H8OEfPrVMLNr4/eGa+ijtLn/6M5f0dY8UKNrC2O9UCU6SSoG3qRKnt7STw==}
@@ -5162,8 +5149,6 @@ snapshots:
 
   '@radix-ui/rect@1.1.1': {}
 
-  '@rolldown/pluginutils@1.0.0-beta.27': {}
-
   '@rollup/plugin-sucrase@5.0.2(rollup@4.18.0)':
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@4.18.0)
@@ -5302,6 +5287,7 @@ snapshots:
       '@swc/core-win32-arm64-msvc': 1.13.0
       '@swc/core-win32-ia32-msvc': 1.13.0
       '@swc/core-win32-x64-msvc': 1.13.0
+    optional: true
 
   '@swc/core@1.6.6':
     dependencies:
@@ -5324,6 +5310,7 @@ snapshots:
   '@swc/types@0.1.23':
     dependencies:
       '@swc/counter': 0.1.3
+    optional: true
 
   '@swc/types@0.1.9':
     dependencies:
@@ -5493,14 +5480,6 @@ snapshots:
       eslint-visitor-keys: 3.4.3
 
   '@ungap/structured-clone@1.2.0': {}
-
-  '@vitejs/plugin-react-swc@3.11.0(vite@5.3.2(@types/node@20.14.9)(sass@1.74.1)(terser@5.31.1))':
-    dependencies:
-      '@rolldown/pluginutils': 1.0.0-beta.27
-      '@swc/core': 1.13.0
-      vite: 5.3.2(@types/node@20.14.9)(sass@1.74.1)(terser@5.31.1)
-    transitivePeerDependencies:
-      - '@swc/helpers'
 
   '@vitejs/plugin-react-swc@3.7.0(vite@5.3.2(@types/node@20.14.9)(sass@1.74.1)(terser@5.31.1))':
     dependencies:
@@ -6976,6 +6955,8 @@ snapshots:
     dependencies:
       p-limit: 3.1.0
 
+  p-timeout@6.1.4: {}
+
   package-json-from-dist@1.0.0: {}
 
   pako@2.1.0: {}
@@ -7021,7 +7002,7 @@ snapshots:
       camelcase-css: 2.0.1
       postcss: 8.4.39
 
-  postcss-load-config@4.0.2(postcss@8.4.39)(ts-node@10.9.2(@swc/core@1.13.0)(@types/node@20.14.9)(typescript@5.2.2)):
+  postcss-load-config@4.0.2(postcss@8.4.39)(ts-node@10.9.2(@types/node@20.14.9)(typescript@5.2.2)):
     dependencies:
       lilconfig: 3.1.2
       yaml: 2.4.5
@@ -7471,7 +7452,7 @@ snapshots:
       postcss: 8.4.39
       postcss-import: 15.1.0(postcss@8.4.39)
       postcss-js: 4.0.1(postcss@8.4.39)
-      postcss-load-config: 4.0.2(postcss@8.4.39)(ts-node@10.9.2(@swc/core@1.13.0)(@types/node@20.14.9)(typescript@5.2.2))
+      postcss-load-config: 4.0.2(postcss@8.4.39)(ts-node@10.9.2(@types/node@20.14.9)(typescript@5.2.2))
       postcss-nested: 6.0.1(postcss@8.4.39)
       postcss-selector-parser: 6.1.0
       resolve: 1.22.8
@@ -7585,7 +7566,7 @@ snapshots:
       execa: 5.1.1
       globby: 11.1.0
       joycon: 3.1.1
-      postcss-load-config: 4.0.2(postcss@8.4.39)(ts-node@10.9.2(@swc/core@1.13.0)(@types/node@20.14.9)(typescript@5.2.2))
+      postcss-load-config: 4.0.2(postcss@8.4.39)(ts-node@10.9.2(@types/node@20.14.9)(typescript@5.2.2))
       resolve-from: 5.0.0
       rollup: 4.18.0
       source-map: 0.8.0-beta.0

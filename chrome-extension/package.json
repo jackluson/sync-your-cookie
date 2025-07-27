@@ -18,15 +18,16 @@
   },
   "type": "module",
   "dependencies": {
-    "webextension-polyfill": "^0.12.0",
     "@sync-your-cookie/shared": "workspace:*",
-    "@sync-your-cookie/storage": "workspace:*"
+    "@sync-your-cookie/storage": "workspace:*",
+    "p-timeout": "^6.1.4",
+    "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {
+    "@laynezh/vite-plugin-lib-assets": "^0.5.21",
     "@sync-your-cookie/dev-utils": "workspace:*",
     "@sync-your-cookie/hmr": "workspace:*",
     "@sync-your-cookie/tsconfig": "workspace:*",
-    "@laynezh/vite-plugin-lib-assets": "^0.5.21",
     "@types/ws": "^8.5.10",
     "magic-string": "^0.30.10",
     "ts-loader": "^9.5.1"

@@ -12,7 +12,8 @@
     "clean:turbo": "rimraf .turbo",
     "clean": "pnpm clean:turbo && pnpm clean:node_modules",
     "build": "vite build",
-    "dev": "vite build --mode development",
+    "build:watch": "cross-env __DEV__=true vite build -w --mode development",
+    "dev": "pnpm build:watch",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write --ignore-path ../../.prettierignore",
@@ -25,7 +26,6 @@
   },
   "devDependencies": {
     "@sync-your-cookie/hmr": "workspace:*",
-    "@sync-your-cookie/tsconfig": "workspace:*",
-    "@sync-your-cookie/vite-config": "workspace:*"
+    "@sync-your-cookie/tsconfig": "workspace:*"
   }
 }

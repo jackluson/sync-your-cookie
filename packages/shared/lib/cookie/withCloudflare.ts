@@ -69,7 +69,7 @@ export const writeCookiesMap = async (cloudflareAccountInfo: AccountInfo, cookie
     encodingStr = arrayBufferToBase64(buffered as any);
   } else {
     encodingStr = JSON.stringify(cookiesMap);
-    console.log('cookiesMap', cookiesMap);
+    console.log('writeCookiesMap->', cookiesMap);
   }
   const res = await writeCloudflareKV(
     encodingStr,
@@ -84,8 +84,8 @@ export const mergeAndWriteCookies = async (
   cloudflareAccountInfo: AccountInfo,
   domain: string,
   cookies: ICookie[],
-  oldCookieMap: ICookiesMap = {},
   localStorageItems: ILocalStorageItem[] = [],
+  oldCookieMap: ICookiesMap = {},
 ): Promise<[WriteResponse, ICookiesMap]> => {
   await check(cloudflareAccountInfo);
   const cookiesMap: ICookiesMap = {

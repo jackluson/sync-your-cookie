@@ -1,13 +1,6 @@
-import { ICookie } from '@sync-your-cookie/protobuf';
-
+import { ICookie, ILocalStorageItem } from '@sync-your-cookie/protobuf';
+import pTimeout from 'p-timeout';
 export type { ICookie };
-export enum LocalStorageMessageType {
-  // LocalStorage
-  GetLocalStorage = 'GetLocalStorage',
-  SetLocalStorage = 'SetLocalStorage',
-  ClearLocalStorage = 'ClearLocalStorage',
-  RemoveLocalStorage = 'RemoveLocalStorage',
-}
 export enum MessageType {
   PushCookie = 'PushCookie',
   PullCookie = 'PullCookie',
@@ -16,6 +9,7 @@ export enum MessageType {
   EditCookieItem = 'EditCookieItem',
   // LocalStorage
   GetLocalStorage = 'GetLocalStorage',
+  SetLocalStorage = 'SetLocalStorage',
 }
 
 export enum MessageErrorCode {
@@ -54,6 +48,12 @@ export type EditCookieItemMessagePayload = {
   newItem: ICookie;
 };
 
+export type SetLocalStorageMessagePayload = {
+  domain: string;
+  value: ILocalStorageItem[];
+  onlyKey?: string;
+}
+
 export type MessageMap = {
   [MessageType.PushCookie]: {
     type: MessageType.PushCookie;
@@ -75,10 +75,15 @@ export type MessageMap = {
     type: MessageType.EditCookieItem;
     payload: EditCookieItemMessagePayload;
   };
+  // LocalStorage
   [MessageType.GetLocalStorage]: {
     type: MessageType.GetLocalStorage;
     payload: DomainPayload;
   };
+  [MessageType.SetLocalStorage]: {
+    type: MessageType.SetLocalStorage;
+    payload: SetLocalStorageMessagePayload;
+  }
 };
 
 // export type Message<T extends MessageType = MessageType> = {
@@ -95,27 +100,9 @@ export type SendResponse = {
   code?: MessageErrorCode;
 };
 
-export function sendMessage<T extends MessageType>(message: Message<T>, isTab = false) {
+export function sendMessage<T extends MessageType>(message: Message<T>, isTab = false, useTimeout: boolean = false) {
   console.log("message", message);
-  if (isTab) {
-    return new Promise<SendResponse>((resolve, reject) => {
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        if (tabs.length === 0) {
-          reject({ isOk: false, msg: 'No active tab found' } as SendResponse);
-          return;
-        }
-        chrome.tabs.sendMessage(tabs[0].id!, message, function (result) {
-          console.log('isTab', isTab, 'result->', result);
-          if (result?.isOk) {
-            resolve(result);
-          } else {
-            reject(result as SendResponse);
-          }
-        });
-      });
-    });
-  }
-  return new Promise<SendResponse>((resolve, reject) => {
+  const send = (resolve: (value: SendResponse | PromiseLike<SendResponse>) => void, reject:  (reason?: any) => void) => {
     chrome.runtime.sendMessage(message, function (result: SendResponse) {
       console.log("sendMessage->message", message);
       if (result?.isOk) {
@@ -124,7 +111,44 @@ export function sendMessage<T extends MessageType>(message: Message<T>, isTab = 
         reject(result as SendResponse);
       }
     });
-  });
+  }
+  const fn = () => {
+    if (isTab) {
+      return new Promise<SendResponse>((resolve, reject) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
+          if (tabs.length === 0) {
+            const allOpendTabs = await chrome.tabs.query({});
+            console.log("allOpendTabs", allOpendTabs);
+
+            console.log('No active tab found, try alternative way');
+            // reject({ isOk: false, msg: 'No active tab found' } as SendResponse);
+            send(resolve, reject)
+            return;
+          }
+          chrome.tabs.sendMessage(tabs[0].id!, message, function (result) {
+            console.log('isTab', isTab, 'result->', result);
+            if (result?.isOk) {
+              resolve(result);
+            } else {
+              reject(result as SendResponse);
+            }
+          });
+        });
+      });
+    }
+    return new Promise<SendResponse>((resolve, reject) => {
+      send(resolve, reject);
+    });
+  }
+  if(useTimeout) {
+    return pTimeout(fn(), {
+      'milliseconds': 5000,
+      fallback: () => {
+        return { isOk: false, msg: 'Timeout' } as SendResponse;
+      }
+    })
+  }
+  return fn()
 }
 
 export function pushCookieUsingMessage(payload: PushCookieMessagePayload) {
