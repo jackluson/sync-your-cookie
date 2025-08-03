@@ -15,6 +15,8 @@ export const useAction = (cookie: Cookie) => {
     setSelectedDomain,
     cookieList,
     renderKeyValue,
+    localStorageItems,
+    ...rest
   } = useSelected(cookie, currentSearchStr);
 
   useEffect(() => {
@@ -122,5 +124,15 @@ export const useAction = (cookie: Cookie) => {
       }
       return true;
     }),
+    localStorageItems: localStorageItems.filter(item => {
+      if (currentSearchStr.trim()) {
+        return (
+          item.key?.includes(currentSearchStr) ||
+          item.value?.includes(currentSearchStr)
+        );
+      }
+      return true;
+    }),
+    ...rest
   };
 };

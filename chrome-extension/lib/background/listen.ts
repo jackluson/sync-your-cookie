@@ -14,6 +14,7 @@ import {
   sendMessage,
   SendResponse
 } from '@sync-your-cookie/shared';
+import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
@@ -37,20 +38,22 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
       domain: domain,
     });
     let localStorageItems: NonNullable<Parameters<typeof pushCookies>[2]> = []
+    const includeLocalStorage = settingsStorage.getSnapshot()?.includeLocalStorage;
+    if (includeLocalStorage) {
+      await sendMessage({
+        type: MessageType.GetLocalStorage,
+        payload: {
+          domain: host
+        }
+      }, true).then((res) => {
+        if (res.isOk) {
+          localStorageItems = res.result as any[] || []
+        }
+      }).catch((err: any) => {
+        console.log('getLocalStorage', err)
+      })
+    }
 
-    await sendMessage({
-      type: MessageType.GetLocalStorage,
-      payload: {
-        domain: host
-      }
-    }, true).then((res) => {
-      if(res.isOk) {
-        localStorageItems = res.result as any[] || []
-      }
-    }).catch((err: any) => {
-      console.log('getLocalStorage', err)
-    })
-    console.log('payload', 'localStorageItems', localStorageItems)
     if (cookies?.length) {
       const res = await pushCookies(host, cookies, localStorageItems);
       checkCloudflareResponse(res, 'push', callback);

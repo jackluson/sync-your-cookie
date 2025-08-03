@@ -12,6 +12,8 @@ import {
   Image,
   Spinner,
   Switch,
+  SyncTooltip,
+  Toggle,
 } from '@sync-your-cookie/ui';
 import {
   ArrowUpRight,
@@ -20,6 +22,7 @@ import {
   CloudDownload,
   CloudUpload,
   Copy,
+  Database,
   Ellipsis,
   RotateCw,
   Table as TableIcon,
@@ -45,7 +48,7 @@ export type CookieItem = {
 const CookieTable = () => {
   const domainConfig = useStorageSuspense(domainConfigStorage);
   const domainStatus = useStorageSuspense(domainStatusStorage);
-  
+
   const cookieMap = useStorageSuspense(cookieStorage);
 
   const {
@@ -63,14 +66,23 @@ const CookieTable = () => {
     handleViewCookies,
     handleSearch,
     currentSearchStr,
+    hasLocalStorage,
+    localStorageMode,
+    setLocalStorageMode,
+    showLocalStorageColumns,
+    localStorageItems,
   } = useAction(cookieMap);
   let domainList = [];
   let totalCookieItem = 0;
+  let totalLocalStorageItem = 0;
   for (const [key, value] of Object.entries(cookieMap?.domainCookieMap || {})) {
     const config = domainConfig.domainMap[key];
     if (!selectedDomain && currentSearchStr.trim() && !key.includes(currentSearchStr.trim())) continue;
     if (value.cookies?.length) {
       totalCookieItem += value.cookies.length;
+    }
+    if (value.localStorageItems?.length) {
+      totalLocalStorageItem += value.localStorageItems.length;
     }
     domainList.push({
       id: key,
@@ -279,60 +291,87 @@ const CookieTable = () => {
   const sourceUrl = selectedRow?.sourceUrl;
   const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'https:';
   const href = `${protocol}//${selectedDomain}`;
+  const handlePressChange = (pressed: boolean) => {
+    setLocalStorageMode(pressed);
+  }
+  const renderTable = () => {
+    return <div className="flex flex-col h-full ">
+      <div className="flex justify-between px-4 mb-4 ">
+        <div className="flex items-center ">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-7 w-7 mr-2"
+            onClick={() => {
+              handleBack();
+            }}>
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Back</span>
+          </Button>
+          <a
+            href={href}
+            target="_blank"
+            className=" flex text-xl items-center font-semibold hover:underline "
+            rel="noreferrer">
+            {selectedRow?.favIconUrl ? <Image src={selectedRow?.favIconUrl} /> : null}
+            {selectedDomain}
+          </a>
+        </div>
+        {
+          hasLocalStorage ? <SyncTooltip title="Toggle LocalStorage View">
+            <Toggle pressed={localStorageMode} onPressedChange={handlePressChange} className='ml-6' variant="outline">
+              <Database size={16} className="h-4 w-4" />
+            </Toggle>
+          </SyncTooltip> : null
+        }
+
+      </div>
+      <div className="mb-1 px-4">
+        <SearchInput onEnter={handleSearch} />
+      </div>
+      <div className="flex-1 pl-4 pr-2 mt-4 overflow-auto">
+        {
+          localStorageMode ? <DataTable columns={showLocalStorageColumns as any} data={localStorageItems} /> :
+            <DataTable columns={showCookiesColumns} data={cookieList} />
+        }
+      </div>
+    </div>
+  }
   return (
     <div className="h-screen flex flex-col">
       <div className="space-y-4 p-4 ">
         <div>
           <h2 className="text-xl font-bold tracking-tight">Welcome back!</h2>
-          <p className="text-muted-foreground text-sm">Here&apos;s a list of your pushed cookies </p>
+          <p className="text-muted-foreground text-sm">Here&apos;s a list of your pushed { localStorageMode ? 'localStorage items' : 'cookies'}  </p>
         </div>
       </div>
       <div className="h-0 flex-1 overflow-auto">
         <Spinner show={loading}>
           {selectedDomain ? (
             <>
-              <div className="flex flex-col h-full ">
-                <div className="flex items-center px-4 mb-4 ">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-7 w-7 mr-2"
-                    onClick={() => {
-                      handleBack();
-                    }}>
-                    <ChevronLeft className="h-4 w-4" />
-                    <span className="sr-only">Back</span>
-                  </Button>
-                  <a
-                    href={href}
-                    target="_blank"
-                    className=" flex text-xl items-center font-semibold hover:underline "
-                    rel="noreferrer">
-                    {selectedRow?.favIconUrl ? <Image src={selectedRow?.favIconUrl} /> : null}
-                    {selectedDomain}
-                  </a>
-                </div>
-                <div className="mb-1 px-4">
-                  <SearchInput onEnter={handleSearch} />
-                </div>
-                <div className="flex-1 pl-4 pr-2 mt-4 overflow-auto">
-                  <DataTable columns={showCookiesColumns} data={cookieList} />
-                </div>
-              </div>
+              {renderTable()}
             </>
           ) : (
             <div className="flex flex-col h-full">
               <div>
-                <div className=" mx-4 w-1/3 bg-primary/10 mb-4 rounded-xl border text-card-foreground shadow">
+                <div className=" mx-4 w-1/3 min-w-[328px] bg-primary/10 mb-4 rounded-xl border text-card-foreground shadow">
                   <div className="p-3">
                     <div className="flex flex-row items-center justify-between">
-                      <p className="tracking-tight text-sm font-normal">Total Cookie</p>
+                      <p className="tracking-tight text-sm font-normal">Total Cookie and LocalStorage</p>
                     </div>
                     <div className="">
                       <p className="text-2xl font-bold">
                         {domainList.length} <span className="text-xl">sites</span>
                       </p>
-                      <p className="text-xs text-muted-foreground">{totalCookieItem} cookie items</p>
+                      <p className="text-xs text-muted-foreground">
+                        <span >
+                        {totalCookieItem} cookie items
+                        </span>
+                        <span className='mx-1'>&</span>
+                        <span >
+                        {totalLocalStorageItem} localStorage items
+                        </span>
+                        </p>
                     </div>
                   </div>
                 </div>

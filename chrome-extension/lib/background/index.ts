@@ -7,18 +7,16 @@ import {
   pullCookies,
   pushMultipleDomainCookies
 } from '@sync-your-cookie/shared';
+import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { refreshListen } from './listen';
 import { initSubscribe } from './subscribe';
 
 
 const ping = () => {
-  console.log('ping');
   chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
     if (tabs.length === 0) {
-      const allOpendTabs = await chrome.tabs.query({});
-      console.log("allOpendTabs", allOpendTabs);
-
+      // const allOpendTabs = await chrome.tabs.query({});
       console.log('No active tab found, try alternative way');
       // reject({ isOk: false, msg: 'No active tab found' } as SendResponse);
       return;
@@ -27,7 +25,7 @@ const ping = () => {
       console.log('result->', result);
     });
   });
-  setTimeout(ping, 3000);
+  setTimeout(ping, 4000);
 }
 
 const init = async () => {
@@ -98,6 +96,7 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
     }
 
     const uploadDomainCookies = [];
+    const cookieMap = await cookieStorage.getSnapshot();
     for (const host of pushDomainSet) {
       const [domain] = await extractDomainAndPort(host);
 
@@ -107,7 +106,7 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
       uploadDomainCookies.push({
         domain: host,
         cookies,
-        localStorageItems: [],
+        localStorageItems: cookieMap?.domainCookieMap?.[host].localStorageItems || [],
       });
     }
     if (uploadDomainCookies.length) {

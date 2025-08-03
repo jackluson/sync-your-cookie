@@ -45,9 +45,9 @@ export class MessageListener {
   // 处理消息
   handleMessage = (message: Message, sender: chrome.runtime.MessageSender, sendResponse: (response?: SendResponse) => void) => {
     // 打印消息类型
-    console.log("message-->", message);
     if(message.toString() === 'ping') {
       this.listen();
+      return
     }
     // 如果消息类型为获取本地存储
     if (message.type === MessageType.GetLocalStorage) {
@@ -103,8 +103,8 @@ export class MessageListener {
     const fn = this.handleMessage;
     chrome.runtime.onMessage.removeListener(fn);
     chrome.runtime.onMessage.addListener(fn);
-    console.log('listener init')
     this.timer = setTimeout(() => {
+      console.log('listen timeout reset')
       this.listen();
     }, 6000)
   }

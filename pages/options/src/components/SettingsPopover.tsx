@@ -1,10 +1,9 @@
-import { useStorageSuspense } from '@sync-your-cookie/shared';
+import { pullCookies, useStorageSuspense } from '@sync-your-cookie/shared';
+import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
-
-import { pullCookies } from '@sync-your-cookie/shared';
-import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
-import { Label, Popover, PopoverContent, PopoverTrigger, Switch } from '@sync-your-cookie/ui';
+import { Label, Popover, PopoverContent, PopoverTrigger, Switch, SyncTooltip } from '@sync-your-cookie/ui';
+import { Info } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { StorageSelect } from './StorageSelect';
 interface SettingsPopover {
@@ -34,8 +33,8 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
     console.log("reset finished");
   }
 
-  useEffect(()=> {
-     reset();
+  useEffect(() => {
+    reset();
   }, [settingsInfo.storageKey])
 
   const handleOpenChange = (open: boolean) => {
@@ -104,14 +103,19 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
               <Label className="whitespace-nowrap block w-[136px] text-right" htmlFor="encoding">
                 Protobuf Encoding
               </Label>
-              <Switch onCheckedChange={(checked)=>handleCheckChange(checked, 'protobufEncoding')} checked={settingsInfo.protobufEncoding} id="encoding" />
+              <Switch onCheckedChange={(checked) => handleCheckChange(checked, 'protobufEncoding')} checked={settingsInfo.protobufEncoding} id="encoding" />
             </div>
 
             <div className="flex items-center gap-4">
-              <Label className="whitespace-nowrap block w-[136px] text-right" htmlFor="include">
+              <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="include">
                 Include LocalStorage
               </Label>
-              <Switch onCheckedChange={(checked)=>handleCheckChange(checked, 'includeLocalStorage')} checked={settingsInfo.includeLocalStorage} id="include" />
+              <div className='flex items-center gap-1'>
+                <Switch onCheckedChange={(checked) => handleCheckChange(checked, 'includeLocalStorage')} checked={settingsInfo.includeLocalStorage} id="include" />
+                <SyncTooltip title="LocalStorage cannot supports Auto Push">
+                  <Info className='mx-2' size={18} />
+                </SyncTooltip>
+              </div>
             </div>
           </div>
         </div>
