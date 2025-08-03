@@ -54,7 +54,7 @@ Cookie Detail
 
 - [x] Custom Store Configure
 - [x] Multi-account synchronization based on Storage-key
-- [ ] Sync LocalStorage
+- [x] Sync LocalStorage
 - [ ] More Cloud Platform (First github gist)
 
 ### Privacy Policy
