@@ -20,6 +20,7 @@ const initStorage = (): BaseStorage<ISettings> => {
       storageKeyList: [defaultKey],
       storageKey: defaultKey,
       protobufEncoding: true,
+      includeLocalStorage: false
     },
     {
       storageType: StorageType.Sync,

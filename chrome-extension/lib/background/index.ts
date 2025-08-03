@@ -25,7 +25,7 @@ const ping = () => {
       console.log('result->', result);
     });
   });
-  setTimeout(ping, 4000);
+  // setTimeout(ping, 4000);
 }
 
 const init = async () => {
@@ -36,7 +36,7 @@ const init = async () => {
     console.log('initSubscribe finish');
     await pullCookies(true);
     console.log('init pullCookies finish');
-    ping();
+    // ping();
   } catch (error) {
     console.log('init-->error', error);
   }

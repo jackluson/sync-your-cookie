@@ -14,6 +14,7 @@ import {
   sendMessage,
   SendResponse
 } from '@sync-your-cookie/shared';
+import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
@@ -37,6 +38,7 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
       // url: activeTabUrl,
       domain: domain,
     });
+    
     let localStorageItems: NonNullable<Parameters<typeof pushCookies>[2]> = []
     const includeLocalStorage = settingsStorage.getSnapshot()?.includeLocalStorage;
     if (includeLocalStorage) {
@@ -52,6 +54,9 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
       }).catch((err: any) => {
         console.log('getLocalStorage', err)
       })
+    } else {
+      const cookieMap = await cookieStorage.getSnapshot();
+      localStorageItems = cookieMap?.domainCookieMap?.[host].localStorageItems || []
     }
 
     if (cookies?.length) {

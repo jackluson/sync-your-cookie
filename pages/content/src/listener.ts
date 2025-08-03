@@ -64,7 +64,7 @@ export class MessageListener {
 
   private init(): void {
     // 此处不能使用 async 函数
-    this.listen();
+    this.listen(false);
     // this.ping();
     // chrome.runtime.onConnect.addListener(port => {
     //   console.log('connected ', port);
@@ -96,17 +96,19 @@ export class MessageListener {
     });
   }
 
-  public listen = () => {
+  public listen = (initSetTimeout = true) => {
     if(this.timer) {
       clearTimeout(this.timer);
     }
     const fn = this.handleMessage;
     chrome.runtime.onMessage.removeListener(fn);
     chrome.runtime.onMessage.addListener(fn);
-    this.timer = setTimeout(() => {
-      console.log('listen timeout reset')
-      this.listen();
-    }, 6000)
+    if(initSetTimeout) {
+      this.timer = setTimeout(() => {
+        console.log('listen timeout reset')
+        this.listen();
+      }, 6000)
+    }
   }
 
   /**
