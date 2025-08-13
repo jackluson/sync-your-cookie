@@ -20,10 +20,11 @@
 
 ### Features
 
-- Supports syncing cookies to Cloudflare
+- Supports syncing cookies to Cloudflare (Include LocalStorage)
 - Supports configuring `Auto Merge` and `Auto Push` rules for different sites
 - Cookie data is transmitted via protobuf encoding
 - Provides a management panel to facilitate viewing, copying, and managing synchronized cookie data
+- Multi-account synchronization based on Storage-key
 
 
 ### Project Screenshots
