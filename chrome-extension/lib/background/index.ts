@@ -45,18 +45,18 @@ const init = async () => {
 chrome.runtime.onInstalled.addListener(async () => {
   init();
   // chrome.sidePanel.setPanexlBehavior({ openPanelOnActionClick: false });
-  chrome.contextMenus.create({
-    id: 'openSidePanel',
-    title: 'Open Cookie Manager',
-    contexts: ['all'],
-  });
+  // chrome.contextMenus.create({
+  //   id: 'openSidePanel',
+  //   title: 'Open Cookie Manager',
+  //   contexts: ['all'],
+  // });
 
-  chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId === 'openSidePanel' && tab?.windowId) {
-      // This will open the panel in all the pages on the current window.
-      chrome.sidePanel.open({ windowId: tab.windowId });
-    }
-  });
+  // chrome.contextMenus.onClicked.addListener((info, tab) => {
+  //   if (info.menuItemId === 'openSidePanel' && tab?.windowId) {
+  //     // This will open the panel in all the pages on the current window.
+  //     chrome.sidePanel.open({ windowId: tab.windowId });
+  //   }
+  // });
 });
 
 let delayTimer: NodeJS.Timeout | null = null;
