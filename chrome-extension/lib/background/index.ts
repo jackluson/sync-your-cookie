@@ -9,6 +9,8 @@ import {
 } from '@sync-your-cookie/shared';
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
+import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
+import { initContextMenu } from './contextMenu';
 import { refreshListen } from './listen';
 import { initSubscribe } from './subscribe';
 
@@ -44,19 +46,13 @@ const init = async () => {
 
 chrome.runtime.onInstalled.addListener(async () => {
   init();
-  // chrome.sidePanel.setPanexlBehavior({ openPanelOnActionClick: false });
-  // chrome.contextMenus.create({
-  //   id: 'openSidePanel',
-  //   title: 'Open Cookie Manager',
-  //   contexts: ['all'],
-  // });
+  console.log('onInstalled');
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
+  const settingsSnapShot = await settingsStorage.get();
+  if(settingsSnapShot?.contextMenu) {
+    initContextMenu()
+  }
 
-  // chrome.contextMenus.onClicked.addListener((info, tab) => {
-  //   if (info.menuItemId === 'openSidePanel' && tab?.windowId) {
-  //     // This will open the panel in all the pages on the current window.
-  //     chrome.sidePanel.open({ windowId: tab.windowId });
-  //   }
-  // });
 });
 
 let delayTimer: NodeJS.Timeout | null = null;

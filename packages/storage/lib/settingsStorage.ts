@@ -5,6 +5,7 @@ export interface ISettings {
   storageKey?: string;
   protobufEncoding?: boolean;
   includeLocalStorage?: boolean;
+  contextMenu?: boolean;
 }
 const key = 'settings-storage-key';
 const cacheStorageMap = new Map();
@@ -20,7 +21,8 @@ const initStorage = (): BaseStorage<ISettings> => {
       storageKeyList: [defaultKey],
       storageKey: defaultKey,
       protobufEncoding: true,
-      includeLocalStorage: false
+      includeLocalStorage: false,
+      contextMenu: false
     },
     {
       storageType: StorageType.Sync,

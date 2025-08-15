@@ -3,7 +3,9 @@ import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusS
 
 import { pullCookies } from '@sync-your-cookie/shared';
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
+import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 import { clearBadge, setPullingBadge, setPushingAndPullingBadge, setPushingBadge } from './badge';
+import { initContextMenu } from './contextMenu';
 
 export const initSubscribe = async () => {
   await domainStatusStorage.resetState();
@@ -26,4 +28,11 @@ export const initSubscribe = async () => {
     await pullCookies();
     console.log("reset finished");
   });
+
+  settingsStorage.subscribe(async () => {
+    const settingsSnapShot = await settingsStorage.getSnapshot();
+    if (settingsSnapShot?.contextMenu) {
+      initContextMenu()
+    }
+  })
 };
