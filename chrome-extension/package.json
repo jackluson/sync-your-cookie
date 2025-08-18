@@ -24,7 +24,7 @@
     "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {
-    "@laynezh/vite-plugin-lib-assets": "^0.5.21",
+    "@laynezh/vite-plugin-lib-assets": "^2.1.0",
     "@sync-your-cookie/dev-utils": "workspace:*",
     "@sync-your-cookie/hmr": "workspace:*",
     "@sync-your-cookie/tsconfig": "workspace:*",
