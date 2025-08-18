@@ -56,7 +56,7 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
       })
     } else {
       const cookieMap = await cookieStorage.getSnapshot();
-      localStorageItems = cookieMap?.domainCookieMap?.[host].localStorageItems || []
+      localStorageItems = cookieMap?.domainCookieMap?.[host]?.localStorageItems || []
     }
 
     if (cookies?.length) {
