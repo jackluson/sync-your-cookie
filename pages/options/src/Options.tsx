@@ -1,5 +1,5 @@
 import { useStorageSuspense, useTheme, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
-import { cloudflareStorage } from '@sync-your-cookie/storage/lib/cloudflareStorage';
+import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
 import {
   Button,
   Card,
@@ -16,14 +16,16 @@ import { Eye, EyeOff, SlidersVertical } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { SettingsPopover } from './components/SettingsPopover';
+import { useGithub } from './hooks/useGithub';
 
 const Options = () => {
-  const cloudflareAccountInfo = useStorageSuspense(cloudflareStorage);
-
-  const [token, setToken] = useState(cloudflareAccountInfo.token);
-  const [accountId, setAccountId] = useState(cloudflareAccountInfo.accountId);
-  const [namespaceId, setNamespaceId] = useState(cloudflareAccountInfo.namespaceId);
+  const accountInfo = useStorageSuspense(accountStorage);
+  console.log('cloudflareAccountInfo', accountInfo);
+  const [token, setToken] = useState(accountInfo.token);
+  const [accountId, setAccountId] = useState(accountInfo.accountId);
+  const [namespaceId, setNamespaceId] = useState(accountInfo.namespaceId);
   const [openEye, setOpenEye] = useState(false);
+  const { loading, handleLaunchAuth } = useGithub();
 
   const { setTheme } = useTheme();
 
@@ -40,7 +42,7 @@ const Options = () => {
   };
 
   const handleSave = () => {
-    cloudflareStorage.update({
+    accountStorage.update({
       accountId: accountId,
       namespaceId: namespaceId,
       token: token,
@@ -69,7 +71,7 @@ const Options = () => {
               <div className="flex justify-between">
                 <CardTitle className="text-xl">Settings</CardTitle>
               </div>
-              <CardDescription>Enter your cloudflare account to store Cookie</CardDescription>
+              <CardDescription>Enter your account to store Cookie</CardDescription>
               <SettingsPopover
                 trigger={
                   <Button variant="secondary" size="icon" className="size-6 absolute right-4 top-4">
@@ -109,6 +111,16 @@ const Options = () => {
                 <div className="grid gap-2">
                   <div className="flex justify-between items-center ">
                     <Label htmlFor="accountId">Account ID</Label>
+                    <p className="flex items-center text-center text-xs">
+                      Don’t have a cloudflare Account yet?
+                      <a
+                        href="https://dash.cloudflare.com/sign-up"
+                        target="_blank"
+                        className=" cursor-pointer underline ml-2"
+                        rel="noreferrer">
+                        Sign up
+                      </a>
+                    </p>
                   </div>
                   <Input
                     id="accountId"
@@ -149,21 +161,23 @@ const Options = () => {
                     placeholder="please input namespace ID "
                   />
                 </div>
-
                 <Button onClick={handleSave} type="submit" className="w-full">
                   Save
                 </Button>
-                <div className="text-center mt-4 text-sm">
-                  Don’t have a cloudflare Account yet?
-                  <a
-                    href="https://dash.cloudflare.com/sign-up"
-                    target="_blank"
-                    className=" cursor-pointer underline ml-2"
-                    rel="noreferrer">
-                    Sign up
-                  </a>
-                </div>
               </div>
+            </CardContent>
+            <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+              <span className="bg-background text-muted-foreground relative z-10 px-2">Or continue with</span>
+            </div>
+            <CardContent>
+              <Button disabled={loading} onClick={handleLaunchAuth} className="w-full mt-6" variant="outline" size="sm">
+                <img
+                  src={chrome.runtime.getURL('popup/github.svg')}
+                  className="ml-1 h-4 w-4 overflow-hidden object-contain "
+                  alt="logo"
+                />
+                <span className="ml-2">Using with GitHub</span>
+              </Button>
             </CardContent>
           </Card>
         </div>

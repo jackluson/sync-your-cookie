@@ -6,7 +6,7 @@
       "@src/*": ["src/*"]
     },
     "jsx": "react-jsx",
-    "types": ["chrome"]
+    "types": ["chrome", "node"]
   },
   "include": ["src"]
 }

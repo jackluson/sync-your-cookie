@@ -26,7 +26,7 @@ const manifest = Object.assign(
     name: 'Sync Your Cookie',
     version: packageJson.version,
     description: 'A browser extension that syncs and manages your cookies to your cloudflare',
-    permissions: ['cookies', "activeTab", 'tabs', 'storage'].concat(sidePanelConfig.permissions),
+    permissions: ['cookies', 'activeTab', 'tabs', 'storage', 'identity'].concat(sidePanelConfig.permissions),
     host_permissions: ['<all_urls>'],
     options_page: 'options/index.html',
     background: {
@@ -48,7 +48,7 @@ const manifest = Object.assign(
         matches: ['*://*/*'],
         js: ['content/index.iife.js'],
         run_at: 'document_start',
-      }
+      },
     ],
     // devtools_page: 'devtools/index.html',
     web_accessible_resources: [

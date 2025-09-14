@@ -4,6 +4,7 @@ export interface AccountInfo {
   accountId?: string;
   namespaceId?: string;
   token?: string;
+  githubAccessToken?: string;
 }
 const key = 'cloudflare-account-storage-key';
 const cacheStorageMap = new Map();
@@ -26,11 +27,11 @@ const initStorage = (): BaseStorage<AccountInfo> => {
 
 const storage = initStorage();
 
-type CloudflareStorage = BaseStorage<AccountInfo> & {
+type AccountInfoStorage = BaseStorage<AccountInfo> & {
   update: (updateInfo: AccountInfo) => Promise<void>;
 };
 
-export const cloudflareStorage: CloudflareStorage = {
+export const accountStorage: AccountInfoStorage = {
   ...storage,
   update: async (updateInfo: AccountInfo) => {
     await storage.set(currentInfo => {

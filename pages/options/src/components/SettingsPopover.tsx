@@ -30,16 +30,15 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
     await domainStatusStorage.resetState();
     await cookieStorage.reset();
     await pullCookies();
-    console.log("reset finished");
-  }
+    console.log('reset finished');
+  };
 
   useEffect(() => {
     reset();
-  }, [settingsInfo.storageKey])
+  }, [settingsInfo.storageKey]);
 
   const handleOpenChange = (open: boolean) => {
     if (selectOpen) return;
-    console.log('popover open', open);
     // if (open === false && (settingsInfo.storageKey !== storageKey || !storageKey)) {
     //   console.log('open', open);
     //   settingsStorage.update({
@@ -103,17 +102,25 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
               <Label className="whitespace-nowrap block w-[136px] text-right" htmlFor="encoding">
                 Protobuf Encoding
               </Label>
-              <Switch onCheckedChange={(checked) => handleCheckChange(checked, 'protobufEncoding')} checked={settingsInfo.protobufEncoding} id="encoding" />
+              <Switch
+                onCheckedChange={checked => handleCheckChange(checked, 'protobufEncoding')}
+                checked={settingsInfo.protobufEncoding}
+                id="encoding"
+              />
             </div>
 
             <div className="flex items-center gap-4">
               <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="include">
                 Include LocalStorage
               </Label>
-              <div className='flex items-center gap-1'>
-                <Switch onCheckedChange={(checked) => handleCheckChange(checked, 'includeLocalStorage')} checked={settingsInfo.includeLocalStorage} id="include" />
+              <div className="flex items-center gap-1">
+                <Switch
+                  onCheckedChange={checked => handleCheckChange(checked, 'includeLocalStorage')}
+                  checked={settingsInfo.includeLocalStorage}
+                  id="include"
+                />
                 <SyncTooltip title="LocalStorage cannot supports Auto Push">
-                  <Info className='mx-2' size={18} />
+                  <Info className="mx-2" size={18} />
                 </SyncTooltip>
               </div>
             </div>

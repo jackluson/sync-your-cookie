@@ -1,4 +1,4 @@
-import { cloudflareStorage, type AccountInfo } from '@sync-your-cookie/storage/lib/cloudflareStorage';
+import { accountStorage, type AccountInfo } from '@sync-your-cookie/storage/lib/accountStorage';
 import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 import { readCloudflareKV, writeCloudflareKV, WriteResponse } from '../cloudflare/api';
@@ -15,7 +15,7 @@ import {
 } from '@sync-your-cookie/protobuf';
 
 export const check = (accountInfo?: AccountInfo) => {
-  const cloudflareAccountInfo = accountInfo || cloudflareStorage.getSnapshot();
+  const cloudflareAccountInfo = accountInfo || accountStorage.getSnapshot();
   if (!cloudflareAccountInfo?.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
     let message = 'Account ID is empty';
     if (!cloudflareAccountInfo?.namespaceId) {
@@ -45,10 +45,10 @@ export const readCookiesMap = async (cloudflareAccountInfo: AccountInfo): Promis
       if (protobufEncoding) {
         const compressedBuffer = base64ToArrayBuffer(res);
         const deMsg = await decodeCookiesMap(compressedBuffer);
-        console.log("readCookiesMap->deMsg", deMsg);
+        console.log('readCookiesMap->deMsg', deMsg);
         return deMsg;
       } else {
-        console.log("readCookiesMap->res", JSON.parse(res));
+        console.log('readCookiesMap->res', JSON.parse(res));
         return JSON.parse(res);
       }
     } catch (error) {
@@ -97,7 +97,7 @@ export const mergeAndWriteCookies = async (
         updateTime: Date.now(),
         createTime: oldCookieMap.domainCookieMap?.[domain]?.createTime || Date.now(),
         cookies: cookies,
-        localStorageItems: localStorageItems
+        localStorageItems: localStorageItems,
       },
     },
   };
@@ -108,7 +108,7 @@ export const mergeAndWriteCookies = async (
 
 export const mergeAndWriteMultipleDomainCookies = async (
   cloudflareAccountInfo: AccountInfo,
-  domainCookies: { domain: string; cookies: ICookie[], localStorageItems: ILocalStorageItem[]  }[],
+  domainCookies: { domain: string; cookies: ICookie[]; localStorageItems: ILocalStorageItem[] }[],
   oldCookieMap: ICookiesMap = {},
 ): Promise<[WriteResponse, ICookiesMap]> => {
   await check(cloudflareAccountInfo);

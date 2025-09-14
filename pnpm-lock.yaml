@@ -372,6 +372,9 @@ importers:
       '@sync-your-cookie/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@types/node':
+        specifier: ^20.12.11
+        version: 20.14.9
 
   pages/popup:
     dependencies:
@@ -7030,7 +7033,7 @@ snapshots:
       camelcase-css: 2.0.1
       postcss: 8.4.39
 
-  postcss-load-config@4.0.2(postcss@8.4.39)(ts-node@10.9.2(@types/node@20.14.9)(typescript@5.2.2)):
+  postcss-load-config@4.0.2(postcss@8.4.39)(ts-node@10.9.2(@swc/core@1.13.0)(@types/node@20.14.9)(typescript@5.2.2)):
     dependencies:
       lilconfig: 3.1.2
       yaml: 2.4.5
@@ -7480,7 +7483,7 @@ snapshots:
       postcss: 8.4.39
       postcss-import: 15.1.0(postcss@8.4.39)
       postcss-js: 4.0.1(postcss@8.4.39)
-      postcss-load-config: 4.0.2(postcss@8.4.39)(ts-node@10.9.2(@types/node@20.14.9)(typescript@5.2.2))
+      postcss-load-config: 4.0.2(postcss@8.4.39)(ts-node@10.9.2(@swc/core@1.13.0)(@types/node@20.14.9)(typescript@5.2.2))
       postcss-nested: 6.0.1(postcss@8.4.39)
       postcss-selector-parser: 6.1.0
       resolve: 1.22.8
@@ -7594,7 +7597,7 @@ snapshots:
       execa: 5.1.1
       globby: 11.1.0
       joycon: 3.1.1
-      postcss-load-config: 4.0.2(postcss@8.4.39)(ts-node@10.9.2(@types/node@20.14.9)(typescript@5.2.2))
+      postcss-load-config: 4.0.2(postcss@8.4.39)(ts-node@10.9.2(@swc/core@1.13.0)(@types/node@20.14.9)(typescript@5.2.2))
       resolve-from: 5.0.0
       rollup: 4.18.0
       source-map: 0.8.0-beta.0

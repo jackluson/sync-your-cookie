@@ -31,7 +31,7 @@
     "prettier/prettier": "error",
     "react/react-in-jsx-scope": "off",
     "import/no-unresolved": "off",
-    "jsx-a11y/click-events-have-key-events": "warning"
+    "jsx-a11y/click-events-have-key-events": "warn"
   },
   "globals": {
     "chrome": "readonly"

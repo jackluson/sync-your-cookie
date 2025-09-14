@@ -1,4 +1,4 @@
-import { cloudflareStorage } from '@sync-your-cookie/storage/lib/cloudflareStorage';
+import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 
 import { pullCookies } from '@sync-your-cookie/shared';
@@ -22,7 +22,7 @@ export const initSubscribe = async () => {
     }
   });
 
-  cloudflareStorage.subscribe(async () => {
+  accountStorage.subscribe(async () => {
     await domainStatusStorage.resetState();
     await cookieStorage.reset();
     await pullCookies();
