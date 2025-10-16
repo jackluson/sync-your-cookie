@@ -4,7 +4,12 @@ export interface AccountInfo {
   accountId?: string;
   namespaceId?: string;
   token?: string;
+  selectedProvider?: 'cloudflare' | 'github';
   githubAccessToken?: string;
+  avatarUrl?: string;
+  name?: string;
+  bio?: string;
+  email?: string;
 }
 const key = 'cloudflare-account-storage-key';
 const cacheStorageMap = new Map();
@@ -15,7 +20,9 @@ const initStorage = (): BaseStorage<AccountInfo> => {
   }
   const storage = createStorage<AccountInfo>(
     key,
-    {},
+    {
+      selectedProvider: 'cloudflare',
+    },
     {
       storageType: StorageType.Sync,
       liveUpdate: true,
