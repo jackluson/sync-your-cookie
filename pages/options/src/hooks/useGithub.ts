@@ -69,8 +69,15 @@ export const useGithub = () => {
       setLoading(false);
     }
   };
+
+  const handleListGist = () => {
+    githubApi.listGists().then(gists => {
+      console.log('gists', gists);
+    });
+  };
   return {
     handleLaunchAuth,
+    handleListGist,
     loading,
   };
 };

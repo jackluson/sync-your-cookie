@@ -1,11 +1,14 @@
+import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
+
 export class GithubApi {
   private clientId: string;
   private clientSecret: string;
-  private accessToken: string | null = null;
+  private accessToken?: string | null = null;
 
   constructor(clientId: string, clientSecret: string) {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
+    this.accessToken = accountStorage.getSnapshot()?.githubAccessToken;
   }
 
   // 用 code 换取 access_token
@@ -36,7 +39,6 @@ export class GithubApi {
     const res = await fetch('https://api.github.com/user', {
       headers: { Authorization: `token ${this.accessToken}` },
     });
-    console.log('res', res);
     return res.json();
   }
 
@@ -89,6 +91,12 @@ export class GithubApi {
   }
 
   private ensureToken() {
-    if (!this.accessToken) throw new Error('请先获取 access_token');
+    if (!this.accessToken) {
+      this.accessToken = accountStorage.getSnapshot()?.githubAccessToken;
+      console.log('this.accessToken', this.accessToken);
+    }
+    if (!this.accessToken) {
+      throw new Error('请先获取 access_token');
+    }
   }
 }
