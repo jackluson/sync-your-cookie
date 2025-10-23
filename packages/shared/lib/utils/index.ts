@@ -2,7 +2,7 @@ import { ErrorCode, WriteResponse } from '@lib/cloudflare';
 import { MessageErrorCode, SendResponse } from '@lib/message';
 
 export function debounce<T = unknown>(func: (...args: T[]) => void, timeout = 300) {
-  let timer: number | null = null;
+  let timer: number | null | NodeJS.Timeout = null;
   return (...args: T[]) => {
     timer && clearTimeout(timer);
     timer = setTimeout(() => {
@@ -20,11 +20,11 @@ export function checkCloudflareResponse(
   callback: (response?: SendResponse) => void,
 ) {
   if ((res as WriteResponse)?.success) {
-    callback({ isOk: true, msg: `${scene} success`  });
+    callback({ isOk: true, msg: `${scene} success` });
   } else {
     const cloudFlareErrors = [ErrorCode.NotFoundRoute, ErrorCode.NamespaceIdError, ErrorCode.AuthenicationError];
     const isAccountError = res?.errors?.length && cloudFlareErrors.includes(res.errors[0].code);
-    console.log("checkCloudflareResponse->res", res);
+    console.log('checkCloudflareResponse->res', res);
     if (isAccountError) {
       callback({
         isOk: false,

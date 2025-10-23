@@ -1,11 +1,7 @@
-import { GithubApi } from '@sync-your-cookie/shared';
+import { clientId, githubApi, scope } from '@sync-your-cookie/shared';
 import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
 import { useState } from 'react';
 import { toast } from 'sonner';
-const scope = 'gist';
-const clientId = 'Ov23liyhOkJsj8FzPlm0';
-const clientSecret = (process as any).env.CLIENT_SECRET;
-const githubApi = new GithubApi(clientId, clientSecret);
 
 export const useGithub = () => {
   const [loading, setLoading] = useState(false);
@@ -70,10 +66,19 @@ export const useGithub = () => {
     }
   };
 
-  const handleListGist = () => {
-    githubApi.listGists().then(gists => {
-      console.log('gists', gists);
-    });
+  const handleListGist = async () => {
+    try {
+      // const res = await githubApi.fetchUser();
+      // console.log("this token", githubApi)
+      const res = await githubApi.createGist('example of gist', 'SYNC_COOKIE.md', 'xxxxx', true);
+      // const res = await githubApi.listGists();
+      console.log('res>', res);
+    } catch (error) {
+      console.log('error', error);
+    }
+    // githubApi.listGists().then(gists => {
+    //   console.log('fetch gist list', gists);
+    // });
   };
   return {
     handleLaunchAuth,

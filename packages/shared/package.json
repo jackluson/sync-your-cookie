@@ -21,6 +21,7 @@
     "proto": "pbjs -o ./lib/protobuf/proto/cookie.js -w es6 -t static-module ./lib/protobuf/proto/*.proto && pbts ./lib/protobuf/proto/cookie.js -o ./lib/protobuf/proto/cookie.d.ts"
   },
   "dependencies": {
+    "@octokit/rest": "^22.0.0",
     "p-timeout": "^6.1.4",
     "pako": "^2.1.0",
     "protobufjs": "^7.3.2"
