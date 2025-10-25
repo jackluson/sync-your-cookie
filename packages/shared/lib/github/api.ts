@@ -1,4 +1,4 @@
-import { Octokit } from '@octokit/rest';
+import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
 
 export class GithubApi {
@@ -57,12 +57,14 @@ export class GithubApi {
   }
 
   // 用 access_token 获取用户信息
-  async fetchUser(): Promise<any> {
+  async fetchUser() {
     this.ensureToken();
+    // const res = await this.octokit.users.getById();
+
     const res = await fetch('https://api.github.com/user', {
       headers: { Authorization: `token ${this.accessToken}` },
     });
-    return res.json();
+    return res.json() as Promise<RestEndpointMethodTypes['users']['getById']['response']['data']>;
   }
 
   async request(method: string, path: string, payload: Record<string, any> = {}) {
@@ -97,7 +99,7 @@ export class GithubApi {
   }
 
   // 创建 gist
-  async createGist(description: string, filename: string, content: string, publicGist = false): Promise<any> {
+  async createGist(description: string, filename: string, content: string, publicGist = false) {
     return this.octokit.gists.create({
       description: description,
       public: publicGist,
@@ -109,29 +111,26 @@ export class GithubApi {
     });
   }
 
+  async getGist(gistId: string) {
+    return this.octokit.gists.get({ gist_id: gistId });
+  }
+
   // 更新 gist
-  async updateGist(gistId: string, files: any, description?: string): Promise<any> {
-    this.ensureToken();
-    const body: any = { files };
-    if (description) body.description = description;
-    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `token ${this.accessToken}`,
-        'Content-Type': 'application/json',
+  async updateGist(gistId: string, description: string, filename: string, content: string) {
+    return this.octokit.gists.update({
+      gist_id: gistId,
+      description: description,
+      files: {
+        [filename]: {
+          content: content,
+        },
       },
-      body: JSON.stringify(body),
     });
-    return res.json();
   }
 
   // 删除 gist
-  async deleteGist(gistId: string): Promise<void> {
-    this.ensureToken();
-    await fetch(`https://api.github.com/gists/${gistId}`, {
-      method: 'DELETE',
-      headers: { Authorization: `token ${this.accessToken}` },
-    });
+  async deleteGist(gistId: string) {
+    return this.octokit.gists.delete({ gist_id: gistId });
   }
 
   private ensureToken() {

@@ -1,4 +1,5 @@
 {
+	"editor.fontFamily": "Consolas, 'Courier New', monospace",
 	"eslint.validate": [
 		"javascript",
 		"javascriptreact",

@@ -11,7 +11,7 @@
     "paths": {
       "@lib/*": ["lib/*"]
     },
-    "types": ["chrome", "node"]
+    "types": ["chrome", "node", "@octokit/types"]
   },
   "include": ["index.ts", "lib"],
 }

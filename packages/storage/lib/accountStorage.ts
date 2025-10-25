@@ -7,9 +7,9 @@ export interface AccountInfo {
   selectedProvider?: 'cloudflare' | 'github';
   githubAccessToken?: string;
   avatarUrl?: string;
-  name?: string;
-  bio?: string;
-  email?: string;
+  name?: string | null;
+  bio?: string | null;
+  email?: string | null;
 }
 const key = 'cloudflare-account-storage-key';
 const cacheStorageMap = new Map();
