@@ -1,10 +1,13 @@
 import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
+import { IStorageItem } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 export class GithubApi {
   private clientId: string;
   private clientSecret: string;
   private accessToken?: string | null = null;
+
+  private prefix = 'sync-your-cookie_';
 
   octokit!: Octokit;
 
@@ -16,20 +19,73 @@ export class GithubApi {
     this.subscribe();
   }
 
-  newOctokit() {
+  async newOctokit() {
     if (this.accessToken) {
       this.octokit = new Octokit({ auth: this.accessToken });
       this.octokit.hook.before('request', options => {
         console.log('请求 URL:', options.url);
         console.log('请求头:', options.headers);
       });
+      this.initStorageKeyList();
     }
+  }
+
+  async getSyncGists() {
+    const res = await this.listGists();
+    console.log('newOctokit->listGist->res', res);
+    const fullList = res.data;
+    const syncGist = fullList.find(gist => {
+      const files = gist.files;
+      const keys = Object.keys(files);
+      const hasSyncFile = keys.some(key => key.startsWith(this.prefix));
+      return hasSyncFile;
+    });
+    return syncGist;
+  }
+
+  async initStorageKeyList() {
+    let syncGist = await this.getSyncGists();
+
+    if (syncGist) {
+      console.log('No sync gists found, creating one...');
+      const newGist = await this.createGist(
+        'Sync Your Cookie Gist',
+        `${this.prefix}default.json`,
+        'This is an example sync file for Sync Your Cookie.',
+        false,
+      );
+      // syncGists.push(newGist.data);
+      console.log('newGist', newGist);
+    }
+    syncGist = await this.getSyncGists();
+    console.log('syncGists', syncGist);
+  }
+
+  async setStorageKeyList(gist: RestEndpointMethodTypes['gists']['get']['response']['data']) {
+    const files = gist.files;
+    const storageKeys: IStorageItem[] = [];
+    if (files) {
+      for (const filename in files) {
+        const file = files[filename];
+        if (filename.startsWith(this.prefix)) {
+          storageKeys.push({
+            value: filename.replace(this.prefix, ''),
+            label: filename.replace(this.prefix, ''),
+            gistId: gist.id,
+          });
+          // storageKeys.push(file[0].replace(this.prefix, ''));
+        }
+      }
+    }
+    // const keys = Object.keys(files);
+    // const storageKeys = keys.filter(key => key.startsWith(this.prefix)).map(key => key.replace(this.prefix, ''));
+    // console.log('storageKeys', storageKeys);
+    // return storageKeys;
   }
 
   subscribe() {
     accountStorage.subscribe(async () => {
       this.accessToken = accountStorage.getSnapshot()?.githubAccessToken;
-      console.log('subscribe->accessToken', this.accessToken);
       this.newOctokit();
     });
   }
@@ -68,7 +124,6 @@ export class GithubApi {
   }
 
   async request(method: string, path: string, payload: Record<string, any> = {}) {
-    console.log('payload', payload, this.accessToken);
     this.ensureToken();
     const res = await this.octokit.request(`${method} ${path}`, {
       ...payload,
@@ -77,7 +132,6 @@ export class GithubApi {
         'X-GitHub-Api-Version': '2022-11-28',
       },
     });
-    console.log('octokit->res', res);
     if (res.status !== 200) {
       return Promise.reject(res);
     }
@@ -93,7 +147,7 @@ export class GithubApi {
   }
 
   // 获取 gist 列表
-  async listGists(): Promise<any> {
+  async listGists() {
     const res = await this.octokit.gists.list();
     return res;
   }
@@ -147,6 +201,6 @@ export class GithubApi {
 
 export const scope = 'gist';
 export const clientId = 'Ov23liyhOkJsj8FzPlm0';
-const clientSecret = (process as any).env.CLIENT_SECRET;
+const clientSecret = '';
 
 export const githubApi = new GithubApi(clientId, clientSecret);

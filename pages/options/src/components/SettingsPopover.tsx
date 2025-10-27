@@ -58,12 +58,6 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   };
 
   const handleRemoveStorageKey = async (key: string) => {
-    // if (settingsInfo.storageKey === key) {
-    //   settingsStorage.update({
-    //     storageKey: defaultKey,
-    //   });
-    //   setStorageKey(defaultKey);
-    // }
     await settingsStorage.removeStorageKey(key);
   };
 

@@ -26,13 +26,13 @@ export const initSubscribe = async () => {
     await domainStatusStorage.resetState();
     await cookieStorage.reset();
     await pullCookies();
-    console.log("reset finished");
+    console.log('reset finished');
   });
 
   settingsStorage.subscribe(async () => {
     const settingsSnapShot = await settingsStorage.getSnapshot();
     if (settingsSnapShot?.contextMenu) {
-      initContextMenu()
+      initContextMenu();
     }
-  })
+  });
 };

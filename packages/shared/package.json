@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@octokit/rest": "^22.0.0",
+    "@octokit/types": "^15.0.1",
     "p-timeout": "^6.1.4",
     "pako": "^2.1.0",
     "protobufjs": "^7.3.2"

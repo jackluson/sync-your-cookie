@@ -6,7 +6,7 @@
     "noEmit": false,
     "declaration": true,
     "module": "CommonJS",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "declarationMap": true,
     "target": "ES6",
     "types": ["node"],

@@ -21,12 +21,11 @@ import { useGithub } from './hooks/useGithub';
 
 const Options = () => {
   const accountInfo = useStorageSuspense(accountStorage);
-  console.log('cloudflareAccountInfo', accountInfo);
   const [token, setToken] = useState(accountInfo.token);
   const [accountId, setAccountId] = useState(accountInfo.accountId);
   const [namespaceId, setNamespaceId] = useState(accountInfo.namespaceId);
   const [openEye, setOpenEye] = useState(false);
-  const { loading, handleLaunchAuth } = useGithub();
+  const { loading, handleLaunchAuth, handleListGist } = useGithub();
 
   const { setTheme } = useTheme();
 
@@ -62,15 +61,16 @@ const Options = () => {
   // }
 
   const handleLogout = () => {
-    accountStorage.update({
-      githubAccessToken: '',
-      selectedProvider: 'cloudflare',
-      name: '',
-      avatarUrl: '',
-      bio: '',
-      email: '',
-    });
-    toast.success('Log out Success');
+    // accountStorage.update({
+    //   githubAccessToken: '',
+    //   selectedProvider: 'cloudflare',
+    //   name: '',
+    //   avatarUrl: '',
+    //   bio: '',
+    //   email: '',
+    // });
+    // toast.success('Log out Success');
+    handleListGist();
   };
 
   const renderAccount = () => {
