@@ -3,9 +3,10 @@ import 'webextension-polyfill';
 
 import {
   extractDomainAndPort,
+  initGithubApi,
   pullAndSetCookies,
   pullCookies,
-  pushMultipleDomainCookies
+  pushMultipleDomainCookies,
 } from '@sync-your-cookie/shared';
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
@@ -13,7 +14,6 @@ import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 import { initContextMenu } from './contextMenu';
 import { refreshListen } from './listen';
 import { initSubscribe } from './subscribe';
-
 
 const ping = () => {
   chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
@@ -23,12 +23,12 @@ const ping = () => {
       // reject({ isOk: false, msg: 'No active tab found' } as SendResponse);
       return;
     }
-    chrome.tabs.sendMessage(tabs[0].id!, "ping", function (result) {
+    chrome.tabs.sendMessage(tabs[0].id!, 'ping', function (result) {
       console.log('result->', result);
     });
   });
   // setTimeout(ping, 4000);
-}
+};
 
 const init = async () => {
   try {
@@ -38,6 +38,7 @@ const init = async () => {
     console.log('initSubscribe finish');
     await pullCookies(true);
     console.log('init pullCookies finish');
+    await initGithubApi();
     // ping();
   } catch (error) {
     console.log('init-->error', error);
@@ -49,10 +50,9 @@ chrome.runtime.onInstalled.addListener(async () => {
   console.log('onInstalled');
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
   const settingsSnapShot = await settingsStorage.get();
-  if(settingsSnapShot?.contextMenu) {
-    initContextMenu()
+  if (settingsSnapShot?.contextMenu) {
+    initContextMenu();
   }
-
 });
 
 let delayTimer: NodeJS.Timeout | null = null;
@@ -188,6 +188,6 @@ chrome.tabs.onActivated.addListener(async function () {
     active: true,
   });
   previousActiveTabList = allActiveTabs;
-  console.log("refreshListen", previousActiveTabList);
+  console.log('refreshListen', previousActiveTabList);
   refreshListen();
 });

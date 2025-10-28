@@ -1,6 +1,6 @@
 import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
-import { IStorageItem } from '@sync-your-cookie/storage/lib/settingsStorage';
+import { IStorageItem, settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 export class GithubApi {
   private clientId: string;
@@ -9,14 +9,25 @@ export class GithubApi {
 
   private prefix = 'sync-your-cookie_';
 
+  static instance: GithubApi;
+
   octokit!: Octokit;
+
+  private inited = false;
 
   constructor(clientId: string, clientSecret: string) {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
     this.accessToken = accountStorage.getSnapshot()?.githubAccessToken;
-    this.newOctokit();
     this.subscribe();
+    this.init();
+  }
+
+  public static getInstance(clientId: string, clientSecret: string): GithubApi {
+    if (!GithubApi.instance) {
+      GithubApi.instance = new GithubApi(clientId, clientSecret);
+    }
+    return GithubApi.instance;
   }
 
   async newOctokit() {
@@ -26,8 +37,16 @@ export class GithubApi {
         console.log('请求 URL:', options.url);
         console.log('请求头:', options.headers);
       });
-      this.initStorageKeyList();
     }
+  }
+
+  async init() {
+    if (this.inited) {
+      return;
+    }
+    this.newOctokit();
+    this.initStorageKeyList();
+    this.inited = true;
   }
 
   async getSyncGists() {
@@ -44,24 +63,30 @@ export class GithubApi {
   }
 
   async initStorageKeyList() {
+    if (!this.octokit) {
+      return;
+    }
     let syncGist = await this.getSyncGists();
 
-    if (syncGist) {
+    if (!syncGist) {
       console.log('No sync gists found, creating one...');
       const newGist = await this.createGist(
         'Sync Your Cookie Gist',
-        `${this.prefix}default.json`,
+        `${this.prefix}Default`,
         'This is an example sync file for Sync Your Cookie.',
         false,
       );
       // syncGists.push(newGist.data);
       console.log('newGist', newGist);
+      syncGist = await this.getSyncGists();
     }
-    syncGist = await this.getSyncGists();
     console.log('syncGists', syncGist);
+    if (syncGist) {
+      await this.setStorageKeyList(syncGist);
+    }
   }
 
-  async setStorageKeyList(gist: RestEndpointMethodTypes['gists']['get']['response']['data']) {
+  async setStorageKeyList(gist: RestEndpointMethodTypes['gists']['list']['response']['data'][number]) {
     const files = gist.files;
     const storageKeys: IStorageItem[] = [];
     if (files) {
@@ -73,9 +98,15 @@ export class GithubApi {
             label: filename.replace(this.prefix, ''),
             gistId: gist.id,
           });
+
           // storageKeys.push(file[0].replace(this.prefix, ''));
         }
       }
+      console.log('storageKeys', storageKeys);
+      settingsStorage.update({
+        storageKeyList: storageKeys,
+        storageKey: storageKeys[0]?.value,
+      });
     }
     // const keys = Object.keys(files);
     // const storageKeys = keys.filter(key => key.startsWith(this.prefix)).map(key => key.replace(this.prefix, ''));
@@ -85,8 +116,14 @@ export class GithubApi {
 
   subscribe() {
     accountStorage.subscribe(async () => {
-      this.accessToken = accountStorage.getSnapshot()?.githubAccessToken;
-      this.newOctokit();
+      const accessToken = accountStorage.getSnapshot()?.githubAccessToken;
+      if (this.accessToken === accessToken || !accessToken) {
+        return;
+      }
+      this.accessToken = accessToken;
+      console.log('GithubApi accountStorage changed -> this.accessToken', this.accessToken);
+      this.inited = false;
+      this.init();
     });
   }
 
@@ -203,4 +240,8 @@ export const scope = 'gist';
 export const clientId = 'Ov23liyhOkJsj8FzPlm0';
 const clientSecret = '';
 
-export const githubApi = new GithubApi(clientId, clientSecret);
+// export const githubApi = new GithubApi(clientId, clientSecret);
+
+export const initGithubApi = async () => {
+  GithubApi.getInstance(clientId, clientSecret);
+};

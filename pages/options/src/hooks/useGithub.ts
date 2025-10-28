@@ -1,4 +1,4 @@
-import { clientId, githubApi, scope } from '@sync-your-cookie/shared';
+import { clientId, GithubApi, scope } from '@sync-your-cookie/shared';
 import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -22,10 +22,10 @@ export const useGithub = () => {
         if (code) {
           try {
             console.log('code', code);
-            const accessToken = await githubApi.fetchAccessToken(code);
+            const accessToken = await GithubApi.instance.fetchAccessToken(code);
             console.log('accessToken', accessToken);
             setLoading(false);
-            const user = await githubApi.fetchUser();
+            const user = await GithubApi.instance.fetchUser();
             accountStorage.update({
               githubAccessToken: accessToken,
               selectedProvider: 'github',
@@ -70,9 +70,17 @@ export const useGithub = () => {
     try {
       // const res = await githubApi.fetchUser();
       // console.log("this token", githubApi)
-      const res = await githubApi.createGist('example of gist', 'SYNC_COOKIE.md', 'xxxxx', true);
+      // const res = await githubApi.createGist('example of gist', 'SYNC_COOKIE.md', 'xxxxx', true);
       // const res = await githubApi.listGists();
-      console.log('res>', res);
+      // const res = await githubApi.getGist('c8cbb4fe554311ffd1fca61a5284d141');
+      // const res = await githubApi.updateGist(
+      //   'c8cbb4fe554311ffd1fca61a5284d141',
+      //   'updated gist',
+      //   'SYNC_COOKIE.md',
+      //   'yyyyyy',
+      // );
+      const res = await GithubApi.instance.deleteGist('c8cbb4fe554311ffd1fca61a5284d141');
+      console.log('res >', res);
     } catch (error) {
       console.log('error', error);
     }
