@@ -37,7 +37,7 @@ const init = async () => {
     await initSubscribe(); // await state reset finish
     console.log('initSubscribe finish');
     await pullCookies(true);
-    console.log('init pullCookies finish');
+    console.log('initPullCookies finish');
     await initGithubApi();
     // ping();
   } catch (error) {

@@ -51,7 +51,6 @@ export class GithubApi {
 
   async getSyncGists() {
     const res = await this.listGists();
-    console.log('newOctokit->listGist->res', res);
     const fullList = res.data;
     const syncGist = fullList.find(gist => {
       const files = gist.files;
@@ -102,10 +101,11 @@ export class GithubApi {
           // storageKeys.push(file[0].replace(this.prefix, ''));
         }
       }
-      console.log('storageKeys', storageKeys);
+      console.log('storageKeys', storageKeys, gist.id);
       settingsStorage.update({
         storageKeyList: storageKeys,
         storageKey: storageKeys[0]?.value,
+        storageKeyGistId: gist.id,
       });
     }
     // const keys = Object.keys(files);
@@ -183,6 +183,10 @@ export class GithubApi {
     return this.request('POST', path, payload);
   }
 
+  async patch(path: string, payload: Record<string, any> = {}) {
+    return this.request('PATCH', path, payload);
+  }
+
   // 获取 gist 列表
   async listGists() {
     const res = await this.octokit.gists.list();
@@ -207,15 +211,38 @@ export class GithubApi {
   }
 
   // 更新 gist
-  async updateGist(gistId: string, description: string, filename: string, content: string) {
+  async updateGist(gistId: string, filename: string, content: string) {
+    // const { data: gist } = await this.octokit.gists.get({
+    //   gist_id: gistId,
+    // });
+    // console.log('files', gist.files);
+    // const existFiles = gist.files || {};
+    const syncFileName = filename.startsWith(this.prefix) ? filename : this.prefix + filename;
     return this.octokit.gists.update({
       gist_id: gistId,
-      description: description,
       files: {
-        [filename]: {
+        [syncFileName]: {
           content: content,
         },
       },
+    });
+    // return this.patch(`/gists/${gistId}`, {
+    //   files: {
+    //     [filename]: {
+    //       content: content,
+    //     },
+    //   },
+    // });
+  }
+
+  async deleteGistFile(gistId: string, filename: string) {
+    const syncFileName = filename.startsWith(this.prefix) ? filename : this.prefix + filename;
+    return this.octokit.gists.update({
+      gist_id: gistId,
+      files: {
+        [syncFileName]: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
     });
   }
 
@@ -243,5 +270,6 @@ const clientSecret = '';
 // export const githubApi = new GithubApi(clientId, clientSecret);
 
 export const initGithubApi = async () => {
+  console.log('initGithubApi finish');
   GithubApi.getInstance(clientId, clientSecret);
 };

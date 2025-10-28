@@ -1,5 +1,4 @@
 import { BaseStorage, createStorage, StorageType } from './base';
-
 export interface IStorageItem {
   value: string;
   label: string;
@@ -9,6 +8,7 @@ export interface IStorageItem {
 export interface ISettings {
   storageKeyList: IStorageItem[];
   storageKey?: string;
+  storageKeyGistId?: string;
   protobufEncoding?: boolean;
   includeLocalStorage?: boolean;
   contextMenu?: boolean;

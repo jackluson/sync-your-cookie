@@ -10,7 +10,7 @@ import {
 } from '@sync-your-cookie/ui';
 import { useRef, useState } from 'react';
 
-import { CircleX, Plus } from 'lucide-react';
+import { CircleX, LoaderIcon, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 export interface IOption {
@@ -28,10 +28,14 @@ interface StorageSelectProps extends React.ComponentProps<typeof Select> {
 
 export function StorageSelect(props: StorageSelectProps) {
   const { value, onRemove, options, onValueChange, ...rest } = props;
+  const [loading, setLoading] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
+    if (loading) {
+      return;
+    }
     const newKey = inputValue.trim().replaceAll(/\s+/g, '');
     const exist = options.find(option => option.value === newKey);
     if (exist) {
@@ -39,14 +43,31 @@ export function StorageSelect(props: StorageSelectProps) {
       toast.error('Key already exists');
       return;
     }
-    props.onAdd(newKey);
-    setInputValue('');
+    try {
+      setLoading(true);
+      await props.onAdd(newKey);
+      setInputValue('');
+    } catch (error) {
+      console.log('error', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRemoveKey = (option: IOption) => {
+  const handleRemoveKey = async (option: IOption) => {
     // Handle removing a storage key
     console.log('Remove storage key', option);
-    onRemove(option.value);
+    if (loading) {
+      return;
+    }
+    try {
+      setLoading(true);
+      await onRemove(option.value);
+    } catch (error) {
+      console.log('error', error);
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div ref={containerRef}>
@@ -77,7 +98,7 @@ export function StorageSelect(props: StorageSelectProps) {
                       role="button"
                       tabIndex={index}
                       className="absolute top-2 invisible right-[6px] cursor-pointer group-hover:visible">
-                      <CircleX size={18} />
+                      {loading ? <LoaderIcon className="animate-spin" size={18} /> : <CircleX size={18} />}
                     </span>
                   ) : null}
                 </div>
@@ -90,10 +111,16 @@ export function StorageSelect(props: StorageSelectProps) {
                 onChange={event => {
                   setInputValue(event?.target.value.replaceAll(/\s+/g, ''));
                 }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && inputValue.replaceAll(/\s+/g, '')) {
+                    e.preventDefault();
+                    handleAdd();
+                  }
+                }}
                 className="h-8 "
               />
               <Button
-                disabled={!inputValue.replaceAll(/\s+/g, '')}
+                disabled={!inputValue.replaceAll(/\s+/g, '') || loading}
                 onClick={() => handleAdd()}
                 className="ml-0 scale-90"
                 size="sm"

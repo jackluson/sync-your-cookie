@@ -1,7 +1,9 @@
-import { clientId, GithubApi, scope } from '@sync-your-cookie/shared';
+import { clientId, GithubApi, initGithubApi, scope } from '@sync-your-cookie/shared';
 import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
 import { useState } from 'react';
 import { toast } from 'sonner';
+
+initGithubApi();
 
 export const useGithub = () => {
   const [loading, setLoading] = useState(false);

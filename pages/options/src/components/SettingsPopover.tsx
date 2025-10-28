@@ -1,4 +1,5 @@
-import { pullCookies, useStorageSuspense } from '@sync-your-cookie/shared';
+import { GithubApi, pullCookies, useStorageSuspense } from '@sync-your-cookie/shared';
+import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
@@ -54,11 +55,25 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   };
 
   const handleAddStorageKey = async (key: string) => {
-    await settingsStorage.addStorageKey(key);
+    const accountStorageInfo = await accountStorage.getSnapshot();
+    if (accountStorageInfo?.selectedProvider === 'cloudflare') {
+      await settingsStorage.addStorageKey(key);
+    } else {
+      const gistId = settingsInfo.storageKeyGistId;
+      await GithubApi.instance.updateGist(gistId!, key, 'x');
+      await GithubApi.instance.initStorageKeyList();
+    }
   };
 
   const handleRemoveStorageKey = async (key: string) => {
-    await settingsStorage.removeStorageKey(key);
+    const accountStorageInfo = await accountStorage.getSnapshot();
+    if (accountStorageInfo?.selectedProvider === 'cloudflare') {
+      await settingsStorage.removeStorageKey(key);
+    } else {
+      const gistId = settingsInfo.storageKeyGistId;
+      await GithubApi.instance.deleteGistFile(gistId!, key);
+      await GithubApi.instance.initStorageKeyList();
+    }
   };
 
   return (
