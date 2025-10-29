@@ -1,4 +1,5 @@
 import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
+import { arrayBufferToBase64, encodeCookiesMap, ICookiesMap } from '@sync-your-cookie/protobuf';
 import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
 import { IStorageItem, settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
@@ -69,12 +70,8 @@ export class GithubApi {
 
     if (!syncGist) {
       console.log('No sync gists found, creating one...');
-      const newGist = await this.createGist(
-        'Sync Your Cookie Gist',
-        `${this.prefix}Default`,
-        'This is an example sync file for Sync Your Cookie.',
-        false,
-      );
+      const content = await this.initContent();
+      const newGist = await this.createGist('Sync Your Cookie Gist', `${this.prefix}Default`, content, false);
       // syncGists.push(newGist.data);
       console.log('newGist', newGist);
       syncGist = await this.getSyncGists();
@@ -83,6 +80,24 @@ export class GithubApi {
     if (syncGist) {
       await this.setStorageKeyList(syncGist);
     }
+  }
+
+  async initContent() {
+    const cookiesMap: ICookiesMap = {
+      updateTime: Date.now(),
+      createTime: Date.now(),
+      domainCookieMap: {},
+    };
+    let encodingStr = '';
+    const protobufEncoding = settingsStorage.getSnapshot()?.protobufEncoding;
+    if (protobufEncoding) {
+      const buffered = await encodeCookiesMap(cookiesMap);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      encodingStr = arrayBufferToBase64(buffered as any);
+    } else {
+      encodingStr = JSON.stringify(cookiesMap);
+    }
+    return encodingStr;
   }
 
   async setStorageKeyList(gist: RestEndpointMethodTypes['gists']['list']['response']['data'][number]) {
