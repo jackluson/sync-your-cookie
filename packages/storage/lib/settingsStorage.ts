@@ -9,6 +9,7 @@ export interface ISettings {
   storageKeyList: IStorageItem[];
   storageKey?: string;
   storageKeyGistId?: string;
+  gistHtmlUrl?: string;
   protobufEncoding?: boolean;
   includeLocalStorage?: boolean;
   contextMenu?: boolean;

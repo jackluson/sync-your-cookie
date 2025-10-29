@@ -4,7 +4,7 @@ import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 import { Label, Popover, PopoverContent, PopoverTrigger, Switch, SyncTooltip } from '@sync-your-cookie/ui';
-import { Info } from 'lucide-react';
+import { Info, SquareArrowOutUpRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { StorageSelect } from './StorageSelect';
 interface SettingsPopover {
@@ -60,7 +60,7 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
       await settingsStorage.addStorageKey(key);
     } else {
       const gistId = settingsInfo.storageKeyGistId;
-      await GithubApi.instance.updateGist(gistId!, key, 'x');
+      await GithubApi.instance.addGistFile(gistId!, key);
       await GithubApi.instance.initStorageKeyList();
     }
   };
@@ -88,7 +88,14 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
           <div className="gap-2">
             <div className="flex items-center gap-4 mb-4">
               <Label className="w-[136px] block text-right" htmlFor="storage-key">
-                Storage Key
+                <div className="flex gap-2 justify-end">
+                  Storage Key
+                  {settingsInfo.gistHtmlUrl ? (
+                    <a href={settingsInfo.gistHtmlUrl} target="_blank" rel="noreferrer">
+                      <SquareArrowOutUpRight size={16} />
+                    </a>
+                  ) : null}
+                </div>
               </Label>
               {/* <Input
                 onChange={handleKeyInputChange}

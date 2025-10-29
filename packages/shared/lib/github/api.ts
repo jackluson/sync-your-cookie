@@ -112,7 +112,6 @@ export class GithubApi {
             label: filename.replace(this.prefix, ''),
             gistId: gist.id,
           });
-
           // storageKeys.push(file[0].replace(this.prefix, ''));
         }
       }
@@ -121,6 +120,7 @@ export class GithubApi {
         storageKeyList: storageKeys,
         storageKey: storageKeys[0]?.value,
         storageKeyGistId: gist.id,
+        gistHtmlUrl: gist.html_url,
       });
     }
     // const keys = Object.keys(files);
@@ -248,6 +248,10 @@ export class GithubApi {
     //     },
     //   },
     // });
+  }
+
+  async addGistFile(gistId: string, filename: string) {
+    return this.updateGist(gistId, filename, await this.initContent());
   }
 
   async deleteGistFile(gistId: string, filename: string) {
