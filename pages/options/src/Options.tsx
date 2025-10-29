@@ -109,6 +109,9 @@ const Options = () => {
     return (
       <>
         <CardContent>
+          <CardDescription className="mt-[-16px] mb-4">
+            Enter your cloudflare account Or using Github Gist
+          </CardDescription>
           <div className="grid gap-4">
             <div className="grid gap-2">
               <div className="flex justify-between items-center ">
@@ -228,7 +231,6 @@ const Options = () => {
               <div className="flex justify-between">
                 <CardTitle className="text-xl">Settings</CardTitle>
               </div>
-              <CardDescription>Enter your account to store Cookie</CardDescription>
               <SettingsPopover
                 trigger={
                   <Button variant="secondary" size="icon" className="size-6 absolute right-4 top-4">
