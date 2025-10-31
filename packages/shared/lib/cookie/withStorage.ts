@@ -5,6 +5,7 @@ import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusS
 import { AccountInfo, accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
 
 import { MessageType, sendMessage } from '@lib/message';
+import { RestEndpointMethodTypes } from '@octokit/rest';
 import { WriteResponse } from '../cloudflare';
 import {
   editAndWriteCookies,
@@ -131,24 +132,33 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
   return cookieMap;
 };
 
+export type GistUpdateResponse = RestEndpointMethodTypes['gists']['update']['response'];
+
+export type PushCookiesResponse = WriteResponse | GistUpdateResponse;
+
 export const pushCookies = async (
   domain: string,
   cookies: ICookie[],
   localStorageItems: ILocalStorageItem[] = [],
-): Promise<WriteResponse> => {
-  const cloudflareInfo = await accountStorage.get();
+): Promise<PushCookiesResponse> => {
+  const accountInfo = await accountStorage.get();
   try {
     const domainStatus = await domainStatusStorage.get();
     if (domainStatus.pushing) return Promise.reject('the cookie is pushing');
     await domainStatusStorage.update({
       pushing: true,
     });
-    const oldCookie = await readCookiesMapWithStatus(cloudflareInfo);
-    const [res, cookieMap] = await mergeAndWriteCookies(cloudflareInfo, domain, cookies, localStorageItems, oldCookie);
-    console.log('res', res);
-
-    if (res.success) {
-      await cookieStorage.update(cookieMap);
+    const oldCookie = await readCookiesMapWithStatus(accountInfo);
+    const [res, cookieMap] = await mergeAndWriteCookies(accountInfo, domain, cookies, localStorageItems, oldCookie);
+    console.log('res->pushCookies', res);
+    if (accountInfo.selectedProvider === 'cloudflare') {
+      if ((res as WriteResponse).success) {
+        await cookieStorage.update(cookieMap);
+      }
+    } else {
+      if ((res as unknown as GistUpdateResponse).status.toString().startsWith('2')) {
+        await cookieStorage.update(cookieMap);
+      }
     }
     return res;
   } catch (e) {

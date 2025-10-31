@@ -83,3 +83,9 @@ export const settingsStorage: TSettingsStorage = {
     });
   },
 };
+
+export const getActiveStorageItem = (): IStorageItem | undefined => {
+  const snapshot = settingsStorage.getSnapshot();
+  const storageKey = snapshot?.storageKey;
+  return snapshot?.storageKeyList.find(item => item.value === storageKey);
+};

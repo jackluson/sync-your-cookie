@@ -3,7 +3,9 @@ import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 import { readCloudflareKV, writeCloudflareKV, WriteResponse } from '../cloudflare/api';
 
+import { GithubApi } from '@lib/github';
 import { MessageErrorCode } from '@lib/message';
+import { RestEndpointMethodTypes } from '@octokit/rest';
 import {
   arrayBufferToBase64,
   base64ToArrayBuffer,
@@ -16,40 +18,49 @@ import {
 
 export const check = (accountInfo?: AccountInfo) => {
   const cloudflareAccountInfo = accountInfo || accountStorage.getSnapshot();
-  if (!cloudflareAccountInfo?.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
-    let message = 'Account ID is empty';
-    if (!cloudflareAccountInfo?.namespaceId) {
-      message = 'NamespaceId ID is empty';
-    } else if (!cloudflareAccountInfo.token) {
-      message = 'Token is empty';
+  if (cloudflareAccountInfo?.selectedProvider === 'github') {
+    if (!cloudflareAccountInfo.githubAccessToken) {
+      return Promise.reject({
+        message: 'GitHub Access Token is empty',
+        code: MessageErrorCode.AccountCheck,
+      });
     }
+  } else {
+    if (!cloudflareAccountInfo?.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
+      let message = 'Account ID is empty';
+      if (!cloudflareAccountInfo?.namespaceId) {
+        message = 'NamespaceId ID is empty';
+      } else if (!cloudflareAccountInfo.token) {
+        message = 'Token is empty';
+      }
 
-    return Promise.reject({
-      message,
-      code: MessageErrorCode.AccountCheck,
-    });
+      return Promise.reject({
+        message,
+        code: MessageErrorCode.AccountCheck,
+      });
+    }
   }
   return cloudflareAccountInfo;
 };
 
 export const readCookiesMap = async (cloudflareAccountInfo: AccountInfo): Promise<ICookiesMap> => {
   await check(cloudflareAccountInfo);
-  const res = await readCloudflareKV(
+  const content = await readCloudflareKV(
     cloudflareAccountInfo.accountId!,
     cloudflareAccountInfo.namespaceId!,
     cloudflareAccountInfo.token!,
   );
-  if (res) {
+  if (content) {
     try {
-      const protobufEncoding = settingsStorage.getSnapshot()?.protobufEncoding;
+      const protobufEncoding = content.startsWith('{') ? false : true;
       if (protobufEncoding) {
-        const compressedBuffer = base64ToArrayBuffer(res);
+        const compressedBuffer = base64ToArrayBuffer(content);
         const deMsg = await decodeCookiesMap(compressedBuffer);
         console.log('readCookiesMap->deMsg', deMsg);
         return deMsg;
       } else {
-        console.log('readCookiesMap->res', JSON.parse(res));
-        return JSON.parse(res);
+        console.log('readCookiesMap->res', JSON.parse(content));
+        return JSON.parse(content);
       }
     } catch (error) {
       console.log('decode error', error);
@@ -60,7 +71,7 @@ export const readCookiesMap = async (cloudflareAccountInfo: AccountInfo): Promis
   }
 };
 
-export const writeCookiesMap = async (cloudflareAccountInfo: AccountInfo, cookiesMap: ICookiesMap = {}) => {
+export const writeCookiesMap = async (accountInfo: AccountInfo, cookiesMap: ICookiesMap = {}) => {
   const protobufEncoding = settingsStorage.getSnapshot()?.protobufEncoding;
   let encodingStr = '';
   if (protobufEncoding) {
@@ -71,23 +82,30 @@ export const writeCookiesMap = async (cloudflareAccountInfo: AccountInfo, cookie
     encodingStr = JSON.stringify(cookiesMap);
     console.log('writeCookiesMap->', cookiesMap);
   }
-  const res = await writeCloudflareKV(
-    encodingStr,
-    cloudflareAccountInfo.accountId!,
-    cloudflareAccountInfo.namespaceId!,
-    cloudflareAccountInfo.token!,
-  );
-  return res;
+  if (accountInfo.selectedProvider === 'github') {
+    const settingsStorageInfo = settingsStorage.getSnapshot();
+    const storageKeyGistId = settingsStorageInfo?.storageKeyGistId;
+    const storageKey = settingsStorageInfo?.storageKey;
+    return await GithubApi.instance.updateGist(storageKeyGistId!, storageKey!, encodingStr);
+  } else {
+    const res = await writeCloudflareKV(
+      encodingStr,
+      accountInfo.accountId!,
+      accountInfo.namespaceId!,
+      accountInfo.token!,
+    );
+    return res;
+  }
 };
 
 export const mergeAndWriteCookies = async (
-  cloudflareAccountInfo: AccountInfo,
+  accountInfo: AccountInfo,
   domain: string,
   cookies: ICookie[],
   localStorageItems: ILocalStorageItem[] = [],
   oldCookieMap: ICookiesMap = {},
-): Promise<[WriteResponse, ICookiesMap]> => {
-  await check(cloudflareAccountInfo);
+): Promise<[WriteResponse | RestEndpointMethodTypes['gists']['update']['response'], ICookiesMap]> => {
+  await check(accountInfo);
   const cookiesMap: ICookiesMap = {
     updateTime: Date.now(),
     createTime: oldCookieMap?.createTime || Date.now(),
@@ -102,7 +120,7 @@ export const mergeAndWriteCookies = async (
     },
   };
 
-  const res = await writeCookiesMap(cloudflareAccountInfo, cookiesMap);
+  const res = await writeCookiesMap(accountInfo, cookiesMap);
   return [res, cookiesMap];
 };
 

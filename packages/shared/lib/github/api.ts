@@ -289,6 +289,11 @@ export class GithubApi {
       throw new Error('请先获取 access_token');
     }
   }
+
+  async fetchRawContent(rawUrl: string) {
+    const content = await fetch(rawUrl).then(res => res.text());
+    return content;
+  }
 }
 
 export const scope = 'gist';
