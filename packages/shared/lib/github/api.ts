@@ -104,12 +104,21 @@ export class GithubApi {
     const files = gist.files;
     const storageKeys: IStorageItem[] = [];
     if (files) {
+      const currentStorageKey = settingsStorage.getSnapshot()?.storageKey;
+      let currentStorageExist = false;
       for (const filename in files) {
         const file = files[filename];
         if (filename.startsWith(this.prefix)) {
+          const tempValue = filename.replace(this.prefix, '');
+          if (!currentStorageExist) {
+            if (currentStorageKey && tempValue === currentStorageKey) {
+              currentStorageExist = true;
+            }
+          }
           storageKeys.push({
-            value: filename.replace(this.prefix, ''),
-            label: filename.replace(this.prefix, ''),
+            value: tempValue,
+            label: tempValue,
+            rawUrl: file.raw_url,
             gistId: gist.id,
           });
           // storageKeys.push(file[0].replace(this.prefix, ''));
@@ -118,7 +127,7 @@ export class GithubApi {
       console.log('storageKeys', storageKeys, gist.id);
       settingsStorage.update({
         storageKeyList: storageKeys,
-        storageKey: storageKeys[0]?.value,
+        storageKey: currentStorageExist ? currentStorageKey : storageKeys[0]?.value,
         storageKeyGistId: gist.id,
         gistHtmlUrl: gist.html_url,
       });
