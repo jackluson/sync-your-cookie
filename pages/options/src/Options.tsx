@@ -6,6 +6,7 @@ import {
   withSuspense,
 } from '@sync-your-cookie/shared';
 import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
+import { initStorageKey } from '@sync-your-cookie/storage/lib/settingsStorage';
 import {
   Button,
   Card,
@@ -103,6 +104,7 @@ const Options = () => {
       email: '',
     });
     toast.success('Log out Success');
+    initStorageKey();
   };
 
   const renderAccount = () => {

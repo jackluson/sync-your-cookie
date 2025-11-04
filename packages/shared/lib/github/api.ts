@@ -307,7 +307,7 @@ export class GithubApi {
 
 export const scope = 'gist';
 export const clientId = 'Ov23liyhOkJsj8FzPlm0';
-const clientSecret = '2c41f1b5a3e32c69eb7497eb5c3f64e6cb003922';
+const clientSecret = '';
 
 // export const githubApi = new GithubApi(clientId, clientSecret);
 

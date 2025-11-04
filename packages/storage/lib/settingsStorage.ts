@@ -90,3 +90,10 @@ export const getActiveStorageItem = (): IStorageItem | undefined => {
   const storageKey = snapshot?.storageKey;
   return snapshot?.storageKeyList.find(item => item.value === storageKey);
 };
+
+export const initStorageKey = () => {
+  settingsStorage.update({
+    storageKeyList: [{ value: defaultKey, label: defaultKey }],
+    storageKey: defaultKey,
+  });
+};
