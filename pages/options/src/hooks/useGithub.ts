@@ -36,26 +36,11 @@ export const useGithub = () => {
               bio: user.bio,
               email: user.email,
             });
-            // settingsStorage.update({})
             GithubApi.instance.reload();
             console.log('user', user);
             toast.success('GitHub Authorization Success');
-            // if (code) {
-            //   // Exchange code for token via your backend
-            //   fetch('https://your-backend.com/auth/github', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ code })
-            //   })
-            //   .then(response => response.json())
-            //   .then(data => {
-            //     chrome.storage.local.set({ github_token: data.access_token });
-            //     sendResponse({ success: true });
-            //   });
-            // }
           } catch (error) {
             toast.error('GitHub Authorization Failed');
-
             setLoading(false);
           }
         } else {

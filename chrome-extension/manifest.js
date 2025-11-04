@@ -25,7 +25,7 @@ const manifest = Object.assign(
      */
     name: 'Sync Your Cookie',
     version: packageJson.version,
-    description: 'A browser extension that syncs and manages your cookies to your cloudflare',
+    description: 'A browser extension that syncs and manages your cookies to your cloudflare or github gist',
     permissions: ['cookies', 'activeTab', 'tabs', 'storage', 'identity'].concat(sidePanelConfig.permissions),
     host_permissions: ['<all_urls>'],
     options_page: 'options/index.html',
