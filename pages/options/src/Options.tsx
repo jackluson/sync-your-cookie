@@ -1,4 +1,10 @@
-import { useStorageSuspense, useTheme, withErrorBoundary, withSuspense } from '@sync-your-cookie/shared';
+import {
+  useStorageSuspense,
+  useTheme,
+  verifyCloudflareToken,
+  withErrorBoundary,
+  withSuspense,
+} from '@sync-your-cookie/shared';
 import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
 import {
   Button,
@@ -25,7 +31,7 @@ const Options = () => {
   const [accountId, setAccountId] = useState(accountInfo.accountId);
   const [namespaceId, setNamespaceId] = useState(accountInfo.namespaceId);
   const [openEye, setOpenEye] = useState(false);
-  const { loading, handleLaunchAuth, handleListGist } = useGithub();
+  const { loading, handleLaunchAuth } = useGithub();
 
   const { setTheme } = useTheme();
 
@@ -41,36 +47,62 @@ const Options = () => {
     setNamespaceId(evt.target.value);
   };
 
-  const handleSave = () => {
-    accountStorage.update({
-      accountId: accountId,
-      namespaceId: namespaceId,
-      token: token,
-    });
-    toast.success('Save Success');
+  const handleSave = async () => {
+    if (!accountId?.trim() || !token?.trim()) {
+      toast.warning('Account ID and Token are required');
+      return;
+    } else if (!namespaceId?.trim()) {
+      toast.warning('NamespaceId are required');
+      return;
+    }
+    try {
+      const res = await verifyCloudflareToken(accountId.trim(), token.trim());
+      if (res.success === true) {
+        const [message] = res.messages;
+        if (message?.message) {
+          toast.success('Save Success (' + message.message.replace('API', '') + ')');
+        } else {
+          toast.success('Save Success');
+        }
+        accountStorage.update({
+          selectedProvider: 'cloudflare',
+          accountId: accountId,
+          namespaceId: namespaceId,
+          token: token,
+        });
+      } else {
+        const [error] = res.errors;
+        if (error?.message) {
+          toast.error('Verify Failed: ' + error.message);
+        } else {
+          toast.error('Verify Failed: Unknown Error');
+        }
+      }
+    } catch (err: any) {
+      console.log('error', err);
+      const [error] = err?.errors || [];
+      if (error?.message) {
+        toast.error('Verify Failed: ' + error.message);
+      } else {
+        toast.error('Verify Failed: Unknown Error');
+      }
+    }
   };
 
   const handleToggleEye = () => {
     setOpenEye(!openEye);
   };
 
-  // if(accountInfo.selectedProvider === 'github' && accountInfo.githubAccessToken){
-  //   return <div>
-
-  //   </div>
-  // }
-
   const handleLogout = () => {
-    // accountStorage.update({
-    //   githubAccessToken: '',
-    //   selectedProvider: 'cloudflare',
-    //   name: '',
-    //   avatarUrl: '',
-    //   bio: '',
-    //   email: '',
-    // });
-    // toast.success('Log out Success');
-    handleListGist();
+    accountStorage.update({
+      githubAccessToken: '',
+      selectedProvider: 'cloudflare',
+      name: '',
+      avatarUrl: '',
+      bio: '',
+      email: '',
+    });
+    toast.success('Log out Success');
   };
 
   const renderAccount = () => {
@@ -116,18 +148,27 @@ const Options = () => {
             <div className="grid gap-2">
               <div className="flex justify-between items-center ">
                 <Label htmlFor="token">Authorization Token</Label>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleToggleEye()}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      handleToggleEye();
-                    }
-                  }}
-                  className="cursor-pointer">
-                  {openEye ? <EyeOff size={18} /> : <Eye size={18} />}
-                </span>
+                <p className="flex items-center text-center text-xs">
+                  <a
+                    href="https://github.com/jackluson/sync-your-cookie/blob/main/how-to-use.md"
+                    target="_blank"
+                    className=" cursor-pointer underline mx-2"
+                    rel="noreferrer">
+                    How to get it?
+                  </a>
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleToggleEye()}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        handleToggleEye();
+                      }
+                    }}
+                    className="cursor-pointer">
+                    {openEye ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </span>
+                </p>
               </div>
               <Input
                 id="token"

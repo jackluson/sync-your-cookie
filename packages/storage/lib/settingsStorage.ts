@@ -28,7 +28,7 @@ const initStorage = (): BaseStorage<ISettings> => {
     {
       storageKeyList: [{ value: defaultKey, label: defaultKey }],
       storageKey: defaultKey,
-      protobufEncoding: true,
+      protobufEncoding: false,
       includeLocalStorage: false,
       contextMenu: false,
     },

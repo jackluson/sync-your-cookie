@@ -66,3 +66,21 @@ export const readCloudflareKV = async (accountId: string, namespaceId: string, t
     }
   });
 };
+
+export const verifyCloudflareToken = async (accountId: string, token: string) => {
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/tokens/verify`;
+  const options = {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  };
+  return fetch(url, options).then(async res => {
+    if (res.status === 200) {
+      return res.json();
+    } else {
+      return Promise.reject(await res.json());
+    }
+  });
+};

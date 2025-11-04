@@ -36,6 +36,8 @@ export const useGithub = () => {
               bio: user.bio,
               email: user.email,
             });
+            // settingsStorage.update({})
+            GithubApi.instance.reload();
             console.log('user', user);
             toast.success('GitHub Authorization Success');
             // if (code) {
@@ -68,31 +70,8 @@ export const useGithub = () => {
     }
   };
 
-  const handleListGist = async () => {
-    try {
-      // const res = await githubApi.fetchUser();
-      // console.log("this token", githubApi)
-      // const res = await githubApi.createGist('example of gist', 'SYNC_COOKIE.md', 'xxxxx', true);
-      // const res = await githubApi.listGists();
-      // const res = await githubApi.getGist('c8cbb4fe554311ffd1fca61a5284d141');
-      // const res = await githubApi.updateGist(
-      //   'c8cbb4fe554311ffd1fca61a5284d141',
-      //   'updated gist',
-      //   'SYNC_COOKIE.md',
-      //   'yyyyyy',
-      // );
-      const res = await GithubApi.instance.deleteGist('c8cbb4fe554311ffd1fca61a5284d141');
-      console.log('res >', res);
-    } catch (error) {
-      console.log('error', error);
-    }
-    // githubApi.listGists().then(gists => {
-    //   console.log('fetch gist list', gists);
-    // });
-  };
   return {
     handleLaunchAuth,
-    handleListGist,
     loading,
   };
 };
