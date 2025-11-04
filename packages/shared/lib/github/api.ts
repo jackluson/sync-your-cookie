@@ -131,6 +131,8 @@ export class GithubApi {
         storageKeyGistId: gist.id,
         gistHtmlUrl: gist.html_url,
       });
+    } else {
+      console.log('No files found in gist', gist.id);
     }
     // const keys = Object.keys(files);
     // const storageKeys = keys.filter(key => key.startsWith(this.prefix)).map(key => key.replace(this.prefix, ''));
@@ -242,7 +244,7 @@ export class GithubApi {
     // console.log('files', gist.files);
     // const existFiles = gist.files || {};
     const syncFileName = filename.startsWith(this.prefix) ? filename : this.prefix + filename;
-    return this.octokit.gists.update({
+    const res = await this.octokit.gists.update({
       gist_id: gistId,
       files: {
         [syncFileName]: {
@@ -250,6 +252,9 @@ export class GithubApi {
         },
       },
     });
+    // update settingsStorage based result
+    this.setStorageKeyList(res.data as unknown as RestEndpointMethodTypes['gists']['list']['response']['data'][number]);
+    return res;
     // return this.patch(`/gists/${gistId}`, {
     //   files: {
     //     [filename]: {

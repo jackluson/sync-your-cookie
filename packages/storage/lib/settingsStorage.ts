@@ -2,6 +2,7 @@ import { BaseStorage, createStorage, StorageType } from './base';
 export interface IStorageItem {
   value: string;
   label: string;
+  rawUrl?: string;
   [key: string]: unknown;
 }
 

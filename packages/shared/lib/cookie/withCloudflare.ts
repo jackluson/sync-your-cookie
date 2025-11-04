@@ -1,5 +1,5 @@
 import { accountStorage, type AccountInfo } from '@sync-your-cookie/storage/lib/accountStorage';
-import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
+import { getActiveStorageItem, settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 import { readCloudflareKV, writeCloudflareKV, WriteResponse } from '../cloudflare/api';
 
@@ -43,13 +43,18 @@ export const check = (accountInfo?: AccountInfo) => {
   return cloudflareAccountInfo;
 };
 
-export const readCookiesMap = async (cloudflareAccountInfo: AccountInfo): Promise<ICookiesMap> => {
-  await check(cloudflareAccountInfo);
-  const content = await readCloudflareKV(
-    cloudflareAccountInfo.accountId!,
-    cloudflareAccountInfo.namespaceId!,
-    cloudflareAccountInfo.token!,
-  );
+export const readCookiesMap = async (accountInfo: AccountInfo): Promise<ICookiesMap> => {
+  let content = '';
+  if (accountInfo.selectedProvider === 'github') {
+    const activeStorageItem = getActiveStorageItem();
+    if (activeStorageItem?.rawUrl) {
+      content = await GithubApi.instance.fetchRawContent(activeStorageItem.rawUrl);
+    }
+  } else {
+    await check(accountInfo);
+    content = await readCloudflareKV(accountInfo.accountId!, accountInfo.namespaceId!, accountInfo.token!);
+  }
+
   if (content) {
     try {
       const protobufEncoding = content.startsWith('{') ? false : true;

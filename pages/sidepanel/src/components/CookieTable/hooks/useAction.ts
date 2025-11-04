@@ -36,7 +36,7 @@ export const useAction = (cookie: Cookie) => {
   const handlePull = async (activeTabUrl: string, cookie: CookieItem) => {
     try {
       setLoading(true);
-      await cookieAction.handlePull(activeTabUrl, cookie.host, false);
+      await cookieAction.handlePull(activeTabUrl, cookie.host, true);
     } finally {
       setLoading(false);
     }
@@ -126,13 +126,10 @@ export const useAction = (cookie: Cookie) => {
     }),
     localStorageItems: localStorageItems.filter(item => {
       if (currentSearchStr.trim()) {
-        return (
-          item.key?.includes(currentSearchStr) ||
-          item.value?.includes(currentSearchStr)
-        );
+        return item.key?.includes(currentSearchStr) || item.value?.includes(currentSearchStr);
       }
       return true;
     }),
-    ...rest
+    ...rest,
   };
 };

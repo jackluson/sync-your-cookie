@@ -14,6 +14,14 @@ export function debounce<T = unknown>(func: (...args: T[]) => void, timeout = 30
   };
 }
 
+const successSceneMap = {
+  push: 'Pushed',
+  pull: 'Pulled',
+  remove: 'Removed',
+  delete: 'Deleted',
+  edit: 'Edited',
+};
+
 export function checkResponseAndCallback(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   res: WriteResponse | Error | any,
@@ -24,7 +32,7 @@ export function checkResponseAndCallback(
   if (accountInfo?.selectedProvider === 'github') {
     const statusCode = res?.status;
     if (statusCode === 200 || statusCode === 201 || statusCode === 204) {
-      callback({ isOk: true, msg: `${scene} success` });
+      callback({ isOk: true, msg: `${successSceneMap[scene]} success` });
     } else {
       const defaultErrMsg =
         res?.message?.toLowerCase().includes?.(scene) || (statusCode && res?.message)
@@ -34,7 +42,7 @@ export function checkResponseAndCallback(
     }
   } else {
     if ((res as WriteResponse)?.success) {
-      callback({ isOk: true, msg: `${scene} success` });
+      callback({ isOk: true, msg: `${successSceneMap[scene]} success` });
     } else {
       const cloudFlareErrors = [ErrorCode.NotFoundRoute, ErrorCode.NamespaceIdError, ErrorCode.AuthenicationError];
       const isAccountError = res?.errors?.length && cloudFlareErrors.includes(res.errors[0].code);

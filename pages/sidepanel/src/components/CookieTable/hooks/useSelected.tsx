@@ -116,16 +116,16 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
   };
 
   const renderPopver = (key: keyof CookieShowItem, row: Record<string, any>, nameKey = 'name') => {
-    const keyName = nameKey
+    const keyName = nameKey;
     const sameId = selectedRow?.id === row.id;
-    if(localStorageMode) {
-      return null
+    if (localStorageMode) {
+      return null;
     }
     return (
       <Popover
         open={key === selectedKey && sameId && !!selectedRow}
         onOpenChange={val => {
-          console.log("val", val);
+          console.log('val', val);
           if (val === false) {
             handleCancel();
           }
@@ -193,12 +193,12 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
           </div>
         </PopoverContent>
       </Popover>
-    )
-  }
+    );
+  };
 
   const renderEditCell = (key: keyof CookieShowItem, row: Record<string, any>, nameKey = 'name') => {
     const isEdit = false && key === selectedKey && selectedRow?.id === row.id;
-    const keyName = nameKey
+    const keyName = nameKey;
     const nameValue = row[keyName];
     const value = row.value;
     const sameId = localStorageMode && 0 ? true : selectedRow?.id === row.id;
@@ -376,10 +376,10 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
       accessorKey: 'value',
       header: 'Key / Value',
       cell: ({ row, cell }) => {
-        const id = cell.id
+        const id = cell.id;
         return renderEditCell('value', { id, ...row.original }, 'key');
       },
-    }
+    },
   ];
 
   const cookieList =

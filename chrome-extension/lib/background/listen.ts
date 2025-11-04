@@ -97,12 +97,7 @@ const handleRemove = async (domain: string, callback: HandleCallback) => {
   try {
     await check();
     const res = await removeCookies(domain);
-    if (res.success) {
-      callback({ isOk: true, msg: 'Removed success' });
-    } else {
-      checkResponseAndCallback(res, 'remove', callback);
-      // callback({ isOk: false, msg: 'Removed fail, please try again ', result: res });
-    }
+    checkResponseAndCallback(res, 'remove', callback);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     checkResponseAndCallback(err, 'remove', callback);
@@ -115,11 +110,7 @@ const handleRemoveItem = async (domain: string, id: string, callback: HandleCall
   try {
     await check();
     const res = await removeCookieItem(domain, id);
-    if (res.success) {
-      callback({ isOk: true, msg: 'Deleted success' });
-    } else {
-      checkResponseAndCallback(res, 'delete', callback);
-    }
+    checkResponseAndCallback(res, 'delete', callback);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     checkResponseAndCallback(err, 'delete', callback);
@@ -130,11 +121,7 @@ const handleEditItem = async (domain: string, oldItem: ICookie, newItem: ICookie
   try {
     await check();
     const res = await CookieOperator.editCookieItem(domain, oldItem, newItem);
-    if (res.success) {
-      callback({ isOk: true, msg: 'Edited success' });
-    } else {
-      checkResponseAndCallback(res, 'edit', callback);
-    }
+    checkResponseAndCallback(res, 'edit', callback);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     checkResponseAndCallback(err, 'edit', callback);

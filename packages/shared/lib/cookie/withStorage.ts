@@ -1,4 +1,4 @@
-import { ICookie, ILocalStorageItem } from '@sync-your-cookie/protobuf';
+import { ICookie, ICookiesMap, ILocalStorageItem } from '@sync-your-cookie/protobuf';
 import { Cookie, cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 
@@ -6,6 +6,7 @@ import { AccountInfo, accountStorage } from '@sync-your-cookie/storage/lib/accou
 
 import { MessageType, sendMessage } from '@lib/message';
 import { RestEndpointMethodTypes } from '@octokit/rest';
+import { OctokitResponse } from '@octokit/types';
 import { WriteResponse } from '../cloudflare';
 import {
   editAndWriteCookies,
@@ -61,6 +62,7 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
   const cookieDetails = cookieMap?.domainCookieMap?.[host]?.cookies || [];
   const localStorageItems = cookieMap?.domainCookieMap?.[host]?.localStorageItems || [];
   if (cookieDetails.length === 0) {
+    console.warn('no cookies to pull, push first please', host, cookieMap);
     throw new Error('No cookies to pull, push first please');
   } else {
     const cookiesPromiseList: Promise<unknown>[] = [];
@@ -102,7 +104,8 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
     }
 
     if (cookiesPromiseList.length === 0) {
-      throw new Error('No cookies to pull, push first please');
+      console.warn('no matched cookies to pull, push first please', host, cookieMap);
+      throw new Error('No matched cookies to pull, push first please');
     }
     // reload window after set cookies
     // await new Promise(resolve => {
@@ -126,7 +129,15 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
       });
     await Promise.allSettled(cookiesPromiseList);
     if (isReload) {
-      // await chrome.tabs.reload();
+      chrome.tabs.query({}, function (tabs) {
+        tabs.forEach(function (tab) {
+          // 使用字符串匹配
+          if (tab.url && tab.url.includes(host) && tab.id) {
+            console.log('tab', tab);
+            chrome.tabs.reload(tab.id);
+          }
+        });
+      });
     }
   }
   return cookieMap;
@@ -135,6 +146,23 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
 export type GistUpdateResponse = RestEndpointMethodTypes['gists']['update']['response'];
 
 export type PushCookiesResponse = WriteResponse | GistUpdateResponse;
+
+const checkSuccessAndUpdate = async (
+  accountInfo: AccountInfo,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  res: WriteResponse | OctokitResponse<any>,
+  cookieMap: ICookiesMap,
+) => {
+  if (accountInfo.selectedProvider === 'cloudflare') {
+    if ((res as WriteResponse).success) {
+      await cookieStorage.update(cookieMap);
+    }
+  } else {
+    if ((res as unknown as GistUpdateResponse).status.toString().startsWith('2')) {
+      await cookieStorage.update(cookieMap);
+    }
+  }
+};
 
 export const pushCookies = async (
   domain: string,
@@ -151,15 +179,7 @@ export const pushCookies = async (
     const oldCookie = await readCookiesMapWithStatus(accountInfo);
     const [res, cookieMap] = await mergeAndWriteCookies(accountInfo, domain, cookies, localStorageItems, oldCookie);
     console.log('res->pushCookies', res);
-    if (accountInfo.selectedProvider === 'cloudflare') {
-      if ((res as WriteResponse).success) {
-        await cookieStorage.update(cookieMap);
-      }
-    } else {
-      if ((res as unknown as GistUpdateResponse).status.toString().startsWith('2')) {
-        await cookieStorage.update(cookieMap);
-      }
-    }
+    await checkSuccessAndUpdate(accountInfo, res, cookieMap);
     return res;
   } catch (e) {
     console.error('pushCookies fail err', e);
@@ -174,21 +194,19 @@ export const pushCookies = async (
 export const pushMultipleDomainCookies = async (
   domainCookies: { domain: string; cookies: ICookie[]; localStorageItems: ILocalStorageItem[] }[],
 ): Promise<WriteResponse> => {
-  const cloudflareInfo = await accountStorage.get();
+  const accountInfo = await accountStorage.get();
   try {
     const domainStatus = await domainStatusStorage.get();
     if (domainStatus.pushing) return Promise.reject('cookie is pushing');
     await domainStatusStorage.update({
       pushing: true,
     });
-    const oldCookie = await readCookiesMapWithStatus(cloudflareInfo);
-    const [res, cookieMap] = await mergeAndWriteMultipleDomainCookies(cloudflareInfo, domainCookies, oldCookie);
+    const oldCookie = await readCookiesMapWithStatus(accountInfo);
+    const [res, cookieMap] = await mergeAndWriteMultipleDomainCookies(accountInfo, domainCookies, oldCookie);
     await domainStatusStorage.update({
       pushing: false,
     });
-    if (res.success) {
-      cookieStorage.update(cookieMap);
-    }
+    await checkSuccessAndUpdate(accountInfo, res, cookieMap);
     return res;
   } catch (e) {
     console.error('pushMultipleDomainCookies fail err', e);
@@ -200,7 +218,7 @@ export const pushMultipleDomainCookies = async (
 };
 
 export const removeCookies = async (domain: string): Promise<WriteResponse> => {
-  const cloudflareInfo = await accountStorage.get();
+  const accountInfo = await accountStorage.get();
   try {
     const domainStatus = await domainStatusStorage.get();
     if (domainStatus.pushing) return Promise.reject('the cookie is pushing');
@@ -208,14 +226,12 @@ export const removeCookies = async (domain: string): Promise<WriteResponse> => {
       pushing: true,
     });
     // const oldCookie = await cookieStorage.get();
-    const oldCookie = await readCookiesMapWithStatus(cloudflareInfo);
-    const [res, cookieMap] = await removeAndWriteCookies(cloudflareInfo, domain, oldCookie);
+    const oldCookie = await readCookiesMapWithStatus(accountInfo);
+    const [res, cookieMap] = await removeAndWriteCookies(accountInfo, domain, oldCookie);
     await domainStatusStorage.update({
       pushing: false,
     });
-    if (res.success) {
-      cookieStorage.update(cookieMap);
-    }
+    await checkSuccessAndUpdate(accountInfo, res, cookieMap);
     return res;
   } catch (e) {
     console.error('removeCookies fail err', e);
@@ -227,7 +243,7 @@ export const removeCookies = async (domain: string): Promise<WriteResponse> => {
 };
 
 export const removeCookieItem = async (domain: string, id: string): Promise<WriteResponse> => {
-  const cloudflareInfo = await accountStorage.get();
+  const accountInfo = await accountStorage.get();
   try {
     const domainStatus = await domainStatusStorage.get();
     if (domainStatus.pushing) return Promise.reject('the cookie is pushing');
@@ -235,14 +251,12 @@ export const removeCookieItem = async (domain: string, id: string): Promise<Writ
       pushing: true,
     });
     // const oldCookie = await cookieStorage.get();
-    const oldCookie = await readCookiesMapWithStatus(cloudflareInfo);
-    const [res, cookieMap] = await removeAndWriteCookies(cloudflareInfo, domain, oldCookie, id);
+    const oldCookie = await readCookiesMapWithStatus(accountInfo);
+    const [res, cookieMap] = await removeAndWriteCookies(accountInfo, domain, oldCookie, id);
     await domainStatusStorage.update({
       pushing: false,
     });
-    if (res.success) {
-      cookieStorage.update(cookieMap);
-    }
+    await checkSuccessAndUpdate(accountInfo, res, cookieMap);
     return res;
   } catch (e) {
     console.error('removeCookieItem fail err', e);
@@ -254,7 +268,7 @@ export const removeCookieItem = async (domain: string, id: string): Promise<Writ
 };
 
 export const editCookieItem = async (domain: string, name: string): Promise<WriteResponse> => {
-  const cloudflareInfo = await accountStorage.get();
+  const accountInfo = await accountStorage.get();
   try {
     const domainStatus = await domainStatusStorage.get();
     if (domainStatus.pushing) return Promise.reject('the cookie is pushing');
@@ -262,14 +276,12 @@ export const editCookieItem = async (domain: string, name: string): Promise<Writ
       pushing: true,
     });
     // const oldCookie = await cookieStorage.get();
-    const oldCookie = await readCookiesMapWithStatus(cloudflareInfo);
-    const [res, cookieMap] = await removeAndWriteCookies(cloudflareInfo, domain, oldCookie, name);
+    const oldCookie = await readCookiesMapWithStatus(accountInfo);
+    const [res, cookieMap] = await removeAndWriteCookies(accountInfo, domain, oldCookie, name);
     await domainStatusStorage.update({
       pushing: false,
     });
-    if (res.success) {
-      cookieStorage.update(cookieMap);
-    }
+    await checkSuccessAndUpdate(accountInfo, res, cookieMap);
     return res;
   } catch (e) {
     console.error('removeCookieItem fail err', e);
@@ -302,9 +314,8 @@ export class CookieOperator {
       const [res, cookieMap] = await editAndWriteCookies(cloudflareInfo, host, oldCookie, oldItem, newItem);
       await this.setPushing(false);
 
-      if (res.success) {
-        cookieStorage.update(cookieMap);
-      }
+      await checkSuccessAndUpdate(cloudflareInfo, res, cookieMap);
+
       return res;
     } catch (e) {
       console.error('removeCookieItem fail err', e);

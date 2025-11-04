@@ -102,23 +102,24 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
       uploadDomainCookies.push({
         domain: host,
         cookies,
-        localStorageItems: cookieMap?.domainCookieMap?.[host].localStorageItems || [],
+        localStorageItems: cookieMap?.domainCookieMap?.[host]?.localStorageItems || [],
       });
     }
     if (uploadDomainCookies.length) {
       await pushMultipleDomainCookies(uploadDomainCookies);
       changedDomainSet.clear();
     }
-  }, 15000);
+  }, 10000);
 
   if (!checkDelayTimer) {
     checkDelayTimer = setTimeout(() => {
       if (delayTimer) {
         console.info('checkDelayTimer timeout');
         timeoutFlag = true;
+        delayTimer = null;
       }
       checkDelayTimer = null;
-    }, 60000);
+    }, 30000);
   }
 });
 

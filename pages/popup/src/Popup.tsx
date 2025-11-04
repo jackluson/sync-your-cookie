@@ -45,6 +45,10 @@ const Popup = () => {
 
   const isPushingOrPulling = domainItemStatus.pushing || domainItemStatus.pulling;
 
+  const handleAndReload = () => {
+    handlePull(activeTabUrl, domain, true);
+  };
+
   return (
     <div className="flex flex-col items-center min-w-[400px] justify-center bg-background ">
       <header className=" p-2 flex w-full justify-between items-center bg-card/50 shadow-md border-b border-border ">
@@ -102,7 +106,7 @@ const Popup = () => {
               <Button
                 disabled={!activeTabUrl || isPushingOrPulling}
                 className=" w-[160px] mr-2 justify-start"
-                onClick={() => handlePull(activeTabUrl)}>
+                onClick={() => handleAndReload()}>
                 {domainItemStatus?.pulling ? (
                   <RotateCw size={16} className="mr-2 animate-spin" />
                 ) : (
