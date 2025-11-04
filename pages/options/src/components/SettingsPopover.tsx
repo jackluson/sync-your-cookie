@@ -79,7 +79,7 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   return (
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent className="w-[328px]">
+      <PopoverContent align="start" className="w-[328px]">
         <div className="grid gap-4">
           <div className="space-y-2">
             <h3 className="leading-none font-medium text-base">Save Settings</h3>
