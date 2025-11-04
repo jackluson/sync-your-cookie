@@ -38,7 +38,6 @@ const init = async () => {
     console.log('initSubscribe finish');
     await pullCookies(true);
     console.log('initPullCookies finish');
-    await initGithubApi();
     // ping();
   } catch (error) {
     console.log('init-->error', error);
@@ -192,3 +191,5 @@ chrome.tabs.onActivated.addListener(async function () {
   console.log('refreshListen', previousActiveTabList);
   refreshListen();
 });
+
+initGithubApi();
