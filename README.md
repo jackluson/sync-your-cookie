@@ -45,6 +45,14 @@ Cookie Detail
 
 <img width="600" src="./screenshots/panel_item.png" alt="cookie manager sidebar panel"/>
 
+Pushed Cookie on Github Gist
+
+<img width="600" src="./screenshots/gist.png" alt="Pushed Cookie on Github Gist"/>
+
+
+Pushed Cookie on Cloudflare
+
+<img width="600" src="./screenshots/key_value.png" alt="Pushed Cookie on Cloudflare"/>
 
 
 ### Usage

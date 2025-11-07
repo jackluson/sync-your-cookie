@@ -1,6 +1,6 @@
 <div align="center">
 <img src="chrome-extension/public/icon-128.png" alt="logo"/>
-<h1> Sync your cookie to <br/>Cloudflare</h1>
+<h1> Sync your cookie to Cloudflare or Github Gist</h1>
 </div>
 
 [English](./README.md) | [中文](./README_ZH.md)
@@ -11,10 +11,11 @@
 <!-- // 使用gif展示功能 -->
 
 ### 功能
-- 支持同步 Cookie 到 Cloudflare
+- 支持同步 Cookie 到 Cloudflare 或者 github Gist (支持LocalStorage)
 - 支持为不同站点配置`Auto Merge`和`Auto Push`规则
 - Cookie数据经过 protobuf 编码传输
 - 提供了一个管理面板，方便查看、复制、管理已经同步的 Cookie 数据
+- 可配置多个Key，支持多账户同步
 
 ### 项目截图
 
@@ -33,6 +34,16 @@ Cookie 管理侧边栏面板
 Cookie 详情
 
 <img width="600" src="./screenshots/panel_item.png" alt="cookie manager sidebar panel"/>
+
+
+Github Gist上传的cookie
+
+<img width="600" src="./screenshots/gist.png" alt="Pushed Cookie on Github Gist"/>
+
+
+Cloudflare上传的cookie
+
+<img width="600" src="./screenshots/key_value.png" alt="Pushed Cookie on Cloudflare"/>
 
 
 
