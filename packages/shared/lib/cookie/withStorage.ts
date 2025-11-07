@@ -46,29 +46,38 @@ export const pullCookies = async (isInit = false): Promise<Cookie> => {
     });
     const cookieMap = await readCookiesMapWithStatus(cloudflareInfo);
     const res = await cookieStorage.update(cookieMap, isInit);
-    return res;
-  } catch (e) {
-    console.error('pullCookies fail', e);
-    return Promise.reject(e);
-  } finally {
     await domainStatusStorage.update({
       pulling: false,
     });
+    return res;
+  } catch (e) {
+    console.error('pullCookies fail', e);
+    await domainStatusStorage.update({
+      pulling: false,
+    });
+    return Promise.reject(e);
   }
 };
-
+function extractPortRegex(host: string) {
+  const match = host.match(/:(\d+)$/);
+  return match ? match[1] : null;
+}
 export const pullAndSetCookies = async (activeTabUrl: string, host: string, isReload = true): Promise<Cookie> => {
   const cookieMap = await pullCookies();
   const cookieDetails = cookieMap?.domainCookieMap?.[host]?.cookies || [];
   const localStorageItems = cookieMap?.domainCookieMap?.[host]?.localStorageItems || [];
-  if (cookieDetails.length === 0) {
+  if (cookieDetails.length === 0 && localStorageItems.length === 0) {
     console.warn('no cookies to pull, push first please', host, cookieMap);
     throw new Error('No cookies to pull, push first please');
   } else {
     const cookiesPromiseList: Promise<unknown>[] = [];
-
     for (const cookie of cookieDetails) {
-      const removeWWWHost = host.replace('www.', '');
+      let removeWWWHost = host.replace('www.', '');
+      const port = extractPortRegex(removeWWWHost);
+      if (port) {
+        removeWWWHost = removeWWWHost.replace(':' + port, '');
+      }
+
       if (cookie.domain?.includes(removeWWWHost)) {
         let url = activeTabUrl;
         if (cookie.domain) {
@@ -103,10 +112,6 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
       }
     }
 
-    if (cookiesPromiseList.length === 0) {
-      console.warn('no matched cookies to pull, push first please', host, cookieMap);
-      throw new Error('No matched cookies to pull, push first please');
-    }
     // reload window after set cookies
     // await new Promise(resolve => {
     //   setTimeout(resolve, 5000);
@@ -127,6 +132,11 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
       .catch(err => {
         console.error('set local storage error', err);
       });
+
+    if (cookiesPromiseList.length === 0 && localStorageItems.length === 0) {
+      console.warn('no matched cookies and localStorageItems to pull, push first please', host, cookieMap);
+      throw new Error('No matched cookies and localStorageItems to pull, push first please');
+    }
     await Promise.allSettled(cookiesPromiseList);
     if (isReload) {
       chrome.tabs.query({}, function (tabs) {
@@ -180,14 +190,16 @@ export const pushCookies = async (
     const [res, cookieMap] = await mergeAndWriteCookies(accountInfo, domain, cookies, localStorageItems, oldCookie);
     console.log('res->pushCookies', res);
     await checkSuccessAndUpdate(accountInfo, res, cookieMap);
-    return res;
-  } catch (e) {
-    console.error('pushCookies fail err', e);
-    return Promise.reject(e);
-  } finally {
     await domainStatusStorage.update({
       pushing: false,
     });
+    return res;
+  } catch (e) {
+    console.error('pushCookies fail err', e);
+    await domainStatusStorage.update({
+      pushing: false,
+    });
+    return Promise.reject(e);
   }
 };
 

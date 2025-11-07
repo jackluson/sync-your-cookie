@@ -16,17 +16,20 @@ export class GithubApi {
 
   private inited = false;
 
-  constructor(clientId: string, clientSecret: string) {
+  private initDefault = false;
+
+  constructor(clientId: string, clientSecret: string, initDefault: boolean = false) {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
     this.accessToken = accountStorage.getSnapshot()?.githubAccessToken;
+    this.initDefault = initDefault;
     this.subscribe();
     this.init();
   }
 
-  public static getInstance(clientId: string, clientSecret: string): GithubApi {
+  public static getInstance(clientId: string, clientSecret: string, initDefault: boolean = false): GithubApi {
     if (!GithubApi.instance) {
-      GithubApi.instance = new GithubApi(clientId, clientSecret);
+      GithubApi.instance = new GithubApi(clientId, clientSecret, initDefault);
     }
     return GithubApi.instance;
   }
@@ -72,7 +75,7 @@ export class GithubApi {
     }
     let syncGist = await this.getSyncGists();
 
-    if (!syncGist) {
+    if (!syncGist && this.initDefault) {
       console.log('No sync gists found, creating one...');
       const content = await this.initContent();
       const newGist = await this.createGist('Sync Your Cookie Gist', `${this.prefix}Default`, content, false);
@@ -311,7 +314,7 @@ const clientSecret = '';
 
 // export const githubApi = new GithubApi(clientId, clientSecret);
 
-export const initGithubApi = async () => {
+export const initGithubApi = async (initDefault = false) => {
   console.log('initGithubApi finish');
-  GithubApi.getInstance(clientId, clientSecret);
+  GithubApi.getInstance(clientId, clientSecret, initDefault);
 };

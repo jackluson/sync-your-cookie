@@ -15,7 +15,10 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   const settingsInfo = useStorageSuspense(settingsStorage);
   const [selectOpen, setSelectOpen] = useState(false);
 
-  const handleCheckChange = (checked: boolean, checkedKey: 'protobufEncoding' | 'includeLocalStorage') => {
+  const handleCheckChange = (
+    checked: boolean,
+    checkedKey: 'protobufEncoding' | 'includeLocalStorage' | 'contextMenu',
+  ) => {
     settingsStorage.update({
       [checkedKey]: checked,
     });
@@ -125,7 +128,7 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
               />
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mb-4">
               <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="include">
                 Include LocalStorage
               </Label>
@@ -135,9 +138,22 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
                   checked={settingsInfo.includeLocalStorage}
                   id="include"
                 />
-                <SyncTooltip title="LocalStorage cannot supports Auto Push">
+                <SyncTooltip title="Note: LocalStorage cannot supports Auto Push & If the retrieval fails, the page will be reloaded once to try again.">
                   <Info className="mx-2" size={18} />
                 </SyncTooltip>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="contextMenu">
+                Show ContextMenu
+              </Label>
+              <div className="flex items-center gap-1">
+                <Switch
+                  onCheckedChange={checked => handleCheckChange(checked, 'contextMenu')}
+                  checked={settingsInfo.contextMenu}
+                  id="contextMenu"
+                />
               </div>
             </div>
           </div>

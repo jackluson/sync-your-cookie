@@ -10,6 +10,7 @@ import {
 } from '@sync-your-cookie/shared';
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
+import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 import { initContextMenu } from './contextMenu';
 import { refreshListen } from './listen';
@@ -189,7 +190,11 @@ chrome.tabs.onActivated.addListener(async function () {
   });
   previousActiveTabList = allActiveTabs;
   console.log('refreshListen', previousActiveTabList);
-  refreshListen();
+  const domainStatus = await domainStatusStorage.get();
+  const settingsStorageInfo = await settingsStorage.get();
+  if (!domainStatus.pulling && !domainStatus.pushing && !settingsStorageInfo.localStorageGetting) {
+    refreshListen();
+  }
 });
 
-initGithubApi();
+initGithubApi(true);

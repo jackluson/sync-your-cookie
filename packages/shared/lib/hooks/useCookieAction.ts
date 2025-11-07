@@ -2,7 +2,7 @@ import {
   MessageErrorCode,
   pullCookieUsingMessage,
   pushCookieUsingMessage,
-  removeCookieUsingMessage,
+  removeCookieUsingMessage
 } from '@lib/message';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';

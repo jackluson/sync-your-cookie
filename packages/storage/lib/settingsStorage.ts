@@ -13,6 +13,7 @@ export interface ISettings {
   gistHtmlUrl?: string;
   protobufEncoding?: boolean;
   includeLocalStorage?: boolean;
+  localStorageGetting?: boolean;
   contextMenu?: boolean;
 }
 const key = 'settings-storage-key';

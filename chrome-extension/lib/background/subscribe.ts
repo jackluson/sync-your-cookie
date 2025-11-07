@@ -5,7 +5,7 @@ import { pullCookies } from '@sync-your-cookie/shared';
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 import { clearBadge, setPullingBadge, setPushingAndPullingBadge, setPushingBadge } from './badge';
-import { initContextMenu } from './contextMenu';
+import { initContextMenu, removeContextMenu } from './contextMenu';
 
 export const initSubscribe = async () => {
   await domainStatusStorage.resetState();
@@ -29,10 +29,18 @@ export const initSubscribe = async () => {
     console.log('reset finished');
   });
 
+  let previousContextMenu: boolean | undefined = undefined;
+
   settingsStorage.subscribe(async () => {
     const settingsSnapShot = await settingsStorage.getSnapshot();
+    if (previousContextMenu === settingsSnapShot?.contextMenu) {
+      return;
+    }
+    previousContextMenu = settingsSnapShot?.contextMenu;
     if (settingsSnapShot?.contextMenu) {
       initContextMenu();
+    } else {
+      removeContextMenu();
     }
   });
 };

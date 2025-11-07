@@ -187,7 +187,7 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
                 Save
               </Button>
               <Button onClick={() => handleSave(true)} disabled={loading} size="sm" className="ml-2">
-                Save And Set
+                Save And Apply
               </Button>
             </div>
           </div>
@@ -346,7 +346,7 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
                 className="cursor-pointer"
                 onClick={() => handleSet(row.original)}>
                 <Wrench size={16} className="mr-2 h-4 w-4" />
-                Set
+                Apply
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

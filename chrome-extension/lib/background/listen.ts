@@ -11,7 +11,7 @@ import {
   pushCookies,
   removeCookieItem,
   removeCookies,
-  sendMessage,
+  sendGetLocalStorageMessage,
   SendResponse,
 } from '@sync-your-cookie/shared';
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
@@ -42,33 +42,21 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
     let localStorageItems: NonNullable<Parameters<typeof pushCookies>[2]> = [];
     const includeLocalStorage = settingsStorage.getSnapshot()?.includeLocalStorage;
     if (includeLocalStorage) {
-      await sendMessage(
-        {
-          type: MessageType.GetLocalStorage,
-          payload: {
-            domain: host,
-          },
-        },
-        true,
-      )
-        .then(res => {
-          if (res.isOk) {
-            localStorageItems = (res.result as any[]) || [];
-          }
-        })
-        .catch((err: any) => {
-          console.log('getLocalStorage', err);
-        });
+      try {
+        localStorageItems = await sendGetLocalStorageMessage(host);
+      } catch (error) {
+        console.error('sendGetLocalStorageMessage error', error);
+      }
     } else {
       const cookieMap = await cookieStorage.getSnapshot();
       localStorageItems = cookieMap?.domainCookieMap?.[host]?.localStorageItems || [];
     }
 
-    if (cookies?.length) {
+    if (cookies?.length || localStorageItems.length) {
       const res = await pushCookies(host, cookies, localStorageItems);
       checkResponseAndCallback(res, 'push', callback);
     } else {
-      callback({ isOk: false, msg: 'no cookies found', result: cookies });
+      callback({ isOk: false, msg: 'no cookies and  localStorageItems found', result: cookies });
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
