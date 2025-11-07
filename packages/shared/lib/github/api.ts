@@ -37,10 +37,10 @@ export class GithubApi {
   async newOctokit() {
     if (this.accessToken) {
       this.octokit = new Octokit({ auth: this.accessToken });
-      this.octokit.hook.before('request', options => {
-        console.log('请求 URL:', options.url);
-        console.log('请求头:', options.headers);
-      });
+      // this.octokit.hook.before('request', options => {
+      //   console.log('请求 URL:', options.url);
+      //   console.log('请求头:', options.headers);
+      // });
     }
   }
 
@@ -78,12 +78,10 @@ export class GithubApi {
     if (!syncGist && this.initDefault) {
       console.log('No sync gists found, creating one...');
       const content = await this.initContent();
-      const newGist = await this.createGist('Sync Your Cookie Gist', `${this.prefix}Default`, content, false);
+      await this.createGist('Sync Your Cookie Gist', `${this.prefix}Default`, content, false);
       // syncGists.push(newGist.data);
-      console.log('newGist', newGist);
       syncGist = await this.getSyncGists();
     }
-    console.log('syncGists', syncGist);
     if (syncGist) {
       await this.setStorageKeyList(syncGist);
     }
