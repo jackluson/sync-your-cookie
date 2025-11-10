@@ -61,7 +61,7 @@ Pushed Cookie on Cloudflare
 
 ### TODO
 
-- [x] Custom Store Configure
+- [x] Custom Save Configure
 - [x] Multi-account synchronization based on Storage-key
 - [x] Sync LocalStorage
 - [x] More Cloud Platform (First github gist)
