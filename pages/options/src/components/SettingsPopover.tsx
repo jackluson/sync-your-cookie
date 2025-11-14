@@ -59,23 +59,23 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
 
   const handleAddStorageKey = async (key: string) => {
     const accountStorageInfo = await accountStorage.getSnapshot();
-    if (accountStorageInfo?.selectedProvider === 'cloudflare') {
-      await settingsStorage.addStorageKey(key);
-    } else {
+    if (accountStorageInfo?.selectedProvider === 'github') {
       const gistId = settingsInfo.storageKeyGistId;
       await GithubApi.instance.addGistFile(gistId!, key);
       await GithubApi.instance.initStorageKeyList();
+    } else {
+      await settingsStorage.addStorageKey(key);
     }
   };
 
   const handleRemoveStorageKey = async (key: string) => {
     const accountStorageInfo = await accountStorage.getSnapshot();
-    if (accountStorageInfo?.selectedProvider === 'cloudflare') {
-      await settingsStorage.removeStorageKey(key);
-    } else {
+    if (accountStorageInfo?.selectedProvider === 'github') {
       const gistId = settingsInfo.storageKeyGistId;
       await GithubApi.instance.deleteGistFile(gistId!, key);
       await GithubApi.instance.initStorageKeyList();
+    } else {
+      await settingsStorage.removeStorageKey(key);
     }
   };
 

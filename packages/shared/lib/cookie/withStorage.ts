@@ -163,12 +163,12 @@ const checkSuccessAndUpdate = async (
   res: WriteResponse | OctokitResponse<any>,
   cookieMap: ICookiesMap,
 ) => {
-  if (accountInfo.selectedProvider === 'cloudflare') {
-    if ((res as WriteResponse).success) {
+  if (accountInfo.selectedProvider === 'github') {
+    if ((res as unknown as GistUpdateResponse)?.status?.toString()?.startsWith('2')) {
       await cookieStorage.update(cookieMap);
     }
   } else {
-    if ((res as unknown as GistUpdateResponse).status.toString().startsWith('2')) {
+    if ((res as WriteResponse).success) {
       await cookieStorage.update(cookieMap);
     }
   }
