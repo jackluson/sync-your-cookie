@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "chrome extension",
   "scripts": {
     "clean": "rimraf ../../dist && rimraf .turbo",
