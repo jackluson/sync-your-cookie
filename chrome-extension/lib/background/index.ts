@@ -65,7 +65,7 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
   const domainMap = domainConfigSnapShot?.domainMap || {};
   let flag = false;
   for (const key in domainMap) {
-    if (domain.endsWith(key) && domainMap[key]?.autoPush) {
+    if (key.endsWith(domain) && domainMap[key]?.autoPush) {
       flag = true;
       break;
     }

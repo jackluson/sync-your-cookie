@@ -33,7 +33,7 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
     await domainStatusStorage.updateItem(host, {
       pushing: true,
     });
-    const [domain] = await extractDomainAndPort(host);
+    const [domain, port, hostname] = await extractDomainAndPort(host);
     const cookies = await chrome.cookies.getAll({
       // url: activeTabUrl,
       domain: domain,
@@ -43,9 +43,12 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
     const includeLocalStorage = settingsStorage.getSnapshot()?.includeLocalStorage;
     if (includeLocalStorage) {
       try {
-        localStorageItems = await sendGetLocalStorageMessage(host);
+        const hostname = sourceUrl ? new URL(sourceUrl).hostname : host;
+        localStorageItems = await sendGetLocalStorageMessage(hostname);
       } catch (error) {
         console.error('sendGetLocalStorageMessage error', error);
+        const cookieMap = await cookieStorage.getSnapshot();
+        localStorageItems = cookieMap?.domainCookieMap?.[host]?.localStorageItems || [];
       }
     } else {
       const cookieMap = await cookieStorage.getSnapshot();

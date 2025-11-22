@@ -189,7 +189,7 @@ export function editCookieItemUsingMessage(payload: EditCookieItemMessagePayload
   });
 }
 
-const getTabsByHost = async (host: string) => {
+export const getTabsByHost = async (host: string) => {
   return new Promise<chrome.tabs.Tab[]>((resolve, reject) => {
     try {
       chrome.tabs.query({}, function (tabs) {
@@ -241,15 +241,23 @@ export const sendGetLocalStorageMessage = async (host: string, isTry = true) => 
           myReject(err);
           return;
         }
+
         console.error('getLocalStorage and try reload fetch again', err);
         const matchedTabs = await getTabsByHost(host);
-        const activeTab = matchedTabs.find(tab => tab.active);
-        if (activeTab) {
-          chrome.tabs.reload(activeTab.id!);
-        } else {
-          matchedTabs.forEach(function (tab) {
-            chrome.tabs.reload(tab.id!);
+        if (matchedTabs.length === 0) {
+          await chrome.tabs.create({
+            url: 'https://' + host,
           });
+          // window.open(host, '_blank');
+        } else {
+          const activeTab = matchedTabs.find(tab => tab.active);
+          if (activeTab) {
+            chrome.tabs.reload(activeTab.id!);
+          } else {
+            matchedTabs.forEach(function (tab) {
+              chrome.tabs.reload(tab.id!);
+            });
+          }
         }
         setTimeout(async () => {
           try {
