@@ -42,10 +42,10 @@ export const useAction = (cookie: Cookie) => {
     }
   };
 
-  const handlePush = async (cookie: CookieItem) => {
+  const handlePush = async (cookie: CookieItem, sourceUrl?: string) => {
     try {
       setLoading(true);
-      await cookieAction.handlePush(cookie.host);
+      await cookieAction.handlePush(cookie.host, sourceUrl);
     } finally {
       setLoading(false);
     }

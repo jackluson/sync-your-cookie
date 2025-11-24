@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import { getTabsByHost, useStorageSuspense } from '@sync-your-cookie/shared';
 import {
@@ -24,6 +25,7 @@ import {
   Copy,
   Database,
   Ellipsis,
+  Info,
   RotateCw,
   Table as TableIcon,
   Trash,
@@ -101,22 +103,21 @@ const CookieTable = () => {
   });
 
   const handleAndCheckPushCookie = async (row: CookieItem) => {
+    const protocol = row.sourceUrl ? new URL(row.sourceUrl).protocol : 'https:';
+    const href = `${protocol}//${row.host}`;
     const includeLocalStorage = settingsStorage.getSnapshot()?.includeLocalStorage;
     if (includeLocalStorage) {
       const matchedTabs = await getTabsByHost(row.host);
-      console.log('matchedTabs', matchedTabs);
       if (matchedTabs.length === 0) {
-        const protocol = row.sourceUrl ? new URL(row.sourceUrl).protocol : 'https:';
-        const href = `${protocol}//${row.host}`;
         window.open(href, '_blank');
         setTimeout(async () => {
-          handlePush(row);
+          handlePush(row, href);
         }, 500);
       } else {
-        handlePush(row);
+        handlePush(row, href);
       }
     } else {
-      handlePush(row);
+      handlePush(row, href);
     }
     // console.log('handleAndCheckPushCookie->row', row);
   };
@@ -241,7 +242,7 @@ const CookieTable = () => {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem
-                className="cursor-pointer"
+                className="cursor-pointer flex items-center"
                 disabled={disabled}
                 onClick={() => {
                   handleAndCheckPushCookie(row.original);
@@ -252,6 +253,19 @@ const CookieTable = () => {
                   <CloudUpload size={16} className="mr-2 h-4 w-4" />
                 )}
                 Push
+                <SyncTooltip
+                  align="start"
+                  alignOffset={80}
+                  title={
+                    <p>
+                      <p>If 'Include LocalStorage' is enabled and no 'host' tab is present,</p>a 'host' tab will
+                      automatically open.
+                    </p>
+                  }>
+                  <p className="text-base flex items-center font-medium">
+                    <Info className="ml-14" size={16} />
+                  </p>
+                </SyncTooltip>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"

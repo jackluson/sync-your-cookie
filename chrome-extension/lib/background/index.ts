@@ -1,13 +1,7 @@
 // sort-imports-ignore
 import 'webextension-polyfill';
 
-import {
-  extractDomainAndPort,
-  initGithubApi,
-  pullAndSetCookies,
-  pullCookies,
-  pushMultipleDomainCookies,
-} from '@sync-your-cookie/shared';
+import { initGithubApi, pullAndSetCookies, pullCookies, pushMultipleDomainCookies } from '@sync-your-cookie/shared';
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
@@ -63,9 +57,10 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
   const domainConfigSnapShot = await domainConfigStorage.getSnapshot();
   const domain = changeInfo.cookie.domain;
   const domainMap = domainConfigSnapShot?.domainMap || {};
+  const removeHeadDomain = domain.startsWith('.') ? domain.slice(1) : domain;
   let flag = false;
   for (const key in domainMap) {
-    if (key.endsWith(domain) && domainMap[key]?.autoPush) {
+    if (key.endsWith(removeHeadDomain) && domainMap[key]?.autoPush) {
       flag = true;
       break;
     }
@@ -75,35 +70,42 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
     return;
   }
   delayTimer && clearTimeout(delayTimer);
-  changedDomainSet.add(domain);
+  changedDomainSet.add(removeHeadDomain);
   delayTimer = setTimeout(async () => {
     timeoutFlag = false;
     if (checkDelayTimer) {
       clearTimeout(checkDelayTimer);
     }
     const domainConfig = await domainConfigStorage.get();
-    const pushDomainSet = new Set<string>();
+    // const pushDomainSet = new Set<string>();
+    const pushDomainHostMap = new Map<string, string[]>();
     for (const domain of changedDomainSet) {
       for (const key in domainConfig.domainMap) {
-        if (domain.endsWith(key) && domainConfig.domainMap[key]?.autoPush) {
-          pushDomainSet.add(key);
+        if (key.endsWith(domain) && domainConfig.domainMap[key]?.autoPush) {
+          // pushDomainSet.add(domain);
+          const existedHost = pushDomainHostMap.get(domain) || [];
+          pushDomainHostMap.set(domain, [key, ...existedHost]);
         }
       }
     }
 
     const uploadDomainCookies = [];
     const cookieMap = await cookieStorage.getSnapshot();
-    for (const host of pushDomainSet) {
-      const [domain] = await extractDomainAndPort(host);
+    console.log('pushDomainHostMap', pushDomainHostMap);
+    for (const domain of pushDomainHostMap.keys()) {
+      const hosts = pushDomainHostMap.get(domain) || [];
+      // const [domain] = await extractDomainAndPort(host);
 
       const cookies = await chrome.cookies.getAll({
         domain: domain,
       });
-      uploadDomainCookies.push({
-        domain: host,
-        cookies,
-        localStorageItems: cookieMap?.domainCookieMap?.[host]?.localStorageItems || [],
-      });
+      for (const host of hosts) {
+        uploadDomainCookies.push({
+          domain: host,
+          cookies,
+          localStorageItems: cookieMap?.domainCookieMap?.[host]?.localStorageItems || [],
+        });
+      }
     }
     if (uploadDomainCookies.length) {
       await pushMultipleDomainCookies(uploadDomainCookies);
