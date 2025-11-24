@@ -8,7 +8,11 @@
 `Sync your cookie` 是一个 Chrome 扩展程序，它可以帮助您将 Cookie 同步到 Cloudflare。它是一个有用的工具，用于在不同设备之间共享 Cookie, 免去了登录流程的烦恼，此外也提供了cookie管理面板查看，管理已经过同步的 cookie。
 
 
-<!-- // 使用gif展示功能 -->
+### 安装
+Chrome: [Sync Your Cookie](https://chromewebstore.google.com/detail/sync-your-cookie/bcegpckmgklcpcapnbigfdadedcneopf)
+
+Edge: [Sync Your Cookie](https://microsoftedge.microsoft.com/addons/detail/sync-your-cookie/ohlcghldllgnmkegocpcphdbbphikgfm)
+
 
 ### 功能
 - 支持同步 Cookie 到 Cloudflare 或者 github Gist (支持LocalStorage)
