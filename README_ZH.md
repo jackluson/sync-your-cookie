@@ -25,7 +25,7 @@ Edge: [Sync Your Cookie](https://microsoftedge.microsoft.com/addons/detail/sync-
 
 账号设置页面
 
-<img width="600" src="./screenshots/settings.png" alt="account settings"/>
+<img width="600" src="./screenshots/settings_v2.png" alt="account settings"/>
 
 Cookie 同步页面
 

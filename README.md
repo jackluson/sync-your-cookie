@@ -47,6 +47,10 @@ Cookie Detail
 
 <img width="600" src="./screenshots/panel_item.png" alt="cookie manager sidebar panel"/>
 
+LocalStorage Detail
+
+<img width="600" src="./screenshots/panel_item_localStorage.png" alt="cookie manager sidebar panel"/>
+
 Pushed Cookie on Github Gist
 
 <img width="600" src="./screenshots/gist.png" alt="Pushed Cookie on Github Gist"/>
