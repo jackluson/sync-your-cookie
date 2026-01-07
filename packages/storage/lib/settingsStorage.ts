@@ -15,6 +15,8 @@ export interface ISettings {
   includeLocalStorage?: boolean;
   localStorageGetting?: boolean;
   contextMenu?: boolean;
+  encryptionEnabled?: boolean;
+  encryptionPassword?: string;
 }
 const key = 'settings-storage-key';
 const cacheStorageMap = new Map();

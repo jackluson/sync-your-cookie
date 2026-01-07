@@ -11,6 +11,9 @@ import {
   base64ToArrayBuffer,
   decodeCookiesMap,
   encodeCookiesMap,
+  encryptBase64,
+  decryptBase64,
+  isBase64Encrypted,
   ICookie,
   ICookiesMap,
   ILocalStorageItem,
@@ -57,15 +60,31 @@ export const readCookiesMap = async (accountInfo: AccountInfo): Promise<ICookies
 
   if (content) {
     try {
-      const protobufEncoding = content.startsWith('{') ? false : true;
+      const settingsInfo = settingsStorage.getSnapshot();
+      const encryptionEnabled = settingsInfo?.encryptionEnabled;
+      const encryptionPassword = settingsInfo?.encryptionPassword;
+
+      // Check if content is encrypted and decrypt if needed
+      let processedContent = content;
+      const protobufEncoding = !content.startsWith('{');
+
+      if (protobufEncoding && encryptionEnabled && encryptionPassword && isBase64Encrypted(content)) {
+        try {
+          processedContent = await decryptBase64(content, encryptionPassword);
+        } catch (decryptError) {
+          console.error('Decryption failed:', decryptError);
+          throw new Error('Failed to decrypt data. Please check your encryption password.');
+        }
+      }
+
       if (protobufEncoding) {
-        const compressedBuffer = base64ToArrayBuffer(content);
+        const compressedBuffer = base64ToArrayBuffer(processedContent);
         const deMsg = await decodeCookiesMap(compressedBuffer);
         console.log('readCookiesMap->deMsg', deMsg);
         return deMsg;
       } else {
-        console.log('readCookiesMap->res', JSON.parse(content));
-        return JSON.parse(content);
+        console.log('readCookiesMap->res', JSON.parse(processedContent));
+        return JSON.parse(processedContent);
       }
     } catch (error) {
       console.log('decode error', error);
@@ -77,20 +96,29 @@ export const readCookiesMap = async (accountInfo: AccountInfo): Promise<ICookies
 };
 
 export const writeCookiesMap = async (accountInfo: AccountInfo, cookiesMap: ICookiesMap = {}) => {
-  const protobufEncoding = settingsStorage.getSnapshot()?.protobufEncoding;
+  const settingsInfo = settingsStorage.getSnapshot();
+  const protobufEncoding = settingsInfo?.protobufEncoding;
+  const encryptionEnabled = settingsInfo?.encryptionEnabled;
+  const encryptionPassword = settingsInfo?.encryptionPassword;
+
   let encodingStr = '';
   if (protobufEncoding) {
     const buffered = await encodeCookiesMap(cookiesMap);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     encodingStr = arrayBufferToBase64(buffered as any);
+
+    // Encrypt the data if encryption is enabled
+    if (encryptionEnabled && encryptionPassword) {
+      encodingStr = await encryptBase64(encodingStr, encryptionPassword);
+      console.log('writeCookiesMap-> data encrypted');
+    }
   } else {
     encodingStr = JSON.stringify(cookiesMap);
     console.log('writeCookiesMap->', cookiesMap);
   }
   if (accountInfo.selectedProvider === 'github') {
-    const settingsStorageInfo = settingsStorage.getSnapshot();
-    const storageKeyGistId = settingsStorageInfo?.storageKeyGistId;
-    const storageKey = settingsStorageInfo?.storageKey;
+    const storageKeyGistId = settingsInfo?.storageKeyGistId;
+    const storageKey = settingsInfo?.storageKey;
     return await GithubApi.instance.updateGist(storageKeyGistId!, storageKey!, encodingStr);
   } else {
     const res = await writeCloudflareKV(

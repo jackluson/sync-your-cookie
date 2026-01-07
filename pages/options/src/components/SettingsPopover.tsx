@@ -3,8 +3,8 @@ import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
-import { Label, Popover, PopoverContent, PopoverTrigger, Switch, SyncTooltip } from '@sync-your-cookie/ui';
-import { Info, SquareArrowOutUpRight } from 'lucide-react';
+import { Input, Label, Popover, PopoverContent, PopoverTrigger, Switch, SyncTooltip } from '@sync-your-cookie/ui';
+import { Info, Lock, SquareArrowOutUpRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { StorageSelect } from './StorageSelect';
 interface SettingsPopover {
@@ -17,10 +17,16 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
 
   const handleCheckChange = (
     checked: boolean,
-    checkedKey: 'protobufEncoding' | 'includeLocalStorage' | 'contextMenu',
+    checkedKey: 'protobufEncoding' | 'includeLocalStorage' | 'contextMenu' | 'encryptionEnabled',
   ) => {
     settingsStorage.update({
       [checkedKey]: checked,
+    });
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    settingsStorage.update({
+      encryptionPassword: e.target.value,
     });
   };
 
@@ -144,7 +150,7 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mb-4">
               <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="contextMenu">
                 Show ContextMenu
               </Label>
@@ -155,6 +161,42 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
                   id="contextMenu"
                 />
               </div>
+            </div>
+
+            <div className="border-t pt-4 mt-2">
+              <div className="flex items-center gap-4 mb-4">
+                <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="encryption">
+                  <Lock size={14} className="mr-1" />
+                  E2E Encryption
+                </Label>
+                <div className="flex items-center gap-1">
+                  <Switch
+                    onCheckedChange={checked => handleCheckChange(checked, 'encryptionEnabled')}
+                    checked={settingsInfo.encryptionEnabled}
+                    disabled={!settingsInfo.protobufEncoding}
+                    id="encryption"
+                  />
+                  <SyncTooltip title="End-to-end encryption requires Protobuf Encoding to be enabled. Your data will be encrypted with AES-256-GCM before being sent to the cloud.">
+                    <Info className="mx-2" size={18} />
+                  </SyncTooltip>
+                </div>
+              </div>
+
+              {settingsInfo.encryptionEnabled && settingsInfo.protobufEncoding && (
+                <div className="flex items-center gap-4">
+                  <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="encryptionPassword">
+                    Password
+                  </Label>
+                  <Input
+                    type="password"
+                    id="encryptionPassword"
+                    value={settingsInfo.encryptionPassword || ''}
+                    onChange={handlePasswordChange}
+                    className="h-8 flex-1"
+                    placeholder="Enter encryption password"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
