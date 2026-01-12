@@ -70,7 +70,7 @@ export function StorageSelect(props: StorageSelectProps) {
     }
   };
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="mr-2">
       <Select
         value={value}
         onValueChange={val => {
@@ -80,7 +80,7 @@ export function StorageSelect(props: StorageSelectProps) {
           onValueChange?.(val);
         }}
         {...rest}>
-        <SelectTrigger className="w-[160px] scale-90 ">
+        <SelectTrigger className="w-[150px] scale-90 ">
           <SelectValue className="ml-[-8px]" placeholder="Select a Storage Key" />
         </SelectTrigger>
         <SelectPortal>

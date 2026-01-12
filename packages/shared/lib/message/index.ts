@@ -17,6 +17,8 @@ export enum MessageType {
 export enum MessageErrorCode {
   AccountCheck = 'AccountCheck',
   CloudflareNotFoundRoute = 'CloudflareNotFoundRoute',
+  DecryptFailed = 'DecryptFailed',
+  DecodeFailed = 'DecodeFailed',
 }
 
 export type PushCookieMessagePayload = {

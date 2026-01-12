@@ -10,13 +10,13 @@ import {
   arrayBufferToBase64,
   base64ToArrayBuffer,
   decodeCookiesMap,
+  decryptBase64,
   encodeCookiesMap,
   encryptBase64,
-  decryptBase64,
-  isBase64Encrypted,
   ICookie,
   ICookiesMap,
   ILocalStorageItem,
+  isBase64Encrypted,
 } from '@sync-your-cookie/protobuf';
 
 export const check = (accountInfo?: AccountInfo) => {
@@ -73,7 +73,11 @@ export const readCookiesMap = async (accountInfo: AccountInfo): Promise<ICookies
           processedContent = await decryptBase64(content, encryptionPassword);
         } catch (decryptError) {
           console.error('Decryption failed:', decryptError);
-          throw new Error('Failed to decrypt data. Please check your encryption password.');
+          // throw new Error('Failed to decrypt data. Please check your encryption password.');
+          return Promise.reject({
+            message: 'Failed to decrypt data. Please check your encryption password.',
+            code: MessageErrorCode.DecryptFailed,
+          });
         }
       }
 
@@ -87,8 +91,12 @@ export const readCookiesMap = async (accountInfo: AccountInfo): Promise<ICookies
         return JSON.parse(processedContent);
       }
     } catch (error) {
-      console.log('decode error', error);
-      return {};
+      console.log('Decode error', error);
+      // return {};
+      return Promise.reject({
+        message: `Decode error: ${error}, please check your save settings`,
+        code: MessageErrorCode.DecodeFailed,
+      });
     }
   } else {
     return {};

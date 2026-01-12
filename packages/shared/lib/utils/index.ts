@@ -36,9 +36,9 @@ export function checkResponseAndCallback(
       callback({ isOk: true, msg: `${successSceneMap[scene]} success` });
     } else {
       const defaultErrMsg =
-        res?.message?.toLowerCase().includes?.(scene) || (statusCode && res?.message)
+        res?.message?.toLowerCase().includes?.(scene) || ((statusCode || res.code) && res?.message)
           ? res?.message
-          : `${scene} fail (status:${statusCode}), please try again.`;
+          : `${scene} fail (status:${statusCode || res.code}), please try again.`;
       callback({ isOk: false, code: res?.code, msg: defaultErrMsg, result: res });
     }
   } else {
@@ -47,7 +47,6 @@ export function checkResponseAndCallback(
     } else {
       const cloudFlareErrors = [ErrorCode.NotFoundRoute, ErrorCode.NamespaceIdError, ErrorCode.AuthenicationError];
       const isAccountError = res?.errors?.length && cloudFlareErrors.includes(res.errors[0].code);
-      console.log('checkResponseAndCallback->res', res);
       if (isAccountError) {
         callback({
           isOk: false,

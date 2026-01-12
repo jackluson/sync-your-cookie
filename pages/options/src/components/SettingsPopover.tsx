@@ -124,7 +124,7 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
               />
             </div>
             <div className="flex items-center gap-4 mb-4">
-              <Label className="whitespace-nowrap block w-[136px] text-right" htmlFor="encoding">
+              <Label className="whitespace-nowrap block w-[136px] justify-end text-right" htmlFor="encoding">
                 Protobuf Encoding
               </Label>
               <Switch
@@ -135,7 +135,9 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
             </div>
 
             <div className="flex items-center gap-4 mb-4">
-              <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="include">
+              <Label
+                className="items-center  whitespace-nowrap flex w-[136px] justify-end text-right"
+                htmlFor="include">
                 Include LocalStorage
               </Label>
               <div className="flex items-center gap-1">
@@ -151,7 +153,9 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
             </div>
 
             <div className="flex items-center gap-4 mb-4">
-              <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="contextMenu">
+              <Label
+                className="items-center whitespace-nowrap flex w-[136px] justify-end text-right"
+                htmlFor="contextMenu">
                 Show ContextMenu
               </Label>
               <div className="flex items-center gap-1">
@@ -165,7 +169,9 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
 
             <div className="border-t pt-4 mt-2">
               <div className="flex items-center gap-4 mb-4">
-                <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="encryption">
+                <Label
+                  className="items-center whitespace-nowrap flex w-[136px] justify-end text-right"
+                  htmlFor="encryption">
                   <Lock size={14} className="mr-1" />
                   E2E Encryption
                 </Label>
@@ -184,7 +190,9 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
 
               {settingsInfo.encryptionEnabled && settingsInfo.protobufEncoding && (
                 <div className="flex items-center gap-4">
-                  <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="encryptionPassword">
+                  <Label
+                    className="items-center whitespace-nowrap flex w-[136px] justify-end text-right"
+                    htmlFor="encryptionPassword">
                     Password
                   </Label>
                   <Input
@@ -192,7 +200,7 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
                     id="encryptionPassword"
                     value={settingsInfo.encryptionPassword || ''}
                     onChange={handlePasswordChange}
-                    className="h-8 flex-1"
+                    className="h-8 flex-1 mr-4"
                     placeholder="Enter encryption password"
                   />
                 </div>

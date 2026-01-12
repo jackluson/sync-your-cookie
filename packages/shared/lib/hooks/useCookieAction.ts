@@ -2,7 +2,7 @@ import {
   MessageErrorCode,
   pullCookieUsingMessage,
   pushCookieUsingMessage,
-  removeCookieUsingMessage
+  removeCookieUsingMessage,
 } from '@lib/message';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
@@ -13,7 +13,14 @@ import { useStorageSuspense } from './index';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const catchHandler = (err: any, scene: 'push' | 'pull' | 'remove' | 'delete' | 'edit', toast: typeof Toast) => {
   const defaultMsg = `${scene} fail`;
-  if (err?.code === MessageErrorCode.AccountCheck || err?.code === MessageErrorCode.CloudflareNotFoundRoute) {
+  const code = err?.code;
+  const settingErrors = [
+    MessageErrorCode.AccountCheck,
+    MessageErrorCode.CloudflareNotFoundRoute,
+    MessageErrorCode.DecodeFailed,
+    MessageErrorCode.DecryptFailed,
+  ];
+  if (settingErrors.includes(code)) {
     toast.error(err?.msg || err?.result?.message || defaultMsg, {
       action: {
         label: 'go to settings',

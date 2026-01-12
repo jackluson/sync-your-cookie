@@ -34,12 +34,7 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
       pushing: true,
     });
     const [domain, port, hostname] = await extractDomainAndPort(host);
-    const condition = sourceUrl
-      ? { url: sourceUrl }
-      : {
-          // url: activeTabUrl,
-          domain: domain,
-        };
+    const condition = sourceUrl ? { url: sourceUrl } : { domain: domain };
     const cookies = await chrome.cookies.getAll(condition);
 
     let localStorageItems: NonNullable<Parameters<typeof pushCookies>[2]> = [];
