@@ -15,6 +15,8 @@ export const useAction = (cookie: Cookie) => {
     setSelectedDomain,
     cookieList,
     renderKeyValue,
+    localStorageItems,
+    ...rest
   } = useSelected(cookie, currentSearchStr);
 
   useEffect(() => {
@@ -34,16 +36,16 @@ export const useAction = (cookie: Cookie) => {
   const handlePull = async (activeTabUrl: string, cookie: CookieItem) => {
     try {
       setLoading(true);
-      await cookieAction.handlePull(activeTabUrl, cookie.host, false);
+      await cookieAction.handlePull(activeTabUrl, cookie.host, true);
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePush = async (cookie: CookieItem) => {
+  const handlePush = async (cookie: CookieItem, sourceUrl?: string) => {
     try {
       setLoading(true);
-      await cookieAction.handlePush(cookie.host);
+      await cookieAction.handlePush(cookie.host, sourceUrl);
     } finally {
       setLoading(false);
     }
@@ -122,5 +124,12 @@ export const useAction = (cookie: Cookie) => {
       }
       return true;
     }),
+    localStorageItems: localStorageItems.filter(item => {
+      if (currentSearchStr.trim()) {
+        return item.key?.includes(currentSearchStr) || item.value?.includes(currentSearchStr);
+      }
+      return true;
+    }),
+    ...rest,
   };
 };

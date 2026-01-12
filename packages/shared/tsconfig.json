@@ -7,10 +7,11 @@
     "allowJs": false,
     "baseUrl": ".",
     "declarationMap": true,
+    "sourceMap": true,
     "paths": {
       "@lib/*": ["lib/*"]
     },
-    "types": ["chrome"]
+    "types": ["chrome", "node", "@octokit/types"]
   },
   "include": ["index.ts", "lib"],
 }

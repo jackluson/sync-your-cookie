@@ -1,9 +1,22 @@
 import { BaseStorage, createStorage, StorageType } from './base';
+export interface IStorageItem {
+  value: string;
+  label: string;
+  rawUrl?: string;
+  [key: string]: unknown;
+}
 
 export interface ISettings {
-  storageKeyList: string[];
+  storageKeyList: IStorageItem[];
   storageKey?: string;
+  storageKeyGistId?: string;
+  gistHtmlUrl?: string;
   protobufEncoding?: boolean;
+  includeLocalStorage?: boolean;
+  localStorageGetting?: boolean;
+  contextMenu?: boolean;
+  encryptionEnabled?: boolean;
+  encryptionPassword?: string;
 }
 const key = 'settings-storage-key';
 const cacheStorageMap = new Map();
@@ -16,9 +29,11 @@ const initStorage = (): BaseStorage<ISettings> => {
   const storage = createStorage<ISettings>(
     key,
     {
-      storageKeyList: [defaultKey],
+      storageKeyList: [{ value: defaultKey, label: defaultKey }],
       storageKey: defaultKey,
-      protobufEncoding: true,
+      protobufEncoding: false,
+      includeLocalStorage: true,
+      contextMenu: false,
     },
     {
       storageType: StorageType.Sync,
@@ -48,25 +63,40 @@ export const settingsStorage: TSettingsStorage = {
 
   addStorageKey: async (key: string) => {
     await storage.set(currentInfo => {
-      if (currentInfo.storageKeyList.includes(key)) {
+      const exists = currentInfo.storageKeyList.find(item => item.value === key);
+      if (exists) {
         return currentInfo;
       }
       return {
         ...currentInfo,
-        storageKeyList: [...currentInfo.storageKeyList, key],
+        storageKeyList: [...currentInfo.storageKeyList, { value: key, label: key }],
       };
     });
   },
 
   removeStorageKey: async (key: string) => {
     await storage.set(currentInfo => {
-      if (!currentInfo.storageKeyList.includes(key)) {
+      const exists = currentInfo.storageKeyList.find(item => item.value === key);
+      if (!exists) {
         return currentInfo;
       }
       return {
         ...currentInfo,
-        storageKeyList: currentInfo.storageKeyList.filter(item => item !== key),
+        storageKeyList: currentInfo.storageKeyList.filter(item => item.value !== key),
       };
     });
   },
+};
+
+export const getActiveStorageItem = (): IStorageItem | undefined => {
+  const snapshot = settingsStorage.getSnapshot();
+  const storageKey = snapshot?.storageKey;
+  return snapshot?.storageKeyList.find(item => item.value === storageKey);
+};
+
+export const initStorageKey = () => {
+  settingsStorage.update({
+    storageKeyList: [{ value: defaultKey, label: defaultKey }],
+    storageKey: defaultKey,
+  });
 };

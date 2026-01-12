@@ -441,6 +441,233 @@ export const Cookie = $root.Cookie = (() => {
     return Cookie;
 })();
 
+export const LocalStorageItem = $root.LocalStorageItem = (() => {
+
+    /**
+     * Properties of a LocalStorageItem.
+     * @exports ILocalStorageItem
+     * @interface ILocalStorageItem
+     * @property {string|null} [key] LocalStorageItem key
+     * @property {string|null} [value] LocalStorageItem value
+     */
+
+    /**
+     * Constructs a new LocalStorageItem.
+     * @exports LocalStorageItem
+     * @classdesc Represents a LocalStorageItem.
+     * @implements ILocalStorageItem
+     * @constructor
+     * @param {ILocalStorageItem=} [properties] Properties to set
+     */
+    function LocalStorageItem(properties) {
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * LocalStorageItem key.
+     * @member {string} key
+     * @memberof LocalStorageItem
+     * @instance
+     */
+    LocalStorageItem.prototype.key = "";
+
+    /**
+     * LocalStorageItem value.
+     * @member {string} value
+     * @memberof LocalStorageItem
+     * @instance
+     */
+    LocalStorageItem.prototype.value = "";
+
+    /**
+     * Creates a new LocalStorageItem instance using the specified properties.
+     * @function create
+     * @memberof LocalStorageItem
+     * @static
+     * @param {ILocalStorageItem=} [properties] Properties to set
+     * @returns {LocalStorageItem} LocalStorageItem instance
+     */
+    LocalStorageItem.create = function create(properties) {
+        return new LocalStorageItem(properties);
+    };
+
+    /**
+     * Encodes the specified LocalStorageItem message. Does not implicitly {@link LocalStorageItem.verify|verify} messages.
+     * @function encode
+     * @memberof LocalStorageItem
+     * @static
+     * @param {ILocalStorageItem} message LocalStorageItem message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    LocalStorageItem.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.key != null && Object.hasOwnProperty.call(message, "key"))
+            writer.uint32(/* id 1, wireType 2 =*/10).string(message.key);
+        if (message.value != null && Object.hasOwnProperty.call(message, "value"))
+            writer.uint32(/* id 2, wireType 2 =*/18).string(message.value);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified LocalStorageItem message, length delimited. Does not implicitly {@link LocalStorageItem.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof LocalStorageItem
+     * @static
+     * @param {ILocalStorageItem} message LocalStorageItem message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    LocalStorageItem.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a LocalStorageItem message from the specified reader or buffer.
+     * @function decode
+     * @memberof LocalStorageItem
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {LocalStorageItem} LocalStorageItem
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    LocalStorageItem.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.LocalStorageItem();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.key = reader.string();
+                    break;
+                }
+            case 2: {
+                    message.value = reader.string();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a LocalStorageItem message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof LocalStorageItem
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {LocalStorageItem} LocalStorageItem
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    LocalStorageItem.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a LocalStorageItem message.
+     * @function verify
+     * @memberof LocalStorageItem
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    LocalStorageItem.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.key != null && message.hasOwnProperty("key"))
+            if (!$util.isString(message.key))
+                return "key: string expected";
+        if (message.value != null && message.hasOwnProperty("value"))
+            if (!$util.isString(message.value))
+                return "value: string expected";
+        return null;
+    };
+
+    /**
+     * Creates a LocalStorageItem message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof LocalStorageItem
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {LocalStorageItem} LocalStorageItem
+     */
+    LocalStorageItem.fromObject = function fromObject(object) {
+        if (object instanceof $root.LocalStorageItem)
+            return object;
+        let message = new $root.LocalStorageItem();
+        if (object.key != null)
+            message.key = String(object.key);
+        if (object.value != null)
+            message.value = String(object.value);
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a LocalStorageItem message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof LocalStorageItem
+     * @static
+     * @param {LocalStorageItem} message LocalStorageItem
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    LocalStorageItem.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.defaults) {
+            object.key = "";
+            object.value = "";
+        }
+        if (message.key != null && message.hasOwnProperty("key"))
+            object.key = message.key;
+        if (message.value != null && message.hasOwnProperty("value"))
+            object.value = message.value;
+        return object;
+    };
+
+    /**
+     * Converts this LocalStorageItem to JSON.
+     * @function toJSON
+     * @memberof LocalStorageItem
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    LocalStorageItem.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for LocalStorageItem
+     * @function getTypeUrl
+     * @memberof LocalStorageItem
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    LocalStorageItem.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/LocalStorageItem";
+    };
+
+    return LocalStorageItem;
+})();
+
 export const DomainCookie = $root.DomainCookie = (() => {
 
     /**
@@ -450,6 +677,7 @@ export const DomainCookie = $root.DomainCookie = (() => {
      * @property {number|Long|null} [createTime] DomainCookie createTime
      * @property {number|Long|null} [updateTime] DomainCookie updateTime
      * @property {Array.<ICookie>|null} [cookies] DomainCookie cookies
+     * @property {Array.<ILocalStorageItem>|null} [localStorageItems] DomainCookie localStorageItems
      */
 
     /**
@@ -462,6 +690,7 @@ export const DomainCookie = $root.DomainCookie = (() => {
      */
     function DomainCookie(properties) {
         this.cookies = [];
+        this.localStorageItems = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -491,6 +720,14 @@ export const DomainCookie = $root.DomainCookie = (() => {
      * @instance
      */
     DomainCookie.prototype.cookies = $util.emptyArray;
+
+    /**
+     * DomainCookie localStorageItems.
+     * @member {Array.<ILocalStorageItem>} localStorageItems
+     * @memberof DomainCookie
+     * @instance
+     */
+    DomainCookie.prototype.localStorageItems = $util.emptyArray;
 
     /**
      * Creates a new DomainCookie instance using the specified properties.
@@ -523,6 +760,9 @@ export const DomainCookie = $root.DomainCookie = (() => {
         if (message.cookies != null && message.cookies.length)
             for (let i = 0; i < message.cookies.length; ++i)
                 $root.Cookie.encode(message.cookies[i], writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+        if (message.localStorageItems != null && message.localStorageItems.length)
+            for (let i = 0; i < message.localStorageItems.length; ++i)
+                $root.LocalStorageItem.encode(message.localStorageItems[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
         return writer;
     };
 
@@ -569,6 +809,12 @@ export const DomainCookie = $root.DomainCookie = (() => {
                     if (!(message.cookies && message.cookies.length))
                         message.cookies = [];
                     message.cookies.push($root.Cookie.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 6: {
+                    if (!(message.localStorageItems && message.localStorageItems.length))
+                        message.localStorageItems = [];
+                    message.localStorageItems.push($root.LocalStorageItem.decode(reader, reader.uint32()));
                     break;
                 }
             default:
@@ -621,6 +867,15 @@ export const DomainCookie = $root.DomainCookie = (() => {
                     return "cookies." + error;
             }
         }
+        if (message.localStorageItems != null && message.hasOwnProperty("localStorageItems")) {
+            if (!Array.isArray(message.localStorageItems))
+                return "localStorageItems: array expected";
+            for (let i = 0; i < message.localStorageItems.length; ++i) {
+                let error = $root.LocalStorageItem.verify(message.localStorageItems[i]);
+                if (error)
+                    return "localStorageItems." + error;
+            }
+        }
         return null;
     };
 
@@ -664,6 +919,16 @@ export const DomainCookie = $root.DomainCookie = (() => {
                 message.cookies[i] = $root.Cookie.fromObject(object.cookies[i]);
             }
         }
+        if (object.localStorageItems) {
+            if (!Array.isArray(object.localStorageItems))
+                throw TypeError(".DomainCookie.localStorageItems: array expected");
+            message.localStorageItems = [];
+            for (let i = 0; i < object.localStorageItems.length; ++i) {
+                if (typeof object.localStorageItems[i] !== "object")
+                    throw TypeError(".DomainCookie.localStorageItems: object expected");
+                message.localStorageItems[i] = $root.LocalStorageItem.fromObject(object.localStorageItems[i]);
+            }
+        }
         return message;
     };
 
@@ -680,8 +945,10 @@ export const DomainCookie = $root.DomainCookie = (() => {
         if (!options)
             options = {};
         let object = {};
-        if (options.arrays || options.defaults)
+        if (options.arrays || options.defaults) {
             object.cookies = [];
+            object.localStorageItems = [];
+        }
         if (options.defaults) {
             if ($util.Long) {
                 let long = new $util.Long(0, 0, false);
@@ -708,6 +975,11 @@ export const DomainCookie = $root.DomainCookie = (() => {
             object.cookies = [];
             for (let j = 0; j < message.cookies.length; ++j)
                 object.cookies[j] = $root.Cookie.toObject(message.cookies[j], options);
+        }
+        if (message.localStorageItems && message.localStorageItems.length) {
+            object.localStorageItems = [];
+            for (let j = 0; j < message.localStorageItems.length; ++j)
+                object.localStorageItems[j] = $root.LocalStorageItem.toObject(message.localStorageItems[j], options);
         }
         return object;
     };

@@ -55,3 +55,9 @@ Your NamespaceId
 The uploaded cookie is a protobuf-encoded string
 ![check your cookie](./screenshots/kv/reload_page.png)
 
+
+
+## Reference
+
+- [create-token](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/)
+- [account-owned-tokens](https://developers.cloudflare.com/fundamentals/api/get-started/account-owned-tokens/)

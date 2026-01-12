@@ -157,6 +157,109 @@ export class Cookie implements ICookie {
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
+/** Properties of a LocalStorageItem. */
+export interface ILocalStorageItem {
+
+    /** LocalStorageItem key */
+    key?: (string|null);
+
+    /** LocalStorageItem value */
+    value?: (string|null);
+}
+
+/** Represents a LocalStorageItem. */
+export class LocalStorageItem implements ILocalStorageItem {
+
+    /**
+     * Constructs a new LocalStorageItem.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ILocalStorageItem);
+
+    /** LocalStorageItem key. */
+    public key: string;
+
+    /** LocalStorageItem value. */
+    public value: string;
+
+    /**
+     * Creates a new LocalStorageItem instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns LocalStorageItem instance
+     */
+    public static create(properties?: ILocalStorageItem): LocalStorageItem;
+
+    /**
+     * Encodes the specified LocalStorageItem message. Does not implicitly {@link LocalStorageItem.verify|verify} messages.
+     * @param message LocalStorageItem message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ILocalStorageItem, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified LocalStorageItem message, length delimited. Does not implicitly {@link LocalStorageItem.verify|verify} messages.
+     * @param message LocalStorageItem message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ILocalStorageItem, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a LocalStorageItem message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns LocalStorageItem
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): LocalStorageItem;
+
+    /**
+     * Decodes a LocalStorageItem message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns LocalStorageItem
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): LocalStorageItem;
+
+    /**
+     * Verifies a LocalStorageItem message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a LocalStorageItem message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns LocalStorageItem
+     */
+    public static fromObject(object: { [k: string]: any }): LocalStorageItem;
+
+    /**
+     * Creates a plain object from a LocalStorageItem message. Also converts values to other types if specified.
+     * @param message LocalStorageItem
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: LocalStorageItem, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this LocalStorageItem to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for LocalStorageItem
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
 /** Properties of a DomainCookie. */
 export interface IDomainCookie {
 
@@ -168,6 +271,9 @@ export interface IDomainCookie {
 
     /** DomainCookie cookies */
     cookies?: (ICookie[]|null);
+
+    /** DomainCookie localStorageItems */
+    localStorageItems?: (ILocalStorageItem[]|null);
 }
 
 /** Represents a DomainCookie. */
@@ -187,6 +293,9 @@ export class DomainCookie implements IDomainCookie {
 
     /** DomainCookie cookies. */
     public cookies: ICookie[];
+
+    /** DomainCookie localStorageItems. */
+    public localStorageItems: ILocalStorageItem[];
 
     /**
      * Creates a new DomainCookie instance using the specified properties.

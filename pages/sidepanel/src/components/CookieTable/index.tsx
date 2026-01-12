@@ -1,5 +1,6 @@
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import { useStorageSuspense } from '@sync-your-cookie/shared';
+import { getTabsByHost, useStorageSuspense } from '@sync-your-cookie/shared';
 import {
   Button,
   DataTable,
@@ -12,6 +13,8 @@ import {
   Image,
   Spinner,
   Switch,
+  SyncTooltip,
+  Toggle,
 } from '@sync-your-cookie/ui';
 import {
   ArrowUpRight,
@@ -20,7 +23,9 @@ import {
   CloudDownload,
   CloudUpload,
   Copy,
+  Database,
   Ellipsis,
+  Info,
   RotateCw,
   Table as TableIcon,
   Trash,
@@ -29,6 +34,7 @@ import {
 import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
+import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 import type { ColumnDef } from '@sync-your-cookie/ui';
 import { useAction } from './hooks/useAction';
@@ -45,7 +51,7 @@ export type CookieItem = {
 const CookieTable = () => {
   const domainConfig = useStorageSuspense(domainConfigStorage);
   const domainStatus = useStorageSuspense(domainStatusStorage);
-  
+
   const cookieMap = useStorageSuspense(cookieStorage);
 
   const {
@@ -63,14 +69,23 @@ const CookieTable = () => {
     handleViewCookies,
     handleSearch,
     currentSearchStr,
+    hasLocalStorage,
+    localStorageMode,
+    setLocalStorageMode,
+    showLocalStorageColumns,
+    localStorageItems,
   } = useAction(cookieMap);
   let domainList = [];
   let totalCookieItem = 0;
+  let totalLocalStorageItem = 0;
   for (const [key, value] of Object.entries(cookieMap?.domainCookieMap || {})) {
     const config = domainConfig.domainMap[key];
     if (!selectedDomain && currentSearchStr.trim() && !key.includes(currentSearchStr.trim())) continue;
     if (value.cookies?.length) {
       totalCookieItem += value.cookies.length;
+    }
+    if (value.localStorageItems?.length) {
+      totalLocalStorageItem += value.localStorageItems.length;
     }
     domainList.push({
       id: key,
@@ -86,6 +101,26 @@ const CookieTable = () => {
   domainList = domainList.sort((a, b) => {
     return b.createTime - a.createTime;
   });
+
+  const handleAndCheckPushCookie = async (row: CookieItem) => {
+    const protocol = row.sourceUrl ? new URL(row.sourceUrl).protocol : 'https:';
+    const href = `${protocol}//${row.host}`;
+    const includeLocalStorage = settingsStorage.getSnapshot()?.includeLocalStorage;
+    if (includeLocalStorage) {
+      const matchedTabs = await getTabsByHost(row.host);
+      if (matchedTabs.length === 0) {
+        window.open(href, '_blank');
+        setTimeout(async () => {
+          handlePush(row, href);
+        }, 500);
+      } else {
+        handlePush(row, href);
+      }
+    } else {
+      handlePush(row, href);
+    }
+    // console.log('handleAndCheckPushCookie->row', row);
+  };
 
   const columns: ColumnDef<CookieItem>[] = [
     {
@@ -207,10 +242,10 @@ const CookieTable = () => {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem
-                className="cursor-pointer"
+                className="cursor-pointer flex items-center"
                 disabled={disabled}
                 onClick={() => {
-                  handlePush(row.original);
+                  handleAndCheckPushCookie(row.original);
                 }}>
                 {itemStatus.pushing ? (
                   <RotateCw size={16} className=" h-4 w-4 mr-2 animate-spin" />
@@ -218,6 +253,19 @@ const CookieTable = () => {
                   <CloudUpload size={16} className="mr-2 h-4 w-4" />
                 )}
                 Push
+                <SyncTooltip
+                  align="start"
+                  alignOffset={80}
+                  title={
+                    <p>
+                      <p>If 'Include LocalStorage' is enabled and no 'host' tab is present,</p>a 'host' tab will
+                      automatically open.
+                    </p>
+                  }>
+                  <p className="text-base flex items-center font-medium">
+                    <Info className="ml-14" size={16} />
+                  </p>
+                </SyncTooltip>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -279,60 +327,85 @@ const CookieTable = () => {
   const sourceUrl = selectedRow?.sourceUrl;
   const protocol = sourceUrl ? new URL(sourceUrl).protocol : 'https:';
   const href = `${protocol}//${selectedDomain}`;
+  const handlePressChange = (pressed: boolean) => {
+    setLocalStorageMode(pressed);
+  };
+  const renderTable = () => {
+    return (
+      <div className="flex flex-col h-full ">
+        <div className="flex justify-between px-4 mb-4 ">
+          <div className="flex items-center ">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-7 w-7 mr-2"
+              onClick={() => {
+                handleBack();
+              }}>
+              <ChevronLeft className="h-4 w-4" />
+              <span className="sr-only">Back</span>
+            </Button>
+            <a
+              href={href}
+              target="_blank"
+              className=" flex text-xl items-center font-semibold hover:underline "
+              rel="noreferrer">
+              {selectedRow?.favIconUrl ? <Image src={selectedRow?.favIconUrl} /> : null}
+              {selectedDomain}
+            </a>
+          </div>
+          {hasLocalStorage ? (
+            <SyncTooltip title="Toggle LocalStorage View">
+              <Toggle pressed={localStorageMode} onPressedChange={handlePressChange} className="ml-6" variant="outline">
+                <Database size={16} className="h-4 w-4" />
+              </Toggle>
+            </SyncTooltip>
+          ) : null}
+        </div>
+        <div className="mb-1 px-4">
+          <SearchInput onEnter={handleSearch} />
+        </div>
+        <div className="flex-1 pl-4 pr-2 mt-4 overflow-auto">
+          {localStorageMode ? (
+            <DataTable columns={showLocalStorageColumns as any} data={localStorageItems} />
+          ) : (
+            <DataTable columns={showCookiesColumns} data={cookieList} />
+          )}
+        </div>
+      </div>
+    );
+  };
   return (
     <div className="h-screen flex flex-col">
       <div className="space-y-4 p-4 ">
         <div>
           <h2 className="text-xl font-bold tracking-tight">Welcome back!</h2>
-          <p className="text-muted-foreground text-sm">Here&apos;s a list of your pushed cookies </p>
+          <p className="text-muted-foreground text-sm">
+            Here&apos;s a list of your pushed {localStorageMode ? 'localStorage items' : 'cookies'}{' '}
+          </p>
         </div>
       </div>
       <div className="h-0 flex-1 overflow-auto">
         <Spinner show={loading}>
           {selectedDomain ? (
-            <>
-              <div className="flex flex-col h-full ">
-                <div className="flex items-center px-4 mb-4 ">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-7 w-7 mr-2"
-                    onClick={() => {
-                      handleBack();
-                    }}>
-                    <ChevronLeft className="h-4 w-4" />
-                    <span className="sr-only">Back</span>
-                  </Button>
-                  <a
-                    href={href}
-                    target="_blank"
-                    className=" flex text-xl items-center font-semibold hover:underline "
-                    rel="noreferrer">
-                    {selectedRow?.favIconUrl ? <Image src={selectedRow?.favIconUrl} /> : null}
-                    {selectedDomain}
-                  </a>
-                </div>
-                <div className="mb-1 px-4">
-                  <SearchInput onEnter={handleSearch} />
-                </div>
-                <div className="flex-1 pl-4 pr-2 mt-4 overflow-auto">
-                  <DataTable columns={showCookiesColumns} data={cookieList} />
-                </div>
-              </div>
-            </>
+            <>{renderTable()}</>
           ) : (
             <div className="flex flex-col h-full">
               <div>
-                <div className=" mx-4 w-1/3 bg-primary/10 mb-4 rounded-xl border text-card-foreground shadow">
+                <div className=" mx-4 w-1/3 min-w-[328px] bg-primary/10 mb-4 rounded-xl border text-card-foreground shadow">
                   <div className="p-3">
                     <div className="flex flex-row items-center justify-between">
-                      <p className="tracking-tight text-sm font-normal">Total Cookie</p>
+                      <p className="tracking-tight text-sm font-normal">Total Cookie and LocalStorage</p>
                     </div>
                     <div className="">
                       <p className="text-2xl font-bold">
                         {domainList.length} <span className="text-xl">sites</span>
                       </p>
-                      <p className="text-xs text-muted-foreground">{totalCookieItem} cookie items</p>
+                      <p className="text-xs text-muted-foreground">
+                        <span>{totalCookieItem} cookie items</span>
+                        <span className="mx-1">&</span>
+                        <span>{totalLocalStorageItem} localStorage items</span>
+                      </p>
                     </div>
                   </div>
                 </div>

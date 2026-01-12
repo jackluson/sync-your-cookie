@@ -1,15 +1,29 @@
 // sort-imports-ignore
 import 'webextension-polyfill';
 
-import {
-  extractDomainAndPort,
-  pullAndSetCookies,
-  pullCookies,
-  pushMultipleDomainCookies,
-} from '@sync-your-cookie/shared';
+import { initGithubApi, pullAndSetCookies, pullCookies, pushMultipleDomainCookies } from '@sync-your-cookie/shared';
+import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
+import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
+import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
+import { initContextMenu } from './contextMenu';
 import { refreshListen } from './listen';
 import { initSubscribe } from './subscribe';
+
+const ping = () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
+    if (tabs.length === 0) {
+      // const allOpendTabs = await chrome.tabs.query({});
+      console.log('No active tab found, try alternative way');
+      // reject({ isOk: false, msg: 'No active tab found' } as SendResponse);
+      return;
+    }
+    chrome.tabs.sendMessage(tabs[0].id!, 'ping', function (result) {
+      console.log('result->', result);
+    });
+  });
+  // setTimeout(ping, 4000);
+};
 
 const init = async () => {
   try {
@@ -18,7 +32,8 @@ const init = async () => {
     await initSubscribe(); // await state reset finish
     console.log('initSubscribe finish');
     await pullCookies(true);
-    console.log('init pullCookies finish');
+    console.log('initPullCookies finish');
+    // ping();
   } catch (error) {
     console.log('init-->error', error);
   }
@@ -26,19 +41,12 @@ const init = async () => {
 
 chrome.runtime.onInstalled.addListener(async () => {
   init();
-  // chrome.sidePanel.setPanexlBehavior({ openPanelOnActionClick: false });
-  chrome.contextMenus.create({
-    id: 'openSidePanel',
-    title: 'Open Cookie Manager',
-    contexts: ['all'],
-  });
-
-  chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId === 'openSidePanel' && tab?.windowId) {
-      // This will open the panel in all the pages on the current window.
-      chrome.sidePanel.open({ windowId: tab.windowId });
-    }
-  });
+  console.log('onInstalled');
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
+  const settingsSnapShot = await settingsStorage.get();
+  if (settingsSnapShot?.contextMenu) {
+    initContextMenu();
+  }
 });
 
 let delayTimer: NodeJS.Timeout | null = null;
@@ -49,9 +57,10 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
   const domainConfigSnapShot = await domainConfigStorage.getSnapshot();
   const domain = changeInfo.cookie.domain;
   const domainMap = domainConfigSnapShot?.domainMap || {};
+  const removeHeadDomain = domain.startsWith('.') ? domain.slice(1) : domain;
   let flag = false;
   for (const key in domainMap) {
-    if (domain.endsWith(key) && domainMap[key]?.autoPush) {
+    if (key.endsWith(removeHeadDomain) && domainMap[key]?.autoPush) {
       flag = true;
       break;
     }
@@ -61,48 +70,58 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
     return;
   }
   delayTimer && clearTimeout(delayTimer);
-  changedDomainSet.add(domain);
+  changedDomainSet.add(removeHeadDomain);
   delayTimer = setTimeout(async () => {
     timeoutFlag = false;
     if (checkDelayTimer) {
       clearTimeout(checkDelayTimer);
     }
     const domainConfig = await domainConfigStorage.get();
-    const pushDomainSet = new Set<string>();
+    // const pushDomainSet = new Set<string>();
+    const pushDomainHostMap = new Map<string, string[]>();
     for (const domain of changedDomainSet) {
       for (const key in domainConfig.domainMap) {
-        if (domain.endsWith(key) && domainConfig.domainMap[key]?.autoPush) {
-          pushDomainSet.add(key);
+        if (key.endsWith(domain) && domainConfig.domainMap[key]?.autoPush) {
+          // pushDomainSet.add(domain);
+          const existedHost = pushDomainHostMap.get(domain) || [];
+          pushDomainHostMap.set(domain, [key, ...existedHost]);
         }
       }
     }
 
     const uploadDomainCookies = [];
-    for (const host of pushDomainSet) {
-      const [domain] = await extractDomainAndPort(host);
+    const cookieMap = await cookieStorage.getSnapshot();
+    console.log('pushDomainHostMap', pushDomainHostMap);
+    for (const domain of pushDomainHostMap.keys()) {
+      const hosts = pushDomainHostMap.get(domain) || [];
+      // const [domain] = await extractDomainAndPort(host);
 
       const cookies = await chrome.cookies.getAll({
         domain: domain,
       });
-      uploadDomainCookies.push({
-        domain: host,
-        cookies,
-      });
+      for (const host of hosts) {
+        uploadDomainCookies.push({
+          domain: host,
+          cookies,
+          localStorageItems: cookieMap?.domainCookieMap?.[host]?.localStorageItems || [],
+        });
+      }
     }
     if (uploadDomainCookies.length) {
       await pushMultipleDomainCookies(uploadDomainCookies);
       changedDomainSet.clear();
     }
-  }, 15000);
+  }, 10000);
 
   if (!checkDelayTimer) {
     checkDelayTimer = setTimeout(() => {
       if (delayTimer) {
         console.info('checkDelayTimer timeout');
         timeoutFlag = true;
+        delayTimer = null;
       }
       checkDelayTimer = null;
-    }, 60000);
+    }, 30000);
   }
 });
 
@@ -172,5 +191,12 @@ chrome.tabs.onActivated.addListener(async function () {
     active: true,
   });
   previousActiveTabList = allActiveTabs;
-  refreshListen();
+  console.log('refreshListen', previousActiveTabList);
+  const domainStatus = await domainStatusStorage.get();
+  const settingsStorageInfo = await settingsStorage.get();
+  if (!domainStatus.pulling && !domainStatus.pushing && !settingsStorageInfo.localStorageGetting) {
+    refreshListen();
+  }
 });
+
+initGithubApi(true);

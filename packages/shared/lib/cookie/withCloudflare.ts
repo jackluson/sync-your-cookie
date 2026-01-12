@@ -1,52 +1,90 @@
-import { cloudflareStorage, type AccountInfo } from '@sync-your-cookie/storage/lib/cloudflareStorage';
-import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
+import { accountStorage, type AccountInfo } from '@sync-your-cookie/storage/lib/accountStorage';
+import { getActiveStorageItem, settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 import { readCloudflareKV, writeCloudflareKV, WriteResponse } from '../cloudflare/api';
 
+import { GithubApi } from '@lib/github';
 import { MessageErrorCode } from '@lib/message';
+import { RestEndpointMethodTypes } from '@octokit/rest';
 import {
   arrayBufferToBase64,
   base64ToArrayBuffer,
   decodeCookiesMap,
   encodeCookiesMap,
+  encryptBase64,
+  decryptBase64,
+  isBase64Encrypted,
   ICookie,
   ICookiesMap,
+  ILocalStorageItem,
 } from '@sync-your-cookie/protobuf';
 
 export const check = (accountInfo?: AccountInfo) => {
-  const cloudflareAccountInfo = accountInfo || cloudflareStorage.getSnapshot();
-  if (!cloudflareAccountInfo?.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
-    let message = 'Account ID is empty';
-    if (!cloudflareAccountInfo?.namespaceId) {
-      message = 'NamespaceId ID is empty';
-    } else if (!cloudflareAccountInfo.token) {
-      message = 'Token is empty';
+  const cloudflareAccountInfo = accountInfo || accountStorage.getSnapshot();
+  if (cloudflareAccountInfo?.selectedProvider === 'github') {
+    if (!cloudflareAccountInfo.githubAccessToken) {
+      return Promise.reject({
+        message: 'GitHub Access Token is empty',
+        code: MessageErrorCode.AccountCheck,
+      });
     }
+  } else {
+    if (!cloudflareAccountInfo?.accountId || !cloudflareAccountInfo.namespaceId || !cloudflareAccountInfo.token) {
+      let message = 'Account ID is empty';
+      if (!cloudflareAccountInfo?.namespaceId) {
+        message = 'NamespaceId ID is empty';
+      } else if (!cloudflareAccountInfo.token) {
+        message = 'Token is empty';
+      }
 
-    return Promise.reject({
-      message,
-      code: MessageErrorCode.AccountCheck,
-    });
+      return Promise.reject({
+        message,
+        code: MessageErrorCode.AccountCheck,
+      });
+    }
   }
   return cloudflareAccountInfo;
 };
 
-export const readCookiesMap = async (cloudflareAccountInfo: AccountInfo): Promise<ICookiesMap> => {
-  await check(cloudflareAccountInfo);
-  const res = await readCloudflareKV(
-    cloudflareAccountInfo.accountId!,
-    cloudflareAccountInfo.namespaceId!,
-    cloudflareAccountInfo.token!,
-  );
-  if (res) {
+export const readCookiesMap = async (accountInfo: AccountInfo): Promise<ICookiesMap> => {
+  let content = '';
+  if (accountInfo.selectedProvider === 'github') {
+    const activeStorageItem = getActiveStorageItem();
+    if (activeStorageItem?.rawUrl) {
+      content = await GithubApi.instance.fetchRawContent(activeStorageItem.rawUrl);
+    }
+  } else {
+    await check(accountInfo);
+    content = await readCloudflareKV(accountInfo.accountId!, accountInfo.namespaceId!, accountInfo.token!);
+  }
+
+  if (content) {
     try {
-      const protobufEncoding = settingsStorage.getSnapshot()?.protobufEncoding;
+      const settingsInfo = settingsStorage.getSnapshot();
+      const encryptionEnabled = settingsInfo?.encryptionEnabled;
+      const encryptionPassword = settingsInfo?.encryptionPassword;
+
+      // Check if content is encrypted and decrypt if needed
+      let processedContent = content;
+      const protobufEncoding = !content.startsWith('{');
+
+      if (protobufEncoding && encryptionEnabled && encryptionPassword && isBase64Encrypted(content)) {
+        try {
+          processedContent = await decryptBase64(content, encryptionPassword);
+        } catch (decryptError) {
+          console.error('Decryption failed:', decryptError);
+          throw new Error('Failed to decrypt data. Please check your encryption password.');
+        }
+      }
+
       if (protobufEncoding) {
-        const compressedBuffer = base64ToArrayBuffer(res);
+        const compressedBuffer = base64ToArrayBuffer(processedContent);
         const deMsg = await decodeCookiesMap(compressedBuffer);
+        console.log('readCookiesMap->deMsg', deMsg);
         return deMsg;
       } else {
-        return JSON.parse(res);
+        console.log('readCookiesMap->res', JSON.parse(processedContent));
+        return JSON.parse(processedContent);
       }
     } catch (error) {
       console.log('decode error', error);
@@ -57,33 +95,50 @@ export const readCookiesMap = async (cloudflareAccountInfo: AccountInfo): Promis
   }
 };
 
-export const writeCookiesMap = async (cloudflareAccountInfo: AccountInfo, cookiesMap: ICookiesMap = {}) => {
-  const protobufEncoding = settingsStorage.getSnapshot()?.protobufEncoding;
+export const writeCookiesMap = async (accountInfo: AccountInfo, cookiesMap: ICookiesMap = {}) => {
+  const settingsInfo = settingsStorage.getSnapshot();
+  const protobufEncoding = settingsInfo?.protobufEncoding;
+  const encryptionEnabled = settingsInfo?.encryptionEnabled;
+  const encryptionPassword = settingsInfo?.encryptionPassword;
+
   let encodingStr = '';
   if (protobufEncoding) {
     const buffered = await encodeCookiesMap(cookiesMap);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     encodingStr = arrayBufferToBase64(buffered as any);
+
+    // Encrypt the data if encryption is enabled
+    if (encryptionEnabled && encryptionPassword) {
+      encodingStr = await encryptBase64(encodingStr, encryptionPassword);
+      console.log('writeCookiesMap-> data encrypted');
+    }
   } else {
     encodingStr = JSON.stringify(cookiesMap);
-    console.log('cookiesMap', cookiesMap);
+    console.log('writeCookiesMap->', cookiesMap);
   }
-  const res = await writeCloudflareKV(
-    encodingStr,
-    cloudflareAccountInfo.accountId!,
-    cloudflareAccountInfo.namespaceId!,
-    cloudflareAccountInfo.token!,
-  );
-  return res;
+  if (accountInfo.selectedProvider === 'github') {
+    const storageKeyGistId = settingsInfo?.storageKeyGistId;
+    const storageKey = settingsInfo?.storageKey;
+    return await GithubApi.instance.updateGist(storageKeyGistId!, storageKey!, encodingStr);
+  } else {
+    const res = await writeCloudflareKV(
+      encodingStr,
+      accountInfo.accountId!,
+      accountInfo.namespaceId!,
+      accountInfo.token!,
+    );
+    return res;
+  }
 };
 
 export const mergeAndWriteCookies = async (
-  cloudflareAccountInfo: AccountInfo,
+  accountInfo: AccountInfo,
   domain: string,
   cookies: ICookie[],
+  localStorageItems: ILocalStorageItem[] = [],
   oldCookieMap: ICookiesMap = {},
-): Promise<[WriteResponse, ICookiesMap]> => {
-  await check(cloudflareAccountInfo);
+): Promise<[WriteResponse | RestEndpointMethodTypes['gists']['update']['response'], ICookiesMap]> => {
+  await check(accountInfo);
   const cookiesMap: ICookiesMap = {
     updateTime: Date.now(),
     createTime: oldCookieMap?.createTime || Date.now(),
@@ -93,17 +148,18 @@ export const mergeAndWriteCookies = async (
         updateTime: Date.now(),
         createTime: oldCookieMap.domainCookieMap?.[domain]?.createTime || Date.now(),
         cookies: cookies,
+        localStorageItems: localStorageItems,
       },
     },
   };
 
-  const res = await writeCookiesMap(cloudflareAccountInfo, cookiesMap);
+  const res = await writeCookiesMap(accountInfo, cookiesMap);
   return [res, cookiesMap];
 };
 
 export const mergeAndWriteMultipleDomainCookies = async (
   cloudflareAccountInfo: AccountInfo,
-  domainCookies: { domain: string; cookies: ICookie[] }[],
+  domainCookies: { domain: string; cookies: ICookie[]; localStorageItems: ILocalStorageItem[] }[],
   oldCookieMap: ICookiesMap = {},
 ): Promise<[WriteResponse, ICookiesMap]> => {
   await check(cloudflareAccountInfo);
@@ -111,11 +167,12 @@ export const mergeAndWriteMultipleDomainCookies = async (
   const newDomainCookieMap = {
     ...(oldCookieMap.domainCookieMap || {}),
   };
-  for (const { domain, cookies } of domainCookies) {
+  for (const { domain, cookies, localStorageItems } of domainCookies) {
     newDomainCookieMap[domain] = {
       updateTime: Date.now(),
       createTime: oldCookieMap.domainCookieMap?.[domain]?.createTime || Date.now(),
       cookies: cookies,
+      localStorageItems: localStorageItems || [],
     };
   }
   const cookiesMap: ICookiesMap = {

@@ -1,5 +1,5 @@
 import { SessionAccessLevel, StorageType, createStorage, type BaseStorage } from './base';
-// export * from './cloudflareStorage';
+// export * from './accountStorage';
 // export * from './cookieStorage';
 // export * from './domainConfigStorage';
 // export * from './themeStorage';

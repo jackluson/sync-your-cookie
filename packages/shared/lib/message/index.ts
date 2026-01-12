@@ -1,5 +1,7 @@
-import { ICookie } from '@sync-your-cookie/protobuf';
-
+import { pushCookies } from '@lib/cookie';
+import { ICookie, ILocalStorageItem } from '@sync-your-cookie/protobuf';
+import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
+import pTimeout from 'p-timeout';
 export type { ICookie };
 export enum MessageType {
   PushCookie = 'PushCookie',
@@ -7,6 +9,9 @@ export enum MessageType {
   RemoveCookie = 'RemoveCookie',
   RemoveCookieItem = 'RemoveCookieItem',
   EditCookieItem = 'EditCookieItem',
+  // LocalStorage
+  GetLocalStorage = 'GetLocalStorage',
+  SetLocalStorage = 'SetLocalStorage',
 }
 
 export enum MessageErrorCode {
@@ -18,6 +23,10 @@ export type PushCookieMessagePayload = {
   host: string;
   sourceUrl?: string;
   favIconUrl?: string;
+};
+
+export type DomainPayload = {
+  domain: string;
 };
 
 export type RemoveCookieMessagePayload = {
@@ -41,6 +50,12 @@ export type EditCookieItemMessagePayload = {
   newItem: ICookie;
 };
 
+export type SetLocalStorageMessagePayload = {
+  domain: string;
+  value: ILocalStorageItem[];
+  onlyKey?: string;
+};
+
 export type MessageMap = {
   [MessageType.PushCookie]: {
     type: MessageType.PushCookie;
@@ -62,6 +77,15 @@ export type MessageMap = {
     type: MessageType.EditCookieItem;
     payload: EditCookieItemMessagePayload;
   };
+  // LocalStorage
+  [MessageType.GetLocalStorage]: {
+    type: MessageType.GetLocalStorage;
+    payload: DomainPayload;
+  };
+  [MessageType.SetLocalStorage]: {
+    type: MessageType.SetLocalStorage;
+    payload: SetLocalStorageMessagePayload;
+  };
 };
 
 // export type Message<T extends MessageType = MessageType> = {
@@ -78,34 +102,54 @@ export type SendResponse = {
   code?: MessageErrorCode;
 };
 
-export function sendMessage<T extends MessageType>(message: Message<T>, isTab = false) {
-  if (isTab) {
-    return new Promise<SendResponse>((resolve, reject) => {
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        if (tabs.length === 0) {
-          reject({ isOk: false, msg: 'No active tab found' } as SendResponse);
-          return;
-        }
-        chrome.tabs.sendMessage(tabs[0].id!, message, function (result) {
-          console.log('isTab', isTab, 'result->', result);
-          if (result?.isOk) {
-            resolve(result);
-          } else {
-            reject(result as SendResponse);
-          }
-        });
-      });
-    });
-  }
-  return new Promise<SendResponse>((resolve, reject) => {
+export function sendMessage<T extends MessageType>(message: Message<T>, isTab = false, useTimeout: boolean = false) {
+  console.log('message', message);
+  const send = (resolve: (value: SendResponse | PromiseLike<SendResponse>) => void, reject: (reason?: any) => void) => {
     chrome.runtime.sendMessage(message, function (result: SendResponse) {
+      console.log('sendMessage->message', message);
       if (result?.isOk) {
         resolve(result);
       } else {
         reject(result as SendResponse);
       }
     });
-  });
+  };
+  const fn = () => {
+    if (isTab) {
+      return new Promise<SendResponse>((resolve, reject) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
+          if (tabs.length === 0) {
+            // const allOpendTabs = await chrome.tabs.query({});
+
+            console.log('No active tab found, try alternative way');
+            // reject({ isOk: false, msg: 'No active tab found' } as SendResponse);
+            send(resolve, reject);
+            return;
+          }
+          chrome.tabs.sendMessage(tabs[0].id!, message, function (result) {
+            console.log('isTab', isTab, 'result->', result);
+            if (result?.isOk) {
+              resolve(result);
+            } else {
+              reject(result as SendResponse);
+            }
+          });
+        });
+      });
+    }
+    return new Promise<SendResponse>((resolve, reject) => {
+      send(resolve, reject);
+    });
+  };
+  if (useTimeout) {
+    return pTimeout(fn(), {
+      milliseconds: 5000,
+      fallback: () => {
+        return { isOk: false, msg: 'Timeout' } as SendResponse;
+      },
+    });
+  }
+  return fn();
 }
 
 export function pushCookieUsingMessage(payload: PushCookieMessagePayload) {
@@ -144,3 +188,89 @@ export function editCookieItemUsingMessage(payload: EditCookieItemMessagePayload
     type: sendType,
   });
 }
+
+export const getTabsByHost = async (host: string) => {
+  return new Promise<chrome.tabs.Tab[]>((resolve, reject) => {
+    try {
+      chrome.tabs.query({}, function (tabs) {
+        const matchedTabs = tabs.filter(tab => tab.url && tab.id && tab.url.includes(host));
+        resolve(matchedTabs);
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const sendGetLocalStorageMessage = async (host: string, isTry = true) => {
+  return new Promise<NonNullable<Parameters<typeof pushCookies>[2]>>(async (resolve, reject) => {
+    const myResolve = (args: any) => {
+      settingsStorage.update({
+        localStorageGetting: false,
+      });
+      resolve(args);
+    };
+    const myReject = (err: any) => {
+      settingsStorage.update({
+        localStorageGetting: false,
+      });
+      reject(err);
+    };
+    settingsStorage.update({
+      localStorageGetting: true,
+    });
+    await sendMessage(
+      {
+        type: MessageType.GetLocalStorage,
+        payload: {
+          domain: host,
+        },
+      },
+      true,
+    )
+      .then(res => {
+        if (res.isOk) {
+          const localStorageItems = (res.result as any[]) || [];
+          myResolve(localStorageItems);
+        } else {
+          throw new Error(res.msg || 'getLocalStorage fail');
+        }
+      })
+      .catch(async (err: any) => {
+        if (isTry == false) {
+          myReject(err);
+          return;
+        }
+
+        console.error('getLocalStorage and try reload fetch again', err);
+        const matchedTabs = await getTabsByHost(host);
+        if (matchedTabs.length === 0) {
+          await chrome.tabs.create({
+            url: 'https://' + host,
+          });
+          // window.open(host, '_blank');
+        } else {
+          const activeTab = matchedTabs.find(tab => tab.active);
+          if (activeTab) {
+            chrome.tabs.reload(activeTab.id!);
+          } else {
+            matchedTabs.forEach(function (tab) {
+              chrome.tabs.reload(tab.id!);
+            });
+          }
+        }
+        setTimeout(async () => {
+          try {
+            const localStorageItems = await sendGetLocalStorageMessage(host, false);
+            myResolve(localStorageItems);
+          } catch (error) {
+            console.log('error', error);
+            myReject(error);
+          }
+        }, 500);
+      })
+      .catch(err => {
+        myReject(err);
+      });
+  });
+};

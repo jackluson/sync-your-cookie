@@ -1,10 +1,10 @@
-import { useStorageSuspense } from '@sync-your-cookie/shared';
+import { GithubApi, pullCookies, useStorageSuspense } from '@sync-your-cookie/shared';
+import { accountStorage } from '@sync-your-cookie/storage/lib/accountStorage';
+import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
-
-import { pullCookies } from '@sync-your-cookie/shared';
-import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
-import { Label, Popover, PopoverContent, PopoverTrigger, Switch } from '@sync-your-cookie/ui';
+import { Input, Label, Popover, PopoverContent, PopoverTrigger, Switch, SyncTooltip } from '@sync-your-cookie/ui';
+import { Info, Lock, SquareArrowOutUpRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { StorageSelect } from './StorageSelect';
 interface SettingsPopover {
@@ -15,9 +15,18 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   const settingsInfo = useStorageSuspense(settingsStorage);
   const [selectOpen, setSelectOpen] = useState(false);
 
-  const handleCheckChange = (checked: boolean) => {
+  const handleCheckChange = (
+    checked: boolean,
+    checkedKey: 'protobufEncoding' | 'includeLocalStorage' | 'contextMenu' | 'encryptionEnabled',
+  ) => {
     settingsStorage.update({
-      protobufEncoding: checked,
+      [checkedKey]: checked,
+    });
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    settingsStorage.update({
+      encryptionPassword: e.target.value,
     });
   };
 
@@ -31,16 +40,15 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
     await domainStatusStorage.resetState();
     await cookieStorage.reset();
     await pullCookies();
-    console.log("reset finished");
-  }
+    console.log('reset finished');
+  };
 
-  useEffect(()=> {
-     reset();
-  }, [settingsInfo.storageKey])
+  useEffect(() => {
+    reset();
+  }, [settingsInfo.storageKey]);
 
   const handleOpenChange = (open: boolean) => {
     if (selectOpen) return;
-    console.log('popover open', open);
     // if (open === false && (settingsInfo.storageKey !== storageKey || !storageKey)) {
     //   console.log('open', open);
     //   settingsStorage.update({
@@ -56,32 +64,47 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   };
 
   const handleAddStorageKey = async (key: string) => {
-    await settingsStorage.addStorageKey(key);
+    const accountStorageInfo = await accountStorage.getSnapshot();
+    if (accountStorageInfo?.selectedProvider === 'github') {
+      const gistId = settingsInfo.storageKeyGistId;
+      await GithubApi.instance.addGistFile(gistId!, key);
+      await GithubApi.instance.initStorageKeyList();
+    } else {
+      await settingsStorage.addStorageKey(key);
+    }
   };
 
   const handleRemoveStorageKey = async (key: string) => {
-    // if (settingsInfo.storageKey === key) {
-    //   settingsStorage.update({
-    //     storageKey: defaultKey,
-    //   });
-    //   setStorageKey(defaultKey);
-    // }
-    await settingsStorage.removeStorageKey(key);
+    const accountStorageInfo = await accountStorage.getSnapshot();
+    if (accountStorageInfo?.selectedProvider === 'github') {
+      const gistId = settingsInfo.storageKeyGistId;
+      await GithubApi.instance.deleteGistFile(gistId!, key);
+      await GithubApi.instance.initStorageKeyList();
+    } else {
+      await settingsStorage.removeStorageKey(key);
+    }
   };
 
   return (
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent className="w-[320px]">
+      <PopoverContent align="start" className="w-[328px]">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <h3 className="leading-none font-medium text-base">Storage Settings</h3>
-            <p className="text-muted-foreground text-sm">Set to how to store in cloudflare KV.</p>
+            <h3 className="leading-none font-medium text-base">Save Settings</h3>
+            <p className="text-muted-foreground text-sm">Set the save format. </p>
           </div>
           <div className="gap-2">
             <div className="flex items-center gap-4 mb-4">
-              <Label className="w-[116px] block text-right" htmlFor="storage-key">
-                Storage Key
+              <Label className="w-[136px] block text-right" htmlFor="storage-key">
+                <div className="flex gap-2 justify-end">
+                  Storage Key
+                  {settingsInfo.gistHtmlUrl ? (
+                    <a href={settingsInfo.gistHtmlUrl} target="_blank" rel="noreferrer">
+                      <SquareArrowOutUpRight size={16} />
+                    </a>
+                  ) : null}
+                </div>
               </Label>
               {/* <Input
                 onChange={handleKeyInputChange}
@@ -100,11 +123,80 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
                 onValueChange={handleValueChange}
               />
             </div>
-            <div className="flex items-center gap-4">
-              <Label className="whitespace-nowrap block w-[116px] text-right" htmlFor="encoding">
+            <div className="flex items-center gap-4 mb-4">
+              <Label className="whitespace-nowrap block w-[136px] text-right" htmlFor="encoding">
                 Protobuf Encoding
               </Label>
-              <Switch onCheckedChange={handleCheckChange} checked={settingsInfo.protobufEncoding} id="encoding" />
+              <Switch
+                onCheckedChange={checked => handleCheckChange(checked, 'protobufEncoding')}
+                checked={settingsInfo.protobufEncoding}
+                id="encoding"
+              />
+            </div>
+
+            <div className="flex items-center gap-4 mb-4">
+              <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="include">
+                Include LocalStorage
+              </Label>
+              <div className="flex items-center gap-1">
+                <Switch
+                  onCheckedChange={checked => handleCheckChange(checked, 'includeLocalStorage')}
+                  checked={settingsInfo.includeLocalStorage}
+                  id="include"
+                />
+                <SyncTooltip title="Note: LocalStorage cannot supports Auto Push & If the retrieval fails, the page will be reloaded once to try again.">
+                  <Info className="mx-2" size={18} />
+                </SyncTooltip>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 mb-4">
+              <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="contextMenu">
+                Show ContextMenu
+              </Label>
+              <div className="flex items-center gap-1">
+                <Switch
+                  onCheckedChange={checked => handleCheckChange(checked, 'contextMenu')}
+                  checked={settingsInfo.contextMenu}
+                  id="contextMenu"
+                />
+              </div>
+            </div>
+
+            <div className="border-t pt-4 mt-2">
+              <div className="flex items-center gap-4 mb-4">
+                <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="encryption">
+                  <Lock size={14} className="mr-1" />
+                  E2E Encryption
+                </Label>
+                <div className="flex items-center gap-1">
+                  <Switch
+                    onCheckedChange={checked => handleCheckChange(checked, 'encryptionEnabled')}
+                    checked={settingsInfo.encryptionEnabled}
+                    disabled={!settingsInfo.protobufEncoding}
+                    id="encryption"
+                  />
+                  <SyncTooltip title="End-to-end encryption requires Protobuf Encoding to be enabled. Your data will be encrypted with AES-256-GCM before being sent to the cloud.">
+                    <Info className="mx-2" size={18} />
+                  </SyncTooltip>
+                </div>
+              </div>
+
+              {settingsInfo.encryptionEnabled && settingsInfo.protobufEncoding && (
+                <div className="flex items-center gap-4">
+                  <Label className="items-center whitespace-nowrap flex w-[136px] text-right" htmlFor="encryptionPassword">
+                    Password
+                  </Label>
+                  <Input
+                    type="password"
+                    id="encryptionPassword"
+                    value={settingsInfo.encryptionPassword || ''}
+                    onChange={handlePasswordChange}
+                    className="h-8 flex-1"
+                    placeholder="Enter encryption password"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

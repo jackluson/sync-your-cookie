@@ -20,7 +20,7 @@ import {
 } from '@sync-your-cookie/ui';
 
 import { Ellipsis, PencilLine, Trash2, Wrench } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useCookieItem } from './useCookieItem';
 export type CookieShowItem = {
@@ -38,14 +38,22 @@ export type CookieShowItem = {
   storeId?: string | null;
 };
 
+export type LocalStorageShowItem = {
+  // id: string;
+  key: string;
+  value: string;
+};
+
 export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
   const [selectedDomain, setSelectedDomain] = useState('');
   const domainStatus = useStorageSuspense(domainStatusStorage);
 
-  const [selectedRow, setSelectedRow] = useState<CookieShowItem | null>(null);
+  const [selectedRow, setSelectedRow] = useState<Record<string, string> | null>(null);
   const inputRowRef = useRef<Partial<CookieShowItem>>({});
   const [selectedKey, setSelectedKey] = useState<string>('');
-  const handleEdit = (key: string, row: CookieShowItem) => {
+  const [hasLocalStorage, setHasLocalStorage] = useState(false);
+  const [localStorageMode, setLocalStorageMode] = useState(false);
+  const handleEdit = (key: string, row: Record<string, string>) => {
     setSelectedKey(key);
     setSelectedRow(row);
     inputRowRef.current = {
@@ -87,7 +95,7 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
         className=" flex min-w-[80px] mr-2 mt-1 ">
         {key && (
           <span className="inline-block w-12 flex-shrink-0 bg-slate-200 h-[28px] leading-7 mr-1 text-center rounded-sm ">
-            {key}:{' '}
+            {key}:
           </span>
         )}
         {nameSearchFlag ? (
@@ -107,10 +115,93 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
     );
   };
 
-  const renderEditCell = (key: keyof CookieShowItem, row: CookieShowItem) => {
+  const renderPopver = (key: keyof CookieShowItem, row: Record<string, any>, nameKey = 'name') => {
+    const keyName = nameKey;
+    const sameId = selectedRow?.id === row.id;
+    if (localStorageMode) {
+      return null;
+    }
+    return (
+      <Popover
+        open={key === selectedKey && sameId && !!selectedRow}
+        onOpenChange={val => {
+          console.log('val', val);
+          if (val === false) {
+            handleCancel();
+          }
+          // if (val) {
+          //   handleEdit(key, row);
+          // } else {
+          //   handleCancel();
+          // }
+        }}>
+        <PopoverTrigger>
+          <button
+            onClick={() => {
+              if (selectedRow && selectedRow.id === row.id) {
+                handleCancel();
+              } else {
+                handleEdit(key, row);
+              }
+            }}
+            style={{
+              visibility: selectedRow && selectedRow?.id === row.id ? 'visible' : undefined,
+            }}
+            className=" invisible ml-2 cursor-pointer group-hover/item:visible">
+            <PencilLine className="h-4 w-4" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 ">
+          <div className="grid gap-2">
+            <p className="text-lg font-semibold ">Edit</p>
+            <div className="grid grid-cols-5 items-center gap-2">
+              <Label htmlFor={keyName}>{keyName}</Label>
+              <Input
+                id={keyName}
+                defaultValue={selectedRow?.[keyName]}
+                onChange={evt => {
+                  (inputRowRef.current as Record<string, any>)![keyName] = evt.target.value || '';
+                }}
+                className="col-span-4 h-8"
+              />
+            </div>
+            <div className="grid grid-cols-5 items-center gap-2">
+              <Label htmlFor={key}>{key}</Label>
+              <Input
+                id={key}
+                defaultValue={String(selectedRow?.[key])}
+                onChange={evt => {
+                  if (inputRowRef.current && key) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (inputRowRef.current as any)[key] = evt.target.value || '';
+                  }
+                }}
+                className="col-span-4 h-8"
+              />
+            </div>
+            <div className="flex justify-end mt-2">
+              <Button size="sm" variant="outline" onClick={() => handleCancel()}>
+                Cancel
+              </Button>
+              <Button disabled={loading} onClick={() => handleSave()} size="sm" className="ml-2">
+                Save
+              </Button>
+              <Button onClick={() => handleSave(true)} disabled={loading} size="sm" className="ml-2">
+                Save And Apply
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
+  const renderEditCell = (key: keyof CookieShowItem, row: Record<string, any>, nameKey = 'name') => {
     const isEdit = false && key === selectedKey && selectedRow?.id === row.id;
-    const nameValue = row.name;
+    const keyName = nameKey;
+    const nameValue = row[keyName];
     const value = row.value;
+    const sameId = localStorageMode && 0 ? true : selectedRow?.id === row.id;
     return (
       <div key={key + row[key]} className=" min-w-[25vw] flex items-center group/item">
         {isEdit ? (
@@ -141,90 +232,18 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
         ) : (
           <div className="flex items-center justify-center">
             <div>
-              {renderKeyValue(nameValue, 'name')}
+              {renderKeyValue(nameValue, keyName)}
               {renderKeyValue(value, 'value')}
             </div>
 
-            <Popover
-              open={key === selectedKey && selectedRow?.id === row.id && !!selectedRow}
-              onOpenChange={val => {
-                if (val === false) {
-                  handleCancel();
-                }
-                // if (val) {
-                //   handleEdit(key, row);
-                // } else {
-                //   handleCancel();
-                // }
-              }}>
-              <PopoverTrigger>
-                {/* <Tooltip title="Edit"> */}
-                <button
-                  onClick={() => {
-                    if (selectedRow && selectedRow.id === row.id) {
-                      handleCancel();
-                    } else {
-                      handleEdit(key, row);
-                    }
-                  }}
-                  style={{
-                    visibility: selectedRow?.id === row.id ? 'visible' : undefined,
-                  }}
-                  className=" invisible ml-2 cursor-pointer group-hover/item:visible">
-                  <PencilLine className="h-4 w-4" />
-                </button>
-
-                {/* </Tooltip> */}
-              </PopoverTrigger>
-              <PopoverContent className="w-80 ">
-                <div className="grid gap-2">
-                  <p className="text-lg font-semibold ">Edit</p>
-                  <div className="grid grid-cols-5 items-center gap-2">
-                    <Label htmlFor="name">name</Label>
-                    <Input
-                      id="name"
-                      defaultValue={selectedRow?.['name']}
-                      onChange={evt => {
-                        inputRowRef.current!.name = evt.target.value || '';
-                      }}
-                      className="col-span-4 h-8"
-                    />
-                  </div>
-                  <div className="grid grid-cols-5 items-center gap-2">
-                    <Label htmlFor={key}>{key}</Label>
-                    <Input
-                      id={key}
-                      defaultValue={String(selectedRow?.[key])}
-                      onChange={evt => {
-                        if (inputRowRef.current && key) {
-                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          (inputRowRef.current as any)[key] = evt.target.value || '';
-                        }
-                      }}
-                      className="col-span-4 h-8"
-                    />
-                  </div>
-                  <div className="flex justify-end mt-2">
-                    <Button size="sm" variant="outline" onClick={() => handleCancel()}>
-                      Cancel
-                    </Button>
-                    <Button disabled={loading} onClick={() => handleSave()} size="sm" className="ml-2">
-                      Save
-                    </Button>
-                    <Button onClick={() => handleSave(true)} disabled={loading} size="sm" className="ml-2">
-                      Save And Set
-                    </Button>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+            {renderPopver(key, row, 'name')}
           </div>
         )}
       </div>
     );
   };
 
-  const handleSet = async (item: CookieShowItem) => {
+  const handleSet = async (item: Record<string, any>) => {
     const domainCnf = await domainConfigStorage.get();
     const itemDomainCnf = domainCnf.domainMap[selectedDomain];
     const sourceUrl = itemDomainCnf?.sourceUrl;
@@ -252,7 +271,7 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
     }
   };
 
-  const handleDelete = async (item: CookieShowItem) => {
+  const handleDelete = async (item: Record<string, any>) => {
     handleDeleteItem(`${item.domain}_${item.name}`);
   };
 
@@ -327,7 +346,7 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
                 className="cursor-pointer"
                 onClick={() => handleSet(row.original)}>
                 <Wrench size={16} className="mr-2 h-4 w-4" />
-                Set
+                Apply
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -351,6 +370,18 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
     },
   ];
 
+  const showLocalStorageColumns: ColumnDef<LocalStorageShowItem>[] = [
+    {
+      id: 'Value',
+      accessorKey: 'value',
+      header: 'Key / Value',
+      cell: ({ row, cell }) => {
+        const id = cell.id;
+        return renderEditCell('value', { id, ...row.original }, 'key');
+      },
+    },
+  ];
+
   const cookieList =
     cookieMap.domainCookieMap?.[selectedDomain]?.cookies?.map((item, index) => {
       return {
@@ -370,12 +401,27 @@ export const useSelected = (cookieMap: Cookie, currentSearchStr: string) => {
         // sameSite: (cookie.sameSite ?? undefined) as chrome.cookies.SameSiteStatus,
       };
     }) || [];
+
+  const localStorageItems = cookieMap.domainCookieMap?.[selectedDomain]?.localStorageItems || [];
+  useEffect(() => {
+    if (localStorageItems && localStorageItems.length > 0) {
+      setHasLocalStorage(true);
+    } else {
+      setHasLocalStorage(false);
+      setLocalStorageMode(false);
+    }
+  }, [localStorageItems]);
   return {
     loading,
     selectedDomain,
     showCookiesColumns,
+    localStorageItems,
+    showLocalStorageColumns,
     setSelectedDomain,
     cookieList,
     renderKeyValue,
+    localStorageMode,
+    hasLocalStorage,
+    setLocalStorageMode,
   };
 };

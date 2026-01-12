@@ -1,6 +1,6 @@
 import {
   check,
-  checkCloudflareResponse,
+  checkResponseAndCallback,
   CookieOperator,
   extractDomainAndPort,
   ICookie,
@@ -11,8 +11,11 @@ import {
   pushCookies,
   removeCookieItem,
   removeCookies,
+  sendGetLocalStorageMessage,
   SendResponse,
 } from '@sync-your-cookie/shared';
+import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
+import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 
 import { domainConfigStorage } from '@sync-your-cookie/storage/lib/domainConfigStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
@@ -30,20 +33,40 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
     await domainStatusStorage.updateItem(host, {
       pushing: true,
     });
-    const [domain] = await extractDomainAndPort(host);
-    const cookies = await chrome.cookies.getAll({
-      // url: activeTabUrl,
-      domain: domain,
-    });
-    if (cookies?.length) {
-      const res = await pushCookies(host, cookies);
-      checkCloudflareResponse(res, 'push', callback);
+    const [domain, port, hostname] = await extractDomainAndPort(host);
+    const condition = sourceUrl
+      ? { url: sourceUrl }
+      : {
+          // url: activeTabUrl,
+          domain: domain,
+        };
+    const cookies = await chrome.cookies.getAll(condition);
+
+    let localStorageItems: NonNullable<Parameters<typeof pushCookies>[2]> = [];
+    const includeLocalStorage = settingsStorage.getSnapshot()?.includeLocalStorage;
+    if (includeLocalStorage) {
+      try {
+        const hostname = sourceUrl ? new URL(sourceUrl).hostname : host;
+        localStorageItems = await sendGetLocalStorageMessage(hostname);
+      } catch (error) {
+        console.error('sendGetLocalStorageMessage error', error);
+        const cookieMap = await cookieStorage.getSnapshot();
+        localStorageItems = cookieMap?.domainCookieMap?.[host]?.localStorageItems || [];
+      }
     } else {
-      callback({ isOk: false, msg: 'no cookies found', result: cookies });
+      const cookieMap = await cookieStorage.getSnapshot();
+      localStorageItems = cookieMap?.domainCookieMap?.[host]?.localStorageItems || [];
+    }
+
+    if (cookies?.length || localStorageItems.length) {
+      const res = await pushCookies(host, cookies, localStorageItems);
+      checkResponseAndCallback(res, 'push', callback);
+    } else {
+      callback({ isOk: false, msg: 'no cookies and  localStorageItems found', result: cookies });
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    checkCloudflareResponse(err, 'push', callback);
+    checkResponseAndCallback(err, 'push', callback);
   } finally {
     await domainStatusStorage.togglePushingState(host, false);
   }
@@ -54,10 +77,11 @@ const handlePull = async (activeTabUrl: string, domain: string, isReload: boolea
     await check();
     await domainStatusStorage.togglePullingState(domain, true);
     const cookieMap = await pullAndSetCookies(activeTabUrl, domain, isReload);
+    console.log('handlePull->cookieMap', cookieMap);
     callback({ isOk: true, msg: 'Pull success', result: cookieMap });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    checkCloudflareResponse(err, 'pull', callback);
+    checkResponseAndCallback(err, 'pull', callback);
   } finally {
     await domainStatusStorage.togglePullingState(domain, false);
   }
@@ -67,15 +91,10 @@ const handleRemove = async (domain: string, callback: HandleCallback) => {
   try {
     await check();
     const res = await removeCookies(domain);
-    if (res.success) {
-      callback({ isOk: true, msg: 'Removed success' });
-    } else {
-      checkCloudflareResponse(res, 'remove', callback);
-      // callback({ isOk: false, msg: 'Removed fail, please try again ', result: res });
-    }
+    checkResponseAndCallback(res, 'remove', callback);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    checkCloudflareResponse(err, 'remove', callback);
+    checkResponseAndCallback(err, 'remove', callback);
 
     // callback({ isOk: false, msg: (err as Error).message || 'remove fail, please try again ', result: err });
   }
@@ -85,14 +104,10 @@ const handleRemoveItem = async (domain: string, id: string, callback: HandleCall
   try {
     await check();
     const res = await removeCookieItem(domain, id);
-    if (res.success) {
-      callback({ isOk: true, msg: 'Deleted success' });
-    } else {
-      checkCloudflareResponse(res, 'delete', callback);
-    }
+    checkResponseAndCallback(res, 'delete', callback);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    checkCloudflareResponse(err, 'delete', callback);
+    checkResponseAndCallback(err, 'delete', callback);
   }
 };
 
@@ -100,14 +115,10 @@ const handleEditItem = async (domain: string, oldItem: ICookie, newItem: ICookie
   try {
     await check();
     const res = await CookieOperator.editCookieItem(domain, oldItem, newItem);
-    if (res.success) {
-      callback({ isOk: true, msg: 'Edited success' });
-    } else {
-      checkCloudflareResponse(res, 'edit', callback);
-    }
+    checkResponseAndCallback(res, 'edit', callback);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    checkCloudflareResponse(err, 'edit', callback);
+    checkResponseAndCallback(err, 'edit', callback);
   }
 };
 function handleMessage(

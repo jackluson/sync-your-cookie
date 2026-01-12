@@ -31,19 +31,18 @@ const Popup = () => {
         if (activeTab.url && activeTab.url.startsWith('http')) {
           setFavIconUrl(activeTab?.favIconUrl || '');
           setActiveTabUrl(activeTab.url);
-          if (activeTab.url.includes('www.') && !1) {
-            const urlObj = new URL(activeTab.url);
-            setDomain(urlObj.hostname + `${urlObj.port ? ':' + urlObj.port : ''}`);
-          } else {
-            const [domain, tempPort] = await extractDomainAndPort(activeTab.url);
-            setDomain(domain + `${tempPort ? ':' + tempPort : ''}`);
-          }
+          const [domain, tempPort] = await extractDomainAndPort(activeTab.url);
+          setDomain(domain + `${tempPort ? ':' + tempPort : ''}`);
         }
       }
     });
   }, []);
 
   const isPushingOrPulling = domainItemStatus.pushing || domainItemStatus.pulling;
+
+  const handleAndReload = () => {
+    handlePull(activeTabUrl, domain, true);
+  };
 
   return (
     <div className="flex flex-col items-center min-w-[400px] justify-center bg-background ">
@@ -102,7 +101,7 @@ const Popup = () => {
               <Button
                 disabled={!activeTabUrl || isPushingOrPulling}
                 className=" w-[160px] mr-2 justify-start"
-                onClick={() => handlePull(activeTabUrl)}>
+                onClick={() => handleAndReload()}>
                 {domainItemStatus?.pulling ? (
                   <RotateCw size={16} className="mr-2 animate-spin" />
                 ) : (
