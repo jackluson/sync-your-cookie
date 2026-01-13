@@ -20,7 +20,7 @@ import {
   ThemeDropdown,
   Toaster,
 } from '@sync-your-cookie/ui';
-import { Eye, EyeOff, Info, LogOut, SlidersVertical } from 'lucide-react';
+import { Eye, EyeOff, Info, Loader2, LogOut, SlidersVertical } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { SettingsPopover } from './components/SettingsPopover';
@@ -33,6 +33,7 @@ const Options = () => {
   const [namespaceId, setNamespaceId] = useState(accountInfo.namespaceId);
   const [openEye, setOpenEye] = useState(false);
   const { loading, handleLaunchAuth } = useGithub();
+  const [loadingSave, setLoadingSave] = useState(false);
 
   const { setTheme } = useTheme();
 
@@ -57,6 +58,7 @@ const Options = () => {
       return;
     }
     try {
+      setLoadingSave(true);
       const res = await verifyCloudflareToken(accountId.trim(), token.trim());
       if (res.success === true) {
         const [message] = res.messages;
@@ -87,6 +89,8 @@ const Options = () => {
       } else {
         toast.error('Verify Failed: Unknown Error');
       }
+    } finally {
+      setLoadingSave(false);
     }
   };
 
@@ -235,7 +239,8 @@ const Options = () => {
                 placeholder="please input namespace ID "
               />
             </div>
-            <Button onClick={handleSave} type="submit" className="w-full">
+            <Button disabled={loadingSave} onClick={handleSave} type="submit" className="w-full">
+              {loadingSave ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Save
             </Button>
           </div>

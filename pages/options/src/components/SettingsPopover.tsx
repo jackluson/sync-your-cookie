@@ -4,7 +4,7 @@ import { cookieStorage } from '@sync-your-cookie/storage/lib/cookieStorage';
 import { domainStatusStorage } from '@sync-your-cookie/storage/lib/domainStatusStorage';
 import { settingsStorage } from '@sync-your-cookie/storage/lib/settingsStorage';
 import { Input, Label, Popover, PopoverContent, PopoverTrigger, Switch, SyncTooltip } from '@sync-your-cookie/ui';
-import { Info, Lock, SquareArrowOutUpRight } from 'lucide-react';
+import { Eye, EyeOff, Info, Lock, SquareArrowOutUpRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { StorageSelect } from './StorageSelect';
 interface SettingsPopover {
@@ -14,6 +14,7 @@ interface SettingsPopover {
 export function SettingsPopover({ trigger }: SettingsPopover) {
   const settingsInfo = useStorageSuspense(settingsStorage);
   const [selectOpen, setSelectOpen] = useState(false);
+  const [openEye, setOpenEye] = useState(false);
 
   const handleCheckChange = (
     checked: boolean,
@@ -46,7 +47,9 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
   useEffect(() => {
     reset();
   }, [settingsInfo.storageKey]);
-
+  const handleToggleEye = () => {
+    setOpenEye(!openEye);
+  };
   const handleOpenChange = (open: boolean) => {
     if (selectOpen) return;
     // if (open === false && (settingsInfo.storageKey !== storageKey || !storageKey)) {
@@ -189,20 +192,32 @@ export function SettingsPopover({ trigger }: SettingsPopover) {
               </div>
 
               {settingsInfo.encryptionEnabled && settingsInfo.protobufEncoding && (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                   <Label
-                    className="items-center whitespace-nowrap flex w-[136px] justify-end text-right"
+                    className="items-center mr-2 whitespace-nowrap flex w-[136px] justify-end text-right"
                     htmlFor="encryptionPassword">
                     Password
                   </Label>
                   <Input
-                    type="password"
+                    type={openEye ? 'text' : 'password'}
                     id="encryptionPassword"
                     value={settingsInfo.encryptionPassword || ''}
                     onChange={handlePasswordChange}
-                    className="h-8 flex-1 mr-4"
+                    className="h-8 flex-1"
                     placeholder="Enter encryption password"
                   />
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleToggleEye()}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        handleToggleEye();
+                      }
+                    }}
+                    className="cursor-pointer mr-4">
+                    {openEye ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </span>
                 </div>
               )}
             </div>
