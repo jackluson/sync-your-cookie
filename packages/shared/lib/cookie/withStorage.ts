@@ -87,7 +87,7 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
           url = `${protocol}//${itemHost}`;
         }
         const cookieDetail: chrome.cookies.SetDetails = {
-          domain: cookie.domain,
+          domain: url ? undefined : cookie.domain,
           name: cookie.name ?? undefined,
           url: url,
           storeId: cookie.storeId ?? undefined,

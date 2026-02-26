@@ -68,7 +68,13 @@ export const readCookiesMap = async (accountInfo: AccountInfo): Promise<ICookies
       let processedContent = content;
       const protobufEncoding = !content.startsWith('{');
 
-      if (protobufEncoding && encryptionEnabled && encryptionPassword && isBase64Encrypted(content)) {
+      if (protobufEncoding && isBase64Encrypted(content)) {
+        if (!encryptionEnabled || !encryptionPassword) {
+          return Promise.reject({
+            message: 'Failed to decrypt data. Please check your encryption password.',
+            code: MessageErrorCode.DecryptFailed,
+          });
+        }
         try {
           processedContent = await decryptBase64(content, encryptionPassword);
         } catch (decryptError) {
@@ -91,7 +97,7 @@ export const readCookiesMap = async (accountInfo: AccountInfo): Promise<ICookies
         return JSON.parse(processedContent);
       }
     } catch (error) {
-      console.log('Decode error', error);
+      console.log('Decode error', error, content);
       // return {};
       return Promise.reject({
         message: `Decode error: ${error}, please check your save settings`,
