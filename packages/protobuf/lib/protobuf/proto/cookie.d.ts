@@ -274,6 +274,9 @@ export interface IDomainCookie {
 
     /** DomainCookie localStorageItems */
     localStorageItems?: (ILocalStorageItem[]|null);
+
+    /** DomainCookie userAgent */
+    userAgent?: (string|null);
 }
 
 /** Represents a DomainCookie. */
@@ -296,6 +299,9 @@ export class DomainCookie implements IDomainCookie {
 
     /** DomainCookie localStorageItems. */
     public localStorageItems: ILocalStorageItem[];
+
+    /** DomainCookie userAgent. */
+    public userAgent: string;
 
     /**
      * Creates a new DomainCookie instance using the specified properties.

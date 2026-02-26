@@ -24,6 +24,7 @@ message DomainCookie {
   int64 updateTime = 2;
   repeated Cookie cookies = 5;
   repeated LocalStorageItem localStorageItems = 6;
+  string userAgent = 7;
 }
 
 message CookiesMap {

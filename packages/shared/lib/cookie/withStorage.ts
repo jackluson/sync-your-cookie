@@ -87,7 +87,7 @@ export const pullAndSetCookies = async (activeTabUrl: string, host: string, isRe
           url = `${protocol}//${itemHost}`;
         }
         const cookieDetail: chrome.cookies.SetDetails = {
-          domain: url ? undefined : cookie.domain,
+          domain: cookie.domain.startsWith('.') || !url ? cookie.domain : undefined,
           name: cookie.name ?? undefined,
           url: url,
           storeId: cookie.storeId ?? undefined,
@@ -178,6 +178,7 @@ export const pushCookies = async (
   domain: string,
   cookies: ICookie[],
   localStorageItems: ILocalStorageItem[] = [],
+  userAgent = '',
 ): Promise<PushCookiesResponse> => {
   const accountInfo = await accountStorage.get();
   try {
@@ -187,7 +188,14 @@ export const pushCookies = async (
       pushing: true,
     });
     const oldCookie = await readCookiesMapWithStatus(accountInfo);
-    const [res, cookieMap] = await mergeAndWriteCookies(accountInfo, domain, cookies, localStorageItems, oldCookie);
+    const [res, cookieMap] = await mergeAndWriteCookies(
+      accountInfo,
+      domain,
+      cookies,
+      localStorageItems,
+      userAgent,
+      oldCookie,
+    );
     console.log('res->pushCookies', res);
     await checkSuccessAndUpdate(accountInfo, res, cookieMap);
     await domainStatusStorage.update({
@@ -204,7 +212,7 @@ export const pushCookies = async (
 };
 
 export const pushMultipleDomainCookies = async (
-  domainCookies: { domain: string; cookies: ICookie[]; localStorageItems: ILocalStorageItem[] }[],
+  domainCookies: { domain: string; cookies: ICookie[]; localStorageItems: ILocalStorageItem[]; userAgent?: string }[],
 ): Promise<WriteResponse> => {
   const accountInfo = await accountStorage.get();
   try {

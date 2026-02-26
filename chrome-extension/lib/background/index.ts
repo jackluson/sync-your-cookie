@@ -91,6 +91,7 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
 
     const uploadDomainCookies = [];
     const cookieMap = await cookieStorage.getSnapshot();
+    const userAgent = navigator?.userAgent || '';
     console.log('pushDomainHostMap', pushDomainHostMap);
     for (const domain of pushDomainHostMap.keys()) {
       const hosts = pushDomainHostMap.get(domain) || [];
@@ -104,6 +105,7 @@ chrome.cookies.onChanged.addListener(async changeInfo => {
           domain: host,
           cookies,
           localStorageItems: cookieMap?.domainCookieMap?.[host]?.localStorageItems || [],
+          userAgent,
         });
       }
     }

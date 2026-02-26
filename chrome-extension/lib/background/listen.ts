@@ -24,6 +24,7 @@ type HandleCallback = (response?: SendResponse) => void;
 
 const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCallback) => {
   const { sourceUrl, host, favIconUrl } = payload || {};
+  const userAgent = navigator?.userAgent || '';
   try {
     await check();
     await domainConfigStorage.updateItem(host, {
@@ -54,7 +55,7 @@ const handlePush = async (payload: PushCookieMessagePayload, callback: HandleCal
     }
 
     if (cookies?.length || localStorageItems.length) {
-      const res = await pushCookies(host, cookies, localStorageItems);
+      const res = await pushCookies(host, cookies, localStorageItems, userAgent);
       checkResponseAndCallback(res, 'push', callback);
     } else {
       callback({ isOk: false, msg: 'no cookies and  localStorageItems found', result: cookies });

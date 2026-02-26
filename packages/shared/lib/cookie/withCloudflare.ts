@@ -150,6 +150,7 @@ export const mergeAndWriteCookies = async (
   domain: string,
   cookies: ICookie[],
   localStorageItems: ILocalStorageItem[] = [],
+  userAgent = '',
   oldCookieMap: ICookiesMap = {},
 ): Promise<[WriteResponse | RestEndpointMethodTypes['gists']['update']['response'], ICookiesMap]> => {
   await check(accountInfo);
@@ -163,6 +164,7 @@ export const mergeAndWriteCookies = async (
         createTime: oldCookieMap.domainCookieMap?.[domain]?.createTime || Date.now(),
         cookies: cookies,
         localStorageItems: localStorageItems,
+        userAgent: userAgent || oldCookieMap.domainCookieMap?.[domain]?.userAgent || '',
       },
     },
   };
@@ -173,7 +175,7 @@ export const mergeAndWriteCookies = async (
 
 export const mergeAndWriteMultipleDomainCookies = async (
   cloudflareAccountInfo: AccountInfo,
-  domainCookies: { domain: string; cookies: ICookie[]; localStorageItems: ILocalStorageItem[] }[],
+  domainCookies: { domain: string; cookies: ICookie[]; localStorageItems: ILocalStorageItem[]; userAgent?: string }[],
   oldCookieMap: ICookiesMap = {},
 ): Promise<[WriteResponse, ICookiesMap]> => {
   await check(cloudflareAccountInfo);
@@ -181,12 +183,13 @@ export const mergeAndWriteMultipleDomainCookies = async (
   const newDomainCookieMap = {
     ...(oldCookieMap.domainCookieMap || {}),
   };
-  for (const { domain, cookies, localStorageItems } of domainCookies) {
+  for (const { domain, cookies, localStorageItems, userAgent } of domainCookies) {
     newDomainCookieMap[domain] = {
       updateTime: Date.now(),
       createTime: oldCookieMap.domainCookieMap?.[domain]?.createTime || Date.now(),
       cookies: cookies,
       localStorageItems: localStorageItems || [],
+      userAgent: userAgent || oldCookieMap.domainCookieMap?.[domain]?.userAgent || '',
     };
   }
   const cookiesMap: ICookiesMap = {
