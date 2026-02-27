@@ -64,7 +64,10 @@ Please refer to [Privacy Policy](./private-policy.md) for more information.
 如果你觉得这个项目对你有帮助，欢迎通过以下方式支持我：
 - 给项目点个 Star ⭐
 - [通过 Ko-fi 赞助](https://ko-fi.com/jacklu) 💖
-- <img src="./screenshots/wechat_sponsor.jpg" alt="微信支付" style="width: 150px;">
+- 通过 微信支付 赞助
+  <div>
+    <img src="./screenshots/wechat_sponsor.jpg" alt="微信支付" style="width: 150px;">
+  </div>
 - 分享给更多需要的人 🚀
 
 
