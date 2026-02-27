@@ -75,3 +75,11 @@ Pushed Cookie on Cloudflare
 ### Privacy Policy
 
 Please refer to [Privacy Policy](./private-policy.md) for more information.
+
+### Support
+
+If you find this project helpful, you can support the development by:
+- Starring the repository ⭐
+- [Sponsoring via Ko-fi](https://ko-fi.com/jacklu) 💖
+- <img src="./screenshots/wechat_sponsor.jpg" alt="微信支付" style="width: 150px;">
+- Sharing it with others 🚀
