@@ -1,0 +1,39 @@
+name: Claude Code Integration
+
+on:
+  # 当 Issue 或 PR 中有新评论时触发（支持 @claude 唤醒）
+  issue_comment:
+    types: [created]
+  # 当代码推送或创建拉取请求时自动触发功能
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  claude-code-action:
+    runs-on: ubuntu-latest
+    # 限制仅在需要时运行，节省资源
+    if: >
+      github.event_name == 'pull_request' || 
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude'))
+    steps:
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 获取完整历史记录以便 Claude 分析上下文
+
+      # 2. 调用 Claude Code 官方 Action
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1 # 请以实际官方最新版本号为准
+        with:
+          # 提供 GitHub token 以便 Claude 能回复评论和修改代码
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          claude_code_oauth_token: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
+        env:
+          # 以下环境变量在 Github Secrets 中提前配置好
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }} # 例如填写 OpenRouter 地址
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.ANTHROPIC_AUTH_TOKEN }} # 填写中转 Key
+          ANTHROPIC_API_KEY: "" # 必须为空
+          ANTHROPIC_DEFAULT_OPUS_MODEL: "glm-5"
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: "glm-5"
+          ANTHROPIC_DEFAULT_SONNET_MODEL: "glm-5"
