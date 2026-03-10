@@ -8,6 +8,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  id-token: write   # 必须添加这个权限，才能生成 ID Token 并消除报错
+  contents: write   # 允许工作流读写代码（Claude Code 常用）
+  pull-requests: write # 允许在 PR 下回复评论
+  issues: write     # 如果你在 issue comment 里触发，需要这个
+
 jobs:
   claude-code-action:
     runs-on: ubuntu-latest
